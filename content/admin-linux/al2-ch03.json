@@ -1,0 +1,429 @@
+{
+  "id": "al2-ch03",
+  "title": "Les volumes logiques",
+  "group": "Cours, partie 2",
+  "order": 13,
+  "source": "AdminLinux-2.pdf, chapitre 3",
+  "questions": [
+    {
+      "id": "al2-ch03-q001",
+      "type": "single",
+      "prompt": "Que signifie l'acronyme RAID dans le cours ?",
+      "choices": [
+        "Redundant Array of Independent Disks",
+        "Random Access Integrated Devices",
+        "Replicated Array of Indexed Drives",
+        "Redundant Allocation of Internal Disks"
+      ],
+      "answer": [0],
+      "explanation": "Le cours définit le RAID comme Redundant Array of Independent Disks : un ensemble redondant de disques indépendants.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q002",
+      "type": "single",
+      "prompt": "Quel est l'objectif du RAID selon le cours ?",
+      "choices": [
+        "Découper un disque en plusieurs partitions indépendantes",
+        "Combiner plusieurs périphériques pour gagner en performances et/ou en disponibilité des données",
+        "Chiffrer les données réparties sur plusieurs disques",
+        "Sauvegarder automatiquement un disque vers un serveur distant"
+      ],
+      "answer": [1],
+      "explanation": "Le RAID combine plusieurs périphériques de stockage pour augmenter les performances, la disponibilité des données, ou les deux selon le niveau choisi. Ce n'est ni du partitionnement ni une sauvegarde.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q003",
+      "type": "single",
+      "prompt": "Quel niveau RAID correspond au disk striping (volume segmenté) ?",
+      "choices": ["RAID 1", "RAID 5", "RAID 0", "Linéaire"],
+      "answer": [2],
+      "explanation": "Le striping est le RAID level 0. Le RAID 5 ajoute la parité au striping (disk striping with parity), le RAID 1 est le miroir.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q004",
+      "type": "single",
+      "prompt": "Quel niveau RAID correspond au mirroring (volume en miroir) ?",
+      "choices": ["RAID 0", "RAID 5", "RAID 6", "RAID 1"],
+      "answer": [3],
+      "explanation": "Le mirroring est le RAID level 1 : les données sont écrites en plusieurs exemplaires sur plusieurs disques en même temps.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q005",
+      "type": "single",
+      "prompt": "Quel niveau RAID correspond au disk striping with parity (volume segmenté avec parité) ?",
+      "choices": ["RAID 5", "RAID 1", "RAID 0", "Linéaire"],
+      "answer": [0],
+      "explanation": "Le RAID 5 répartit les données et la parité sur les périphériques. Le RAID 0 fait du striping sans parité.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q006",
+      "type": "multi",
+      "prompt": "Parmi ces affirmations sur le RAID matériel et le RAID logiciel, lesquelles sont exactes selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "Le RAID matériel est géré par un contrôleur ou une baie de stockage.",
+        "Le RAID logiciel exige un contrôleur SAS ou NVMe dédié.",
+        "Le RAID matériel apparaît généralement comme un volume au système d'exploitation.",
+        "Le RAID matériel n'est possible qu'avec des disques SATA.",
+        "Le RAID logiciel est assuré par un pilote de périphérique, comme le pilote MD."
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "Le RAID matériel est géré par un contrôleur ou une baie et se présente comme un volume au système ; il peut utiliser SATA, SAS ou NVMe. Le RAID logiciel repose sur un pilote, et non sur un contrôleur dédié.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q007",
+      "type": "single",
+      "prompt": "Quel pilote de RAID logiciel Linux le cours étudie-t-il ?",
+      "choices": ["LVM", "MD", "Btrfs", "DRBD"],
+      "answer": [1],
+      "explanation": "Parmi les solutions de RAID logiciel pour Linux, le cours étudie le pilote MD, piloté par la commande `mdadm`. LVM gère des volumes logiques mais n'est pas le pilote présenté.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q008",
+      "type": "single",
+      "prompt": "Trois disques de 500 Go sont assemblés en RAID 0. Quelle est la capacité de l'ensemble ?",
+      "choices": ["500 Go", "1000 Go", "1500 Go", "750 Go"],
+      "answer": [2],
+      "explanation": "En RAID 0, la capacité de l'ensemble est égale à la somme des tailles des disques, soit 3 x 500 Go. Le piège 1000 Go correspond à une perte d'un disque pour la parité, ce qui concerne le RAID 5.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q009",
+      "type": "single",
+      "prompt": "Un disque de 500 Go et un disque de 1 To sont assemblés en RAID 1. Quelle est la capacité de l'ensemble ?",
+      "choices": ["1 To", "1,5 To", "750 Go", "500 Go"],
+      "answer": [3],
+      "explanation": "En RAID 1, la taille de l'ensemble est égale à la taille du plus petit disque, puisque chaque donnée est écrite sur tous les disques. Additionner les tailles est le calcul du RAID 0 ou du mode linéaire.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q010",
+      "type": "single",
+      "prompt": "Un serveur de calcul a besoin des meilleures performances possibles en lecture et écriture sur des données temporaires dont la perte est sans gravité. Quel niveau RAID le cours désigne-t-il comme le plus performant ?",
+      "choices": ["RAID 0", "RAID 1", "RAID 5", "Linéaire"],
+      "answer": [0],
+      "explanation": "Le RAID 0 offre le maximum de performances, les temps de lecture et d'écriture étant théoriquement divisés par le nombre de disques. Le mode linéaire, lui, n'apporte aucun gain de performance.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q011",
+      "type": "single",
+      "prompt": "Selon le cours, quelle est la vitesse de lecture/écriture d'un ensemble RAID 1 ?",
+      "choices": [
+        "La somme des vitesses de tous les disques",
+        "La vitesse du disque le plus lent",
+        "La vitesse du disque le plus rapide",
+        "La vitesse d'un disque multipliée par le nombre de disques"
+      ],
+      "answer": [1],
+      "explanation": "Le cours indique que la vitesse de l'ensemble RAID 1 est égale à celle du disque le plus lent, à cause du temps d'écriture sur chacun des disques. C'est pourquoi il le présente comme le niveau le moins performant. C'est la réponse du cours ; en pratique, seule l'écriture est ainsi limitée, les lectures pouvant être réparties entre les disques.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch03-q012",
+      "type": "single",
+      "prompt": "Pourquoi le cours dit-il que le RAID 0 abaisse la sécurité ?",
+      "choices": [
+        "Parce que la parité est stockée sur un seul disque",
+        "Parce qu'il écrit les données en plusieurs exemplaires",
+        "Parce que l'ensemble dépend de la fiabilité de chaque disque",
+        "Parce qu'il ne peut pas être monté via `/etc/fstab`"
+      ],
+      "answer": [2],
+      "explanation": "En RAID 0, les données sont réparties sur tous les disques sans redondance : l'ensemble dépend de la fiabilité de chaque disque, et la perte d'un seul compromet le tout. Il n'y a pas de parité en RAID 0.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q013",
+      "type": "single",
+      "prompt": "Combien de périphériques faut-il au minimum pour un RAID 5 ?",
+      "choices": ["2", "4", "5", "3"],
+      "answer": [3],
+      "explanation": "Le RAID 5 utilise au minimum trois périphériques et répartit les données et la parité. Quatre disques au minimum, c'est le RAID 6.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q014",
+      "type": "single",
+      "prompt": "Combien de périphériques un RAID 5 peut-il perdre sans perdre de données ?",
+      "choices": ["1", "0", "2", "La moitié des périphériques"],
+      "answer": [0],
+      "explanation": "Le RAID 5 tolère la perte d'un périphérique grâce à la parité. Tolérer la perte de deux disques est la propriété du RAID 6.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q015",
+      "type": "single",
+      "prompt": "Quelle combinaison décrit le RAID 6 selon le cours ?",
+      "choices": [
+        "3 disques minimum, perte d'1 disque tolérée",
+        "4 disques minimum, perte de 2 disques tolérée",
+        "4 disques minimum, perte d'1 disque tolérée",
+        "6 disques minimum, perte de 3 disques tolérée"
+      ],
+      "answer": [1],
+      "explanation": "Le RAID 6 fonctionne comme le RAID 5 mais avec 4 disques au minimum, et on peut perdre 2 disques en même temps. Trois disques et une perte tolérée, c'est le RAID 5.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q016",
+      "type": "multi",
+      "prompt": "Que dit le cours du mode linéaire (concaténé) ? (plusieurs réponses)",
+      "choices": [
+        "Il améliore les performances en répartissant la charge sur tous les disques.",
+        "Les données y sont écrites séquentiellement, sans algorithme particulier.",
+        "Sa capacité est égale à la somme des tailles des disques.",
+        "Il tolère la perte d'un disque grâce à la parité.",
+        "Il pose le même problème de sécurité que le RAID 0."
+      ],
+      "answer": [1, 2, 4],
+      "explanation": "Le mode linéaire groupe les disques en un seul disque logique rempli séquentiellement : capacité égale à la somme des disques, aucun gain de performance et le même problème de sécurité que le RAID 0. Répartir la charge est le principe du striping, pas de la concaténation.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q017",
+      "type": "multi",
+      "prompt": "Pour quels ensembles la capacité est-elle égale à la somme des tailles des disques ? (plusieurs réponses)",
+      "choices": ["RAID 1", "RAID 0", "RAID 5", "Linéaire (concaténé)", "RAID 6"],
+      "answer": [1, 3],
+      "explanation": "Le RAID 0 et le mode linéaire n'ont aucune redondance : toute la capacité des disques est utilisable. Le RAID 1 se limite au plus petit disque, et les RAID 5 et 6 consacrent de l'espace à la parité.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q018",
+      "type": "single",
+      "prompt": "Que dit le cours de la taille de chunk d'un ensemble RAID ?",
+      "choices": [
+        "Elle vaut toujours 64 Ko",
+        "Elle est égale à la taille d'un bloc du système de fichiers",
+        "Elle est configurable et n'est pas une valeur fixe universelle",
+        "Elle est déterminée par le nombre de disques de l'ensemble"
+      ],
+      "answer": [2],
+      "explanation": "Le cours précise que la taille de chunk est configurable et ne doit pas être présentée comme une valeur fixe universelle. Une valeur comme 64 Ko n'est qu'un réglage possible.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q019",
+      "type": "single",
+      "prompt": "Après le remplacement d'un disque défectueux dans un RAID 5, à partir de quoi le disque est-il recréé ?",
+      "choices": [
+        "Par copie intégrale d'un disque miroir",
+        "À partir de la dernière sauvegarde du serveur",
+        "À partir du contenu de `/proc/mdstat`",
+        "À partir des données et des informations de parité des autres disques"
+      ],
+      "answer": [3],
+      "explanation": "En RAID 5, le disque défectueux est recréé à partir des données et de la parité stockées sur les autres disques. La copie depuis un disque miroir est la reconstruction du RAID 1.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q020",
+      "type": "single",
+      "prompt": "Quelle commande configure un ensemble RAID avec le pilote MD ?",
+      "choices": ["`mdadm`", "`mkfs`", "`lvcreate`", "`fdisk`"],
+      "answer": [0],
+      "explanation": "La configuration d'un ensemble RAID MD se fait avec `mdadm`, dont le paquet s'installe s'il est absent. `mkfs` intervient ensuite pour créer le système de fichiers sur l'ensemble.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q021",
+      "type": "single",
+      "prompt": "Que construit cette commande ?",
+      "code": "# mdadm --create --verbose --level=linear --raid-devices=2 /dev/md0 /dev/sdb /dev/sdc",
+      "choices": [
+        "Un RAID 1 nommé `/dev/md0` en miroir de `/dev/sdb` et `/dev/sdc`",
+        "Un ensemble concaténé `/dev/md0` formé de `/dev/sdb` et `/dev/sdc`",
+        "Un RAID 0 nommé `/dev/md0` réparti sur `/dev/sdb` et `/dev/sdc`",
+        "Un ensemble linéaire de trois disques : `/dev/md0`, `/dev/sdb` et `/dev/sdc`"
+      ],
+      "answer": [1],
+      "explanation": "`--level=linear` crée un ensemble concaténé, `/dev/md0` est le périphérique créé et `/dev/sdb` `/dev/sdc` sont ses deux membres (`--raid-devices=2`). `/dev/md0` n'est pas un des disques de l'ensemble.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q022",
+      "type": "single",
+      "prompt": "Quelle option compléter dans `mdadm --create --verbose ... --raid-devices=2 /dev/md0 /dev/sdb /dev/sdc` pour construire un RAID 1 ?",
+      "choices": ["`--level=0`", "`--level=linear`", "`--level=1`", "`--mode=1`"],
+      "answer": [2],
+      "explanation": "Le niveau se choisit avec `--level`, et le cours construit le RAID 1 avec `--level=1`. `--level=linear` produirait un ensemble concaténé.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q023",
+      "type": "single",
+      "prompt": "Dans `mdadm --create`, que précise l'option `--raid-devices=2` ?",
+      "choices": [
+        "Le numéro de l'ensemble à créer, ici `/dev/md2`",
+        "Le nombre de disques de secours de l'ensemble",
+        "Le niveau RAID de l'ensemble",
+        "Le nombre de périphériques qui composent l'ensemble"
+      ],
+      "answer": [3],
+      "explanation": "`--raid-devices=2` indique que l'ensemble est formé de deux périphériques, ici `/dev/sdb` et `/dev/sdc`. Le niveau se donne séparément avec `--level`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q024",
+      "type": "single",
+      "prompt": "L'ensemble `/dev/md0` vient d'être créé et démarré. Que faut-il faire avant d'y stocker des fichiers ?",
+      "choices": [
+        "Créer un système de fichiers avec `mkfs` puis le monter avec `mount`",
+        "Lancer `mdadm --stop /dev/md0` puis `mount`",
+        "Lancer `mkswap /dev/md0` puis `swapon /dev/md0`",
+        "Ajouter `/dev/md0` dans `/proc/mdstat` puis redémarrer"
+      ],
+      "answer": [0],
+      "explanation": "Une fois l'ensemble créé, on le traite comme n'importe quelle partition : `mkfs` puis `mount`. `mkswap` et `swapon` en feraient une zone de swap, pas un espace de fichiers.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q025",
+      "type": "single",
+      "prompt": "Quel fichier donne des informations sur les ensembles RAID en cours de fonctionnement ?",
+      "choices": [
+        "`/etc/mdadm/mdadm.conf`",
+        "`/proc/mdstat`",
+        "`/etc/raidtab`",
+        "`/proc/diskstats`"
+      ],
+      "answer": [1],
+      "explanation": "`cat /proc/mdstat` affiche l'état des ensembles MD actifs. `/etc/mdadm/mdadm.conf` contient la configuration persistante, pas l'état en cours.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q026",
+      "type": "single",
+      "prompt": "Quelle commande arrête l'ensemble `/dev/md0` ?",
+      "choices": [
+        "`umount /dev/md0`",
+        "`mdadm --remove /dev/md0`",
+        "`mdadm --stop /dev/md0`",
+        "`mdadm --fail /dev/md0`"
+      ],
+      "answer": [2],
+      "explanation": "Le cours arrête un ensemble avec `mdadm --stop /dev/md0`. `umount` ne fait que démonter le système de fichiers, l'ensemble reste actif.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q027",
+      "type": "single",
+      "prompt": "Où se trouve la configuration persistante de `mdadm` selon le cours ?",
+      "choices": [
+        "`/proc/mdstat`",
+        "`/etc/fstab`",
+        "`/etc/raid/md0.conf`",
+        "`/etc/mdadm/mdadm.conf`"
+      ],
+      "answer": [3],
+      "explanation": "La configuration persistante est dans `/etc/mdadm/mdadm.conf`, où les ensembles sont décrits par leur UUID et leurs métadonnées. `/proc/mdstat` n'est qu'un état en mémoire.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q028",
+      "type": "single",
+      "prompt": "Que fait cette commande ?",
+      "code": "# mdadm --detail --scan >> /etc/mdadm/mdadm.conf",
+      "choices": [
+        "Elle ajoute à la fin du fichier les lignes décrivant les ensembles actifs",
+        "Elle remplace tout le fichier par la liste des disques détectés",
+        "Elle crée les ensembles décrits dans le fichier de configuration",
+        "Elle affiche l'état de reconstruction des ensembles"
+      ],
+      "answer": [0],
+      "explanation": "`mdadm --detail --scan` génère une description des ensembles (UUID, métadonnées) et `>>` l'ajoute à la fin de `/etc/mdadm/mdadm.conf`. Le piège est de confondre `>>`, qui ajoute, avec `>`, qui écraserait le fichier.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch03-q029",
+      "type": "multi",
+      "prompt": "Vous avez créé `/dev/md0` et son système de fichiers. Que faut-il faire selon le cours pour que l'ensemble soit décrit de façon persistante et monté au démarrage ? (plusieurs réponses)",
+      "choices": [
+        "Ajouter une ligne pour l'ensemble dans `/etc/fstab`",
+        "Écrire la description de l'ensemble dans `/proc/mdstat`",
+        "Recréer l'ensemble avec `mdadm --create` à chaque démarrage",
+        "Ajouter la sortie de `mdadm --detail --scan` à `/etc/mdadm/mdadm.conf`",
+        "Exécuter `mdadm --stop /dev/md0` avant chaque arrêt"
+      ],
+      "answer": [0, 3],
+      "explanation": "La description persistante va dans `/etc/mdadm/mdadm.conf` (générée par `mdadm --detail --scan`) et le montage automatique demande une ligne dans `/etc/fstab`. `/proc/mdstat` se lit, il ne se configure pas.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch03-q030",
+      "type": "single",
+      "prompt": "À partir de quoi un ensemble MD peut-il être construit ?",
+      "choices": [
+        "Uniquement de disques entiers",
+        "De disques entiers ou de partitions",
+        "Uniquement de partitions",
+        "Uniquement de disques NVMe"
+      ],
+      "answer": [1],
+      "explanation": "Un ensemble MD peut être construit à partir de disques entiers ou de partitions, le choix dépendant de l'organisation du stockage. Les exemples du cours utilisent des disques entiers, mais ce n'est pas une obligation.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q031",
+      "type": "single",
+      "prompt": "Quand un ensemble RAID peut-il utiliser des périphériques remplaçables à chaud ?",
+      "choices": [
+        "Uniquement en RAID 0",
+        "Seulement avec le RAID logiciel MD",
+        "Lorsque le matériel et le contrôleur le permettent",
+        "Après avoir arrêté l'ensemble avec `mdadm --stop`"
+      ],
+      "answer": [2],
+      "explanation": "Le remplacement à chaud est possible lorsque le matériel et le contrôleur le permettent, par exemple certaines baies SATA, SAS ou NVMe. Arrêter l'ensemble avant le remplacement serait justement l'inverse d'un remplacement à chaud.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q032",
+      "type": "single",
+      "prompt": "Vous disposez de quatre disques et l'ensemble doit survivre à la panne simultanée de deux d'entre eux. Quel niveau RAID choisir ?",
+      "choices": ["RAID 5", "RAID 0", "Linéaire", "RAID 6"],
+      "answer": [3],
+      "explanation": "Le RAID 6 demande 4 disques au minimum et tolère la perte de 2 disques en même temps. Le RAID 5 ne tolère la perte que d'un seul périphérique.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch03-q033",
+      "type": "single",
+      "prompt": "Quel niveau le cours présente-t-il comme offrant le maximum de sécurité, mais aussi comme le moins performant ?",
+      "choices": ["RAID 1", "RAID 0", "RAID 5", "Linéaire"],
+      "answer": [0],
+      "explanation": "Le RAID 1 écrit les données sur chaque disque : maximum de sécurité, mais le temps d'écriture sur chacun des disques en fait le niveau le moins performant. Le RAID 0 est l'opposé, maximum de performances.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch03-q034",
+      "type": "single",
+      "prompt": "Dans un RAID 1, comment l'intégrité de l'ensemble est-elle rétablie après le remplacement du disque défectueux ?",
+      "choices": [
+        "En recalculant les données à partir de la parité",
+        "En recréant le disque miroir à partir d'un autre disque de l'ensemble",
+        "En recréant l'ensemble avec `mdadm --create`",
+        "En restaurant `/etc/mdadm/mdadm.conf`"
+      ],
+      "answer": [1],
+      "explanation": "En RAID 1, le disque miroir défectueux est recréé à partir d'un autre disque, qui contient les mêmes données. Le calcul à partir de la parité concerne le RAID 5.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch03-q035",
+      "type": "multi",
+      "prompt": "Quels ensembles survivent à la perte d'un disque ? (plusieurs réponses)",
+      "choices": ["RAID 0", "RAID 1", "Linéaire (concaténé)", "RAID 5", "RAID 6"],
+      "answer": [1, 3, 4],
+      "explanation": "Le RAID 1 garde une copie sur un autre disque, le RAID 5 tolère la perte d'un périphérique et le RAID 6 celle de deux. Le RAID 0 et le mode linéaire n'ont aucune redondance : la perte d'un disque compromet l'ensemble.",
+      "difficulty": 2
+    }
+  ]
+}

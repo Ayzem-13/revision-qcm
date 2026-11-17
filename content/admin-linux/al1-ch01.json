@@ -1,0 +1,434 @@
+{
+  "id": "al1-ch01",
+  "title": "Concepts de base",
+  "group": "Cours, partie 1",
+  "order": 1,
+  "source": "AdminLinux-1.pdf, chapitre 1",
+  "questions": [
+    {
+      "id": "al1-ch01-q001",
+      "type": "single",
+      "prompt": "Selon le cours, quel rôle joue le système d'exploitation Ubuntu Linux ?",
+      "choices": [
+        "Il se limite à gérer les fichiers stockés sur les disques",
+        "Il supervise toutes les opérations de l'ordinateur et fournit une interface entre l'utilisateur et les ressources du système",
+        "Il fournit uniquement l'interface graphique de l'utilisateur",
+        "Il se limite à exécuter les commandes tapées dans le shell"
+      ],
+      "answer": [1],
+      "explanation": "Le cours définit Ubuntu Linux comme un ensemble de programmes qui supervisent toutes les opérations de l'ordinateur et servent d'interface entre l'utilisateur et les ressources du système. Gérer des fichiers ou exécuter des commandes n'en sont que des parties.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q002",
+      "type": "multi",
+      "prompt": "Selon le cours, quels éléments composent le système Ubuntu Linux ? (plusieurs réponses)",
+      "choices": [
+        "le noyau Linux, ses modules et les bibliothèques et fichiers partagés GNU",
+        "le noyau XNU et ses extensions",
+        "les outils en ligne de commande GNU",
+        "l'interface graphique X-Window ou Wayland avec un environnement comme Gnome ou KDE",
+        "la base de registre et le gestionnaire de services Windows"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "Ubuntu Linux réunit le noyau Linux et ses modules avec les bibliothèques GNU, les outils en ligne de commande GNU, et l'interface graphique X-Window ou Wayland avec Gnome ou KDE. XNU est le noyau de macOS, la base de registre appartient à Windows.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q003",
+      "type": "single",
+      "prompt": "Comme tout système de type UNIX, le système d'exploitation Linux est basé sur :",
+      "choices": [
+        "une base de registre centrale",
+        "des objets graphiques",
+        "des fichiers",
+        "des machines virtuelles"
+      ],
+      "answer": [2],
+      "explanation": "Le cours précise que Linux, comme tout système de type UNIX, est basé sur des fichiers. La base de registre est un concept propre à Windows.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q004",
+      "type": "multi",
+      "prompt": "Quels sont les trois composants essentiels du système d'exploitation Linux selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "le chargeur de démarrage",
+        "le noyau",
+        "le gestionnaire de paquets",
+        "le système de fichiers",
+        "le shell et les applications"
+      ],
+      "answer": [1, 3, 4],
+      "explanation": "Les trois composants essentiels sont le noyau, le shell et les applications, et le système de fichiers. Le chargeur de démarrage et le gestionnaire de paquets existent mais ne font pas partie de cette liste.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q005",
+      "type": "single",
+      "prompt": "De quoi est composée la mémoire virtuelle utilisée par le système d'exploitation ?",
+      "choices": [
+        "de la RAM physique et du cache du processeur",
+        "de la zone de swap et du répertoire `/tmp`",
+        "de la RAM physique et de la mémoire vidéo",
+        "de la RAM physique et de la zone de swap"
+      ],
+      "answer": [3],
+      "explanation": "La mémoire virtuelle est composée de la RAM physique et de la zone de swap. Le cache du processeur n'en fait pas partie au sens du cours.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q006",
+      "type": "single",
+      "prompt": "Où la zone de swap est-elle généralement stockée selon le cours ?",
+      "choices": [
+        "sur un disque dur local",
+        "dans la RAM physique",
+        "sur un partage réseau",
+        "dans le répertoire `/proc`"
+      ],
+      "answer": [0],
+      "explanation": "Le swap est généralement stocké sur un disque dur local : c'est ce qui permet d'étendre la RAM physique. `/proc` est un accès aux informations du noyau, pas un espace de stockage.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q007",
+      "type": "single",
+      "prompt": "Comment appelle-t-on les processus qui fonctionnent en permanence dans le système pour assumer les tâches du système d'exploitation ?",
+      "choices": [
+        "les pilotes",
+        "les démons",
+        "les modules",
+        "les shells"
+      ],
+      "answer": [1],
+      "explanation": "Les tâches du système sont assumées par des processus permanents appelés démons. Les pilotes et les modules sont du code chargé par le noyau, pas des processus.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q008",
+      "type": "multi",
+      "prompt": "Quelles opérations sont à la charge du noyau selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "l'interprétation des commandes tapées par l'utilisateur",
+        "la gestion des périphériques à travers les pilotes",
+        "la gestion de la mémoire virtuelle",
+        "l'installation automatique des dépendances des paquets",
+        "le séquençage des processus et le partage du temps des processeurs"
+      ],
+      "answer": [1, 2, 4],
+      "explanation": "Le noyau gère les périphériques via les pilotes, la mémoire, les processus, le partage du temps processeur et la mémoire virtuelle. Interpréter ce que tape l'utilisateur est le rôle du shell, et les dépendances relèvent d'APT.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q009",
+      "type": "single",
+      "prompt": "Quel composant contrôle les échanges de données, par exemple TCP/IP, entre les utilitaires du système et le matériel ?",
+      "choices": [
+        "le shell",
+        "le système de fichiers",
+        "le noyau",
+        "l'interface graphique"
+      ],
+      "answer": [2],
+      "explanation": "Le contrôle des flux de données (TCP/IP par exemple) entre les utilitaires et le matériel fait partie des opérations du noyau. Le shell, lui, fait l'interface avec l'utilisateur.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q010",
+      "type": "single",
+      "prompt": "Quel est le rôle du shell ?",
+      "choices": [
+        "Il gère la mémoire virtuelle et le partage du temps processeur",
+        "Il contrôle les flux de données entre les utilitaires et le matériel",
+        "Il stocke la hiérarchie des répertoires et des fichiers",
+        "Il constitue l'interface entre le noyau et l'utilisateur et interprète ce que l'utilisateur tape"
+      ],
+      "answer": [3],
+      "explanation": "Le shell est l'interface entre le noyau et l'utilisateur : il interprète ce que l'utilisateur tape et démarre les exécutables. La mémoire virtuelle et les flux de données sont gérés par le noyau.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q011",
+      "type": "single",
+      "prompt": "D'après le cours, que peut démarrer le shell ?",
+      "choices": [
+        "des fichiers exécutables, y compris les démons ou l'interface graphique",
+        "uniquement les commandes internes du shell",
+        "uniquement les programmes situés dans `/bin`",
+        "uniquement les scripts écrits pour le Bourne Shell"
+      ],
+      "answer": [0],
+      "explanation": "Le shell démarre les fichiers exécutables, y compris les démons et l'interface graphique. Il n'est limité ni à ses commandes internes ni à un répertoire particulier.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q012",
+      "type": "single",
+      "prompt": "Quel est le shell par défaut de Ubuntu Linux selon le cours ?",
+      "choices": [
+        "`sh`",
+        "`bash`",
+        "`zsh`",
+        "`tcsh`"
+      ],
+      "answer": [1],
+      "explanation": "Le cours présente le GNU Bourne Again Shell (`bash`) comme le shell par défaut de Ubuntu Linux. `sh` est présenté comme le shell le plus utilisé pour les scripts, pas comme le shell par défaut.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q013",
+      "type": "single",
+      "prompt": "Quel shell le cours présente-t-il comme le plus utilisé pour l'écriture des scripts ?",
+      "choices": [
+        "le GNU Bourne Again Shell (`bash`)",
+        "le C Shell (`csh`)",
+        "le Bourne Shell (`sh`)",
+        "le Z Shell (`zsh`)"
+      ],
+      "answer": [2],
+      "explanation": "Le Bourne Shell (`sh`), développé pour l'environnement UNIX, est selon le cours le shell le plus utilisé pour l'écriture des scripts. Le piège est `bash`, qui est le shell par défaut mais pas celui que le cours désigne pour les scripts.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q014",
+      "type": "single",
+      "prompt": "Quel shell a une syntaxe proche du langage C ?",
+      "choices": [
+        "le Z Shell (`zsh`)",
+        "le Bourne Again Shell (`bash`)",
+        "le Bourne Shell (`sh`)",
+        "le C Shell (`csh`)"
+      ],
+      "answer": [3],
+      "explanation": "Le C Shell (`csh`) est décrit comme une version améliorée du Bourne Shell avec une syntaxe proche du langage C. `bash` et `zsh` sont présentés comme compatibles avec le Bourne Shell.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q015",
+      "type": "single",
+      "prompt": "D'après le cours, quelle version du C Shell est en réalité installée la plupart du temps ?",
+      "choices": [
+        "`tcsh` (Turbo C Shell)",
+        "`ksh` (Korn Shell)",
+        "`dash` (Debian Almquist Shell)",
+        "`zsh` (Z Shell)"
+      ],
+      "answer": [0],
+      "explanation": "Le cours indique que, la plupart du temps, seule la version Turbo C Shell (`tcsh`) est installée. Elle apporte l'historique, les alias et l'édition de la ligne de commande.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q016",
+      "type": "multi",
+      "prompt": "Quelles fonctionnalités le cours attribue-t-il à `bash` en plus de la compatibilité avec le Bourne Shell ? (plusieurs réponses)",
+      "choices": [
+        "une syntaxe proche du langage C",
+        "l'historique des commandes",
+        "la gestion de la mémoire virtuelle",
+        "les alias",
+        "l'édition de la ligne de commande"
+      ],
+      "answer": [1, 3, 4],
+      "explanation": "`bash` incorpore l'historique des commandes, les alias et l'édition de la ligne de commande. La syntaxe proche du C caractérise `csh`, et la mémoire virtuelle relève du noyau.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q017",
+      "type": "single",
+      "prompt": "Que signifie le nom `bash` ?",
+      "choices": [
+        "Basic Shell",
+        "Bourne Again Shell",
+        "Bourne Advanced Shell",
+        "Berkeley Shell"
+      ],
+      "answer": [1],
+      "explanation": "`bash` est le GNU Bourne Again Shell, un shell compatible avec le Bourne Shell (`sh`).",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q018",
+      "type": "single",
+      "prompt": "Comment le cours présente-t-il le Z Shell (`zsh`) ?",
+      "choices": [
+        "comme un shell à syntaxe proche du langage C",
+        "comme le shell par défaut de Ubuntu Linux",
+        "comme un shell compatible avec le Bourne Shell",
+        "comme le shell le plus utilisé pour l'écriture des scripts"
+      ],
+      "answer": [2],
+      "explanation": "Le cours décrit `zsh` simplement comme un shell compatible avec le Bourne Shell. Le shell par défaut est `bash`, et la syntaxe proche du C est celle de `csh`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q019",
+      "type": "single",
+      "prompt": "Comment est désigné le répertoire racine (root), la base de l'arborescence du système de fichiers ?",
+      "choices": [
+        "`/root`",
+        "`~`",
+        "`/home`",
+        "`/`"
+      ],
+      "answer": [3],
+      "explanation": "La racine de l'arborescence est désignée par le symbole `/`. Le piège est `/root`, qui est un répertoire distinct malgré le nom anglais « root » donné à la racine.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q020",
+      "type": "single",
+      "prompt": "Quel répertoire contient les fichiers de configuration du système et des applications ?",
+      "choices": [
+        "`/etc`",
+        "`/usr`",
+        "`/var`",
+        "`/boot`"
+      ],
+      "answer": [0],
+      "explanation": "`/etc` contient les fichiers de configuration du système et des applications. `/var` contient des fichiers dont le contenu varie, comme les logs.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q021",
+      "type": "single",
+      "prompt": "Quel répertoire contient les fichiers nécessaires au démarrage du système, comme le noyau et les chargeurs ?",
+      "choices": [
+        "`/lib`",
+        "`/boot`",
+        "`/sbin`",
+        "`/proc`"
+      ],
+      "answer": [1],
+      "explanation": "`/boot` contient les fichiers nécessaires au démarrage : noyau, chargeurs. `/lib` contient les modules du noyau, mais pas le noyau lui-même.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q022",
+      "type": "single",
+      "prompt": "Que représente le répertoire `/dev` ?",
+      "choices": [
+        "les outils de développement et les compilateurs",
+        "les informations du noyau et des processus",
+        "les points d'accès aux périphériques",
+        "les modules du noyau"
+      ],
+      "answer": [2],
+      "explanation": "`/dev` représente les points d'accès aux périphériques (devices). Le piège est de lire « dev » comme développement ; les informations du noyau et des processus sont dans `/proc`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q023",
+      "type": "single",
+      "prompt": "Quel répertoire contient les bibliothèques partagées et les modules du noyau ?",
+      "choices": [
+        "`/usr`",
+        "`/boot`",
+        "`/bin`",
+        "`/lib`"
+      ],
+      "answer": [3],
+      "explanation": "`/lib` contient les bibliothèques partagées et les modules du noyau. Le noyau lui-même est dans `/boot`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q024",
+      "type": "single",
+      "prompt": "Quelle différence le cours fait-il entre `/bin` et `/sbin` ?",
+      "choices": [
+        "`/bin` contient les commandes indispensables à l'utilisation du système, `/sbin` les outils système pour l'administration",
+        "`/bin` contient les outils système pour l'administration, `/sbin` les commandes indispensables à l'utilisation du système",
+        "`/bin` contient les commandes installées par les paquets, `/sbin` les scripts de démarrage du système",
+        "`/bin` contient les commandes des utilisateurs, `/sbin` les bibliothèques partagées des commandes"
+      ],
+      "answer": [0],
+      "explanation": "`/bin` contient les commandes indispensables à l'utilisation du système, `/sbin` les outils système pour l'administration. Les bibliothèques partagées sont dans `/lib`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q025",
+      "type": "single",
+      "prompt": "Un administrateur cherche les fichiers de logs du système. Dans quel répertoire de premier niveau, dont le contenu varie en fonction de l'utilisation du système, doit-il regarder ?",
+      "choices": [
+        "`/etc`",
+        "`/var`",
+        "`/proc`",
+        "`/usr`"
+      ],
+      "answer": [1],
+      "explanation": "`/var` contient les fichiers dont le contenu varie avec l'utilisation du système, comme les bases de données et les fichiers de logs. `/etc` ne contient que la configuration.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q026",
+      "type": "single",
+      "prompt": "Que représente le répertoire `/proc` ?",
+      "choices": [
+        "les programmes installés pour les utilisateurs",
+        "les fichiers de configuration des démons",
+        "le point d'accès aux informations (variables, tables, listes) du noyau et des processus",
+        "les points d'accès aux périphériques"
+      ],
+      "answer": [2],
+      "explanation": "`/proc` est le point d'accès aux informations du noyau et des processus. Les points d'accès aux périphériques sont dans `/dev`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q027",
+      "type": "single",
+      "prompt": "Dans quel répertoire se trouvent les répertoires personnels des utilisateurs ?",
+      "choices": [
+        "`/usr`",
+        "`/root`",
+        "`/var`",
+        "`/home`"
+      ],
+      "answer": [3],
+      "explanation": "`/home` contient les répertoires personnels des utilisateurs. Le piège est `/usr`, qui contient les commandes et applications pour les utilisateurs, pas leurs fichiers personnels.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch01-q028",
+      "type": "single",
+      "prompt": "Selon le cours, quel répertoire contient les commandes et applications pour les utilisateurs, dont les environnements graphiques ?",
+      "choices": [
+        "`/usr`",
+        "`/home`",
+        "`/etc`",
+        "`/bin`"
+      ],
+      "answer": [0],
+      "explanation": "`/usr` contient les commandes et applications pour les utilisateurs, dont les environnements graphiques. `/bin` est réservé aux commandes indispensables à l'utilisation du système.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q029",
+      "type": "multi",
+      "prompt": "D'après le cours, quels répertoires contiennent des commandes ou des outils exécutables ? (plusieurs réponses)",
+      "choices": [
+        "`/etc`",
+        "`/bin`",
+        "`/dev`",
+        "`/sbin`",
+        "`/usr`"
+      ],
+      "answer": [1, 3, 4],
+      "explanation": "`/bin` contient les commandes indispensables, `/sbin` les outils d'administration et `/usr` les commandes et applications des utilisateurs. `/etc` contient la configuration et `/dev` les accès aux périphériques.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch01-q030",
+      "type": "single",
+      "prompt": "Dans la description d'Ubuntu Linux, que sont Gnome et KDE ?",
+      "choices": [
+        "des serveurs d'affichage qui remplacent X-Window",
+        "des environnements de travail qui accompagnent l'interface graphique X-Window ou Wayland",
+        "des chargeurs de démarrage graphiques",
+        "des gestionnaires de paquets graphiques"
+      ],
+      "answer": [1],
+      "explanation": "Gnome et KDE sont des environnements de travail qui accompagnent l'interface graphique X-Window ou Wayland. Le serveur d'affichage est X-Window ou Wayland, pas Gnome ou KDE.",
+      "difficulty": 2
+    }
+  ]
+}

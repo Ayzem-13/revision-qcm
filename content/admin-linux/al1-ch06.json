@@ -1,0 +1,199 @@
+{
+  "id": "al1-ch06",
+  "title": "Les fichiers d'initialisation",
+  "group": "Cours, partie 1",
+  "order": 6,
+  "source": "AdminLinux-1.pdf, chapitre 6",
+  "questions": [
+    {
+      "id": "al1-ch06-q001",
+      "type": "single",
+      "prompt": "Qu'est-ce qu'un fichier d'initialisation ?",
+      "choices": [
+        "Un fichier lu par le noyau au démarrage pour charger les pilotes",
+        "Un fichier listant les shells valides du système",
+        "Une série de commandes exécutées au démarrage du shell pour personnaliser l'environnement",
+        "Un script lancé par systemd à chaque changement de cible"
+      ],
+      "answer": [2],
+      "explanation": "Un fichier d'initialisation contient des commandes exécutées quand le shell démarre, pour personnaliser l'environnement de travail. La liste des shells valides, c'est `/etc/shells`, un tout autre fichier.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch06-q002",
+      "type": "single",
+      "prompt": "Dans quel répertoire se trouvent les fichiers d'initialisation système ?",
+      "choices": ["`/etc`", "`/etc/skel`", "`/usr/share`", "`/root`"],
+      "answer": [0],
+      "explanation": "Les fichiers d'initialisation système sont gérés par l'administrateur et se trouvent dans `/etc`. `/etc/skel` ne contient que des modèles copiés chez les nouveaux utilisateurs.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch06-q003",
+      "type": "single",
+      "prompt": "Où se trouvent les fichiers d'initialisation utilisateur ?",
+      "choices": [
+        "Dans `/etc/skel`, un sous-répertoire par utilisateur",
+        "À la racine du répertoire personnel de chaque utilisateur",
+        "Dans `/var/lib`, un fichier par utilisateur",
+        "Dans `/etc/profile.d`, un fichier par utilisateur"
+      ],
+      "answer": [1],
+      "explanation": "Les fichiers d'initialisation utilisateur sont à la racine du répertoire personnel de chacun (par exemple `$HOME/.bashrc`). `/etc/skel` ne sert que de modèle à la création du compte.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch06-q004",
+      "type": "single",
+      "prompt": "Dans quel ordre les fichiers d'initialisation sont-ils exécutés ?",
+      "choices": [
+        "Les fichiers utilisateur d'abord, puis les fichiers système",
+        "Uniquement les fichiers utilisateur s'ils existent, sinon les fichiers système",
+        "Système et utilisateur en parallèle, sans ordre garanti",
+        "Les fichiers système d'abord s'ils existent, puis les fichiers utilisateur"
+      ],
+      "answer": [3],
+      "explanation": "Les fichiers système sont exécutés en premier s'ils existent, puis les fichiers utilisateur. C'est ce qui permet à l'utilisateur de surcharger les réglages communs, et non l'inverse.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch06-q005",
+      "type": "multi",
+      "prompt": "Quelles affirmations sur les fichiers d'initialisation système sont exactes ? (plusieurs réponses)",
+      "choices": [
+        "Ils sont gérés par l'administrateur",
+        "Ils sont communs à tous les utilisateurs",
+        "Ils sont exécutés après les fichiers utilisateur",
+        "Ils se trouvent dans le répertoire `/etc`",
+        "Chaque utilisateur les modifie pour son propre compte"
+      ],
+      "answer": [0, 1, 3],
+      "explanation": "Les fichiers système sont gérés par l'administrateur, sont dans `/etc` et sont communs à tous. Ils passent avant les fichiers utilisateur, et un utilisateur personnalise son environnement dans ses propres fichiers, pas dans ceux-là.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch06-q006",
+      "type": "single",
+      "prompt": "Quels sont les deux types de fichiers d'initialisation que distingue le cours ?",
+      "choices": [
+        "Ceux exécutés au démarrage du système et ceux exécutés à son arrêt",
+        "Ceux exécutés au login seulement et ceux exécutés à chaque lancement de shell",
+        "Ceux du shell graphique et ceux du shell texte",
+        "Ceux exécutés par root et ceux exécutés par les autres utilisateurs"
+      ],
+      "answer": [1],
+      "explanation": "Le cours distingue les fichiers exécutés au login seulement (comme `.bash_profile`) et ceux exécutés à chaque lancement de shell (comme `.bashrc`). L'autre distinction, système ou utilisateur, porte sur l'emplacement, pas sur le moment.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch06-q007",
+      "type": "single",
+      "prompt": "À quoi servent en général les fichiers d'initialisation ?",
+      "choices": [
+        "Monter les systèmes de fichiers listés dans `/etc/fstab`",
+        "Charger les modules du noyau nécessaires au shell",
+        "Créer les variables d'environnement comme `PATH`, `USER` ou `HOSTNAME`",
+        "Définir les mots de passe des utilisateurs"
+      ],
+      "answer": [2],
+      "explanation": "Le cours indique qu'ils servent en général à créer les variables d'environnement `PATH`, `LOGNAME`, `USER`, `HOSTNAME`, etc. Le montage des systèmes de fichiers relève du démarrage du système, pas du shell.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch06-q008",
+      "type": "single",
+      "prompt": "Avec bash, quel fichier utilisateur est exécuté à chaque lancement de shell ?",
+      "choices": ["`$HOME/.bash_profile`", "`$HOME/.bashrc`", "`/etc/profile`", "`$HOME/.login`"],
+      "answer": [1],
+      "explanation": "`$HOME/.bashrc` est le fichier utilisateur de bash exécuté à chaque lancement de shell. `$HOME/.bash_profile` n'est exécuté qu'au login.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch06-q009",
+      "type": "single",
+      "prompt": "Avec bash, quel fichier utilisateur est exécuté au login seulement ?",
+      "choices": ["`$HOME/.bashrc`", "`/etc/profile`", "`$HOME/.bash_profile`", "`$HOME/.kshrc`"],
+      "answer": [2],
+      "explanation": "`$HOME/.bash_profile` est le fichier utilisateur de bash du type login. `/etc/profile` est aussi du type login, mais c'est un fichier système, pas utilisateur.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch06-q010",
+      "type": "single",
+      "prompt": "Quel fichier d'initialisation système du type login est utilisé par bash et par le Korn shell ?",
+      "choices": ["`/etc/profile`", "`/etc/csh.login`", "`/etc/zprofile`", "`/etc/skel/.profile`"],
+      "answer": [0],
+      "explanation": "`/etc/profile` est le fichier système exécuté au login pour bash et ksh. `/etc/csh.login` est celui du tcsh, `/etc/zprofile` celui du zsh.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch06-q011",
+      "type": "single",
+      "prompt": "Quel fichier utilisateur est exécuté à chaque lancement d'un Korn shell (`ksh`) ?",
+      "choices": ["`$HOME/.kshrc`", "`$HOME/.profile`", "`$HOME/.cshrc`", "`$HOME/.zshrc`"],
+      "answer": [0],
+      "explanation": "Pour ksh, `$HOME/.kshrc` est exécuté à chaque lancement de shell. `$HOME/.profile` est le fichier utilisateur du type login de ksh.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch06-q012",
+      "type": "multi",
+      "prompt": "Quels fichiers sont des fichiers d'initialisation utilisateur de bash ? (plusieurs réponses)",
+      "choices": ["`$HOME/.bashrc`", "`/etc/profile`", "`$HOME/.bash_profile`", "`/etc/shells`"],
+      "answer": [0, 2],
+      "explanation": "`$HOME/.bash_profile` (au login) et `$HOME/.bashrc` (à chaque lancement) sont dans le répertoire personnel, donc des fichiers utilisateur. `/etc/profile` est un fichier système, et `/etc/shells` n'est pas un fichier d'initialisation.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch06-q013",
+      "type": "single",
+      "prompt": "Que contient le répertoire `/etc/skel` ?",
+      "choices": [
+        "Les fichiers d'initialisation système communs à tous les utilisateurs",
+        "La liste des shells valides du système",
+        "Les répertoires personnels des comptes supprimés",
+        "Des modèles de fichiers d'initialisation pour les nouveaux utilisateurs"
+      ],
+      "answer": [3],
+      "explanation": "`/etc/skel` contient des modèles de fichiers d'initialisation, copiés dans le répertoire d'un utilisateur à sa création. Ce ne sont pas les fichiers système, qui sont exécutés directement depuis `/etc`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch06-q014",
+      "type": "single",
+      "prompt": "Quand le contenu de `/etc/skel` est-il copié dans le répertoire d'un utilisateur ?",
+      "choices": [
+        "À chaque login de l'utilisateur",
+        "À la création de l'utilisateur par `useradd` avec l'option `-m`",
+        "Au premier lancement de `bash` par l'utilisateur",
+        "À la création de l'utilisateur par `useradd`, même sans option"
+      ],
+      "answer": [1],
+      "explanation": "Le contenu de `/etc/skel` est copié à la création de l'utilisateur par `useradd`, si l'option `-m` est utilisée. Sans `-m`, le répertoire personnel n'est pas créé et rien n'est copié.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch06-q015",
+      "type": "single",
+      "prompt": "Quelle option de `useradd` permet de préciser un autre répertoire modèle que `/etc/skel` ?",
+      "choices": ["`-m`", "`-d`", "`-s`", "`-k`"],
+      "answer": [3],
+      "explanation": "L'option `-k` de `useradd` désigne un autre répertoire que `/etc/skel`. `-m` crée le répertoire personnel (et déclenche la copie), `-d` en fixe le chemin.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch06-q016",
+      "type": "single",
+      "prompt": "`/etc/skel` contient un sous-répertoire `.config`. Que se passe-t-il lors d'un `useradd -m alice` ?",
+      "choices": [
+        "Seuls les fichiers sont copiés, les sous-répertoires sont ignorés",
+        "`useradd` échoue tant que le sous-répertoire existe",
+        "Le sous-répertoire `.config` est créé dans le répertoire d'alice",
+        "Le sous-répertoire n'est créé qu'en ajoutant l'option `-k`"
+      ],
+      "answer": [2],
+      "explanation": "S'il existe des sous-répertoires dans `/etc/skel`, ils sont créés dans le répertoire de l'utilisateur. L'option `-k` ne sert qu'à changer de répertoire modèle.",
+      "difficulty": 3
+    }
+  ]
+}

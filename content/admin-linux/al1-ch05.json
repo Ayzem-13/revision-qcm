@@ -1,0 +1,668 @@
+{
+  "id": "al1-ch05",
+  "title": "La sécurité du système",
+  "group": "Cours, partie 1",
+  "order": 5,
+  "source": "AdminLinux-1.pdf, chapitre 5",
+  "questions": [
+    {
+      "id": "al1-ch05-q001",
+      "type": "single",
+      "prompt": "Sous Ubuntu, à partir de quel UID commencent généralement les comptes utilisateurs ordinaires ?",
+      "choices": [
+        "0",
+        "100",
+        "500",
+        "1000"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Sous Ubuntu, les comptes ordinaires commencent généralement à l'UID 1000 ; l'UID 0 est celui de root et les UID inférieurs servent surtout aux comptes système et aux services. 500 apparaît dans les vieux exemples du cours mais n'est pas la valeur d'Ubuntu.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch05-q002",
+      "type": "single",
+      "prompt": "À combien de groupes un utilisateur peut-il appartenir ?",
+      "choices": [
+        "À un seul groupe",
+        "À plusieurs groupes principaux et un groupe secondaire",
+        "À un groupe principal et à plusieurs groupes secondaires",
+        "À deux groupes au maximum"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Un utilisateur a un groupe principal (le GID de `/etc/passwd`) et peut appartenir à plusieurs groupes secondaires (listés dans `/etc/group`). Il n'y a jamais plus d'un groupe principal.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch05-q003",
+      "type": "single",
+      "prompt": "Dans cette ligne de `/etc/group`, que représente `root,adm,daemon` ?",
+      "code": "adm:x:4:root,adm,daemon",
+      "choices": [
+        "Les utilisateurs qui ont ce groupe comme groupe secondaire",
+        "Les utilisateurs qui ont ce groupe comme groupe principal",
+        "Les administrateurs autorisés à modifier ce groupe",
+        "Les processus lancés avec ce groupe"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le format est `group:x:GID:users`, et le dernier champ liste les utilisateurs qui appartiennent au groupe en tant que groupe secondaire. Le groupe principal d'un utilisateur est donné par le GID de sa ligne dans `/etc/passwd`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q004",
+      "type": "single",
+      "prompt": "Quelle commande crée le groupe `staff` avec le GID 601 ?",
+      "choices": [
+        "`groupadd -u 601 staff`",
+        "`groupmod -g 601 staff`",
+        "`groupadd -g 601 staff`",
+        "`groupadd staff -G 601`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`groupadd -g gid group` crée le groupe avec le GID indiqué ; sans `-g`, un GID est calculé automatiquement. `groupmod -g` change le GID d'un groupe qui existe déjà.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch05-q005",
+      "type": "single",
+      "prompt": "Quelle commande renomme le groupe `staff` en `lestaff` ?",
+      "choices": [
+        "`groupmod -n lestaff staff`",
+        "`groupmod -n staff lestaff`",
+        "`groupmod -l lestaff staff`",
+        "`groupadd -n lestaff staff`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`groupmod -n` donne le nouveau nom, puis vient le nom actuel du groupe : `groupmod -n lestaff staff`. `-l` est l'option de `usermod` pour renommer un utilisateur.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q006",
+      "type": "single",
+      "prompt": "Vous changez le GID du groupe `staff` avec `groupmod -g`. Que deviennent les fichiers qui appartenaient à ce groupe ?",
+      "choices": [
+        "`groupmod` met automatiquement à jour leur groupe",
+        "Ils sont supprimés avec l'ancien GID",
+        "Ils ne sont pas modifiés : il faut utiliser `chgrp` et `find`",
+        "Ils passent au groupe `root`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`groupmod` ne modifie pas les permissions des fichiers et répertoires appartenant au groupe ; le cours renvoie à `chgrp` et `find`. Les fichiers gardent donc l'ancien GID numérique.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q007",
+      "type": "single",
+      "prompt": "Que dit le cours du changement forcé du mot de passe à intervalles réguliers ?",
+      "choices": [
+        "Il est obligatoire sous Ubuntu",
+        "Il est possible, mais n'a jamais été prouvé comme améliorant la sécurité, bien au contraire",
+        "Il est impossible sans module supplémentaire",
+        "C'est la mesure la plus efficace pour protéger un compte"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Le cours indique qu'on peut forcer un utilisateur à changer son mot de passe régulièrement, mais que cela n'a jamais été prouvé comme améliorant la sécurité, bien au contraire.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q008",
+      "type": "single",
+      "prompt": "Dans cette ligne de `/etc/passwd`, que représente le quatrième champ (le second `500`) ?",
+      "code": "toto:x:500:500::/home/toto:/bin/bash",
+      "choices": [
+        "L'UID de toto",
+        "Le GID du groupe principal de toto",
+        "Le GID d'un groupe secondaire de toto",
+        "Le nombre de jours de validité du mot de passe"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Après le `x` viennent l'UID puis le GID du groupe principal. Les groupes secondaires ne figurent pas dans `/etc/passwd` mais dans `/etc/group`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q009",
+      "type": "single",
+      "prompt": "Que signifie le `x` du deuxième champ de `/etc/passwd` ?",
+      "choices": [
+        "Le compte est verrouillé",
+        "L'utilisateur n'a pas de mot de passe",
+        "Le mot de passe, autrefois stocké ici, est reporté dans `/etc/shadow`",
+        "Le compte est un compte système sans shell"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le `x` est l'ancien emplacement du mot de passe, désormais reporté dans `/etc/shadow`. Le verrouillage d'un compte se voit dans `/etc/shadow`, pas par ce `x` qui figure sur toutes les lignes.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q010",
+      "type": "single",
+      "prompt": "Le dernier champ de la ligne d'un utilisateur dans `/etc/passwd` désigne un programme qui n'existe pas. Quelle est la conséquence ?",
+      "choices": [
+        "Le système lance `/bin/sh` à la place",
+        "L'utilisateur se connecte, mais sans répertoire personnel",
+        "`useradd` recrée le programme manquant",
+        "L'utilisateur ne peut pas ouvrir de session"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Le dernier champ est le programme exécuté à la connexion, en général un shell ; si ce fichier n'existe pas, l'utilisateur ne peut pas ouvrir de session.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q011",
+      "type": "multi",
+      "prompt": "Quelles affirmations sur `/etc/passwd` et `/etc/shadow` sont exactes ? (plusieurs réponses)",
+      "choices": [
+        "`/etc/passwd` est lisible par tout le monde, car de nombreux outils l'utilisent",
+        "`/etc/shadow` ne peut être lu et modifié que par l'administrateur",
+        "`/etc/passwd` contient les hachages des mots de passe",
+        "`/etc/shadow` est lisible par tout le monde pour l'affichage de `ls -l`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explanation": "`/etc/passwd` est lisible par tous (par exemple `ls -l` y lit les noms d'utilisateurs), c'est pourquoi les mots de passe ont été déplacés dans `/etc/shadow`, que seul l'administrateur peut lire et modifier.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q012",
+      "type": "single",
+      "prompt": "Que contient le champ `password` de `/etc/shadow` sous Ubuntu ?",
+      "choices": [
+        "Le mot de passe chiffré de façon réversible",
+        "Le mot de passe en clair, protégé par les droits du fichier",
+        "Un `x` qui renvoie vers `/etc/passwd`",
+        "Un hachage non réversible, ou un marqueur de désactivation"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Le champ contient un hachage (Ubuntu utilise des algorithmes modernes comme yescrypt selon la configuration) ou un marqueur de désactivation. Le cours insiste : ce n'est pas un mot de passe « crypté » réversible.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q013",
+      "type": "single",
+      "prompt": "Dans cette ligne de `/etc/shadow`, que représente `12227` ?",
+      "code": "toto:$1$3rtpru8P$Oc0BLu7MGrl8bdNbvbUtp1:12227:0:99999:7:::",
+      "choices": [
+        "La date d'expiration du compte, en jours depuis le 1er janvier 1970",
+        "Les jours écoulés entre le 1er janvier 1970 et le dernier changement du mot de passe",
+        "Le nombre maximum de jours de validité du mot de passe",
+        "L'UID de l'utilisateur"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Le troisième champ est `lastchange` : le nombre de jours entre le 1er janvier 1970 et la dernière modification du mot de passe. La date d'expiration du compte compte aussi depuis 1970, mais c'est le dernier champ, ici vide.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q014",
+      "type": "single",
+      "prompt": "Dans cette même ligne de `/etc/shadow`, que signifie le `7` ?",
+      "code": "toto:$1$3rtpru8P$Oc0BLu7MGrl8bdNbvbUtp1:12227:0:99999:7:::",
+      "choices": [
+        "Le nombre minimum de jours entre deux modifications du mot de passe",
+        "Le nombre de jours après l'expiration avant le blocage du compte",
+        "Le nombre de jours avant l'expiration du mot de passe où l'utilisateur est averti",
+        "Le nombre maximum de jours de validité du mot de passe"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "L'ordre est `lastchange:min:max:warning` : ici min vaut 0, max 99999 et warning 7, soit un avertissement 7 jours avant l'expiration du mot de passe.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q015",
+      "type": "multi",
+      "prompt": "Quels fichiers la commande `useradd` peut-elle modifier ? (plusieurs réponses)",
+      "choices": [
+        "`/etc/passwd`",
+        "`/etc/shells`",
+        "`/etc/shadow`",
+        "`/etc/login.defs`",
+        "`/etc/group`, quand on attribue des groupes secondaires"
+      ],
+      "answer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "`useradd` modifie `/etc/passwd` et `/etc/shadow`, et met à jour `/etc/group` quand on lui donne des groupes secondaires. `/etc/login.defs` est seulement lu pour ses valeurs par défaut.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q016",
+      "type": "single",
+      "prompt": "Que fait `useradd` quand on lui passe l'option `-m` ?",
+      "choices": [
+        "Il crée le répertoire personnel et y copie le contenu de `/etc/skel`",
+        "Il crée le répertoire personnel vide",
+        "Il déplace l'ancien répertoire personnel vers le nouveau",
+        "Il oblige l'utilisateur à changer son mot de passe"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`-m` force la création du répertoire personnel et `useradd` y copie les fichiers de `/etc/skel`. Sans `-m`, le répertoire n'est pas créé. Déplacer l'ancien répertoire est le rôle de `-m` avec `usermod`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q017",
+      "type": "multi",
+      "prompt": "Quelles sont les valeurs par défaut de `useradd` sous Ubuntu selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "Le répertoire personnel est `/home/login`",
+        "Le compte expire au bout de 99999 jours",
+        "Le shell est `/bin/bash`",
+        "L'inactivité vaut `-1`, sans désactivation pour inactivité",
+        "Le répertoire personnel est toujours créé"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Par défaut : répertoire `/home/login`, shell `/bin/bash`, inactivité `-1`, et le compte n'expire jamais. Sans `-m`, le répertoire personnel n'est pas créé.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q018",
+      "type": "single",
+      "prompt": "Dans `useradd`, quelle est la différence entre `-g` et `-G` ?",
+      "choices": [
+        "`-g` donne la liste des groupes secondaires, `-G` le groupe principal",
+        "`-g` donne le GID numérique, `-G` le nom du groupe",
+        "`-g` crée le groupe, `-G` y ajoute l'utilisateur",
+        "`-g` donne le groupe principal, `-G` la liste des groupes secondaires"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`-g` fixe le groupe principal de l'utilisateur, `-G group,group,...` la liste de ses groupes secondaires. Sans `-g`, la version Ubuntu de `useradd` crée un groupe pour l'utilisateur.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q019",
+      "type": "single",
+      "prompt": "Dans cette commande, que fait `-f 120` ?",
+      "code": "# useradd -g users -d /home/users/toto -m \\\n-s /bin/tcsh -e 2003-12-31 -f 120 toto",
+      "choices": [
+        "Il fixe l'UID de toto à 120",
+        "Il autorise 120 jours d'inactivité pour le compte",
+        "Il fait expirer le mot de passe au bout de 120 jours",
+        "Il avertit toto 120 jours avant l'expiration"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`-f inactive` donne le nombre de jours d'inactivité autorisé pour le compte (par défaut `-1`). L'UID se fixe avec `-u`, et `-e 2003-12-31` est la date d'expiration du compte au format AAAA-MM-JJ.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q020",
+      "type": "single",
+      "prompt": "Selon le cours, quel paramètre de `/etc/default/useradd` ne correspond à aucune option de `useradd` ?",
+      "code": "# useradd defaults file\nGROUP=100\nHOME=/home\nINACTIVE=-1\nEXPIRE=\nSHELL=/bin/bash\nSKEL=/etc/skel",
+      "choices": [
+        "`SHELL`",
+        "`INACTIVE`",
+        "`SKEL`",
+        "`EXPIRE`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le fichier donne les valeurs des options de `useradd` quand elles ne sont pas précisées ; le cours indique que seul `SKEL` ne correspond pas à une option. `SHELL` correspond à `-s`, `INACTIVE` à `-f`, `EXPIRE` à `-e`. En pratique, `useradd` a aussi une option `-k` pour le répertoire squelette, mais la réponse attendue reste `SKEL`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q021",
+      "type": "single",
+      "prompt": "toto est dans les groupes secondaires `audio` et `video`. Vous lancez `usermod -G docker toto`. Quel est le résultat ?",
+      "choices": [
+        "toto est dans `audio`, `video` et `docker`",
+        "`docker` devient le groupe principal de toto",
+        "La commande échoue, `-G` n'existant pas pour `usermod`",
+        "toto n'a plus que `docker` comme groupe secondaire"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Avec `usermod`, `-G` ne met pas à jour mais remplace l'ancienne liste de groupes secondaires par la nouvelle : toto perd `audio` et `video`. Le groupe principal se change avec `-g`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q022",
+      "type": "single",
+      "prompt": "Quelle commande renomme l'utilisateur `toto` en `tutu` ?",
+      "choices": [
+        "`usermod -l tutu toto`",
+        "`usermod -l toto tutu`",
+        "`usermod -n tutu toto`",
+        "`useradd -l tutu toto`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`usermod -l login` donne le nouveau nom, suivi du nom actuel : `usermod -l tutu toto`. `-n` est l'option de `groupmod` pour renommer un groupe.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q023",
+      "type": "single",
+      "prompt": "Après avoir modifié l'UID d'un utilisateur avec `usermod`, quelles commandes le cours conseille-t-il pour mettre à jour ses fichiers ?",
+      "choices": [
+        "`chgrp` et `find`",
+        "`rm` et `find`",
+        "`chmod` et `ls`",
+        "`chown` et `find`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`usermod` ne modifie pas les permissions des fichiers de l'utilisateur ; le cours renvoie à `chown` et `find`. `chgrp` et `find` sont le pendant pour `groupmod`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q024",
+      "type": "single",
+      "prompt": "Que fait `userdel -r toto` ?",
+      "choices": [
+        "Il supprime le compte et tous les fichiers de toto, où qu'ils soient",
+        "Il supprime le compte et garde son répertoire personnel",
+        "Il supprime le compte et son répertoire personnel, mais pas ses fichiers situés ailleurs",
+        "Il verrouille le compte sans le supprimer"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`-r` supprime le répertoire personnel avec le compte. Les fichiers de toto situés hors de ce répertoire restent : le cours renvoie à `rm` et `find` pour eux.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q025",
+      "type": "single",
+      "prompt": "Qui peut changer quel mot de passe avec la commande `passwd` ?",
+      "choices": [
+        "Chaque utilisateur peut changer le sien uniquement, et root celui de n'importe quel utilisateur",
+        "Chaque utilisateur peut changer celui de n'importe quel utilisateur",
+        "Seul root peut utiliser `passwd`",
+        "Chaque utilisateur peut changer le sien, et root uniquement celui des comptes système"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Tout utilisateur peut changer son mot de passe, et uniquement le sien, avec `passwd` ; le super utilisateur peut modifier celui de n'importe quel utilisateur avec la même commande.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch05-q026",
+      "type": "multi",
+      "prompt": "Quelles commandes bloquent le compte de toto ? (plusieurs réponses)",
+      "choices": [
+        "`passwd -u toto`",
+        "`passwd -l toto`",
+        "`usermod -U toto`",
+        "`usermod -L toto`",
+        "`passwd -d toto`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explanation": "`passwd -l` et `usermod -L` bloquent le compte ; `passwd -u` et `usermod -U` le débloquent. `passwd -d` supprime le mot de passe (mot de passe blanc), ce qui ne bloque rien.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q027",
+      "type": "single",
+      "prompt": "Quelle commande force toto à changer son mot de passe à sa prochaine ouverture de session ?",
+      "choices": [
+        "`passwd -l toto`",
+        "`chage -W 0 toto`",
+        "`chage -E 0 toto`",
+        "`chage -d 0 toto`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`chage -d 0` met à 0 la date de dernière modification du mot de passe, ce qui force son changement à la prochaine connexion. `-E` fixe la date d'expiration du compte lui-même.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q028",
+      "type": "single",
+      "prompt": "Quelle option de `chage` fixe le nombre maximum de jours de validité du mot de passe ?",
+      "choices": [
+        "`-W`",
+        "`-M`",
+        "`-E`",
+        "`-I`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`-M` (majuscule) fixe le maximum de jours de validité, alors que `-m` (minuscule) fixe le minimum entre deux modifications. `-W` règle l'avertissement, `-I` le blocage après expiration et `-E` la date d'expiration du compte.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q029",
+      "type": "single",
+      "prompt": "Quelle option de `chage` fixe le nombre de jours après l'expiration du mot de passe au bout duquel le compte est bloqué ?",
+      "choices": [
+        "`-I`",
+        "`-E`",
+        "`-W`",
+        "`-d`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`-I days` correspond au champ inactif de `/etc/shadow` : les jours après l'expiration du mot de passe avant le blocage du compte. `-E` donne la date d'expiration du compte au format AAAA-MM-JJ.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q030",
+      "type": "multi",
+      "prompt": "Quels paramètres se trouvent dans `/etc/login.defs` selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "`PASS_MAX_DAYS`",
+        "`SKEL`",
+        "`PASS_MIN_LEN`",
+        "`SHELL`",
+        "`UID_MIN`"
+      ],
+      "answer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "`/etc/login.defs` contient notamment `PASS_MAX_DAYS`, `PASS_MIN_DAYS`, `PASS_WARN_AGE`, `PASS_MIN_LEN`, `UID_MIN` et `GID_MAX`. `SKEL` et `SHELL` sont dans `/etc/default/useradd`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q031",
+      "type": "single",
+      "prompt": "Sur Ubuntu, comment s'effectue normalement l'administration du système ?",
+      "choices": [
+        "En se connectant directement en root sur la console",
+        "Avec `sudo` depuis un compte autorisé, root étant verrouillé",
+        "En gardant une session root ouverte en permanence",
+        "Avec `su` vers root, dont le mot de passe est choisi à l'installation"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Sur Ubuntu, le compte root est normalement verrouillé pour l'ouverture de session directe et l'administration se fait avec `sudo` depuis un compte autorisé. Le cours déconseille les sessions permanentes en root.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q032",
+      "type": "single",
+      "prompt": "Après `su tutu`, que désignent l'EUID et l'EGID ?",
+      "choices": [
+        "L'identité réelle de l'utilisateur qui s'est connecté",
+        "Les identifiants du processus parent du shell",
+        "Les UID et GID effectifs, ceux de tutu, qui déterminent l'accès aux fichiers",
+        "Les identifiants de la session graphique"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`su` remplace votre UID et votre GID par ceux de l'autre utilisateur : ce sont l'UID et le GID effectifs (EUID, EGID), qui déterminent l'accès aux fichiers. Votre identité d'origine reste votre identité réelle.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q033",
+      "type": "single",
+      "prompt": "toto, connecté sur `pts/1`, tape `su - tutu` puis son mot de passe. Que répondent ensuite `whoami` puis `who am i` ?",
+      "choices": [
+        "`toto`, puis une ligne qui commence par `tutu`",
+        "`tutu`, puis une ligne qui commence par `tutu`",
+        "`toto`, puis une ligne qui commence par `toto`",
+        "`tutu`, puis une ligne qui commence par `toto`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`whoami` donne l'identité effective, devenue tutu ; `who am i` donne l'identité réelle, qui reste toto. C'est exactement l'exemple du cours.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q034",
+      "type": "multi",
+      "prompt": "Quelles commandes affichent votre identité effective ? (plusieurs réponses)",
+      "choices": [
+        "`id` sans argument",
+        "`who am i`",
+        "`whoami`",
+        "`last`"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explanation": "`id` sans argument et `whoami` affichent l'identité effective. `who am i` affiche l'identité réelle, et `last` l'historique des connexions.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q035",
+      "type": "single",
+      "prompt": "Que fait l'option `-` (ou `-l`) de la commande `su` ?",
+      "choices": [
+        "Elle lance le nouveau shell en arrière-plan",
+        "Elle simule un shell de login, en exécutant les scripts d'initialisation",
+        "Elle garde le shell de l'utilisateur d'origine",
+        "Elle liste les utilisateurs dont on peut prendre l'identité"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`su -` ou `su -l` simule un shell de login : les scripts d'initialisation de l'utilisateur cible sont exécutés. Le choix du shell à lancer se fait avec `-s`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q036",
+      "type": "single",
+      "prompt": "Avec `sudo`, quelle option précise l'utilisateur dont on prend l'identité ?",
+      "choices": [
+        "`-g`",
+        "`-u`",
+        "`-b`",
+        "`-l`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`sudo -u user` précise l'utilisateur, root par défaut. `-g` change le groupe principal et `-b` exécute la commande en arrière-plan.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q037",
+      "type": "single",
+      "prompt": "Quel fichier la commande `who` consulte-t-elle pour savoir qui est connecté ?",
+      "choices": [
+        "`/var/log/wtmp`",
+        "`/var/log/auth.log`",
+        "`/var/run/utmp`",
+        "`/etc/passwd`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`who` lit `/var/run/utmp`, qui décrit les connexions en cours. `/var/log/wtmp` enregistre l'historique des connexions et des déconnexions, consulté par `last`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q038",
+      "type": "single",
+      "prompt": "Un administrateur supprime `/var/log/wtmp` pour faire de la place. Quelle est la conséquence ?",
+      "choices": [
+        "Le fichier n'est pas recréé automatiquement et les connexions ne sont plus enregistrées",
+        "Le fichier est recréé au prochain démarrage",
+        "Les utilisateurs ne peuvent plus ouvrir de session",
+        "La commande `who` n'affiche plus personne"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le cours précise que si ces fichiers sont effacés, ils ne sont pas recréés automatiquement et les connexions et déconnexions ne sont plus enregistrées. `who` lit `/var/run/utmp`, pas `/var/log/wtmp`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch05-q039",
+      "type": "single",
+      "prompt": "Qu'affiche `last -x` en plus de la sortie normale de `last` ?",
+      "choices": [
+        "Les adresses IP au lieu des noms d'hôtes",
+        "Les arrêts du système et les changements de cible",
+        "Les seules sessions encore ouvertes",
+        "Les tentatives de connexion échouées"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Avec `-x`, `last` affiche en plus les arrêts du système et les changements de cibles, présentés comme des changements de niveau System V (`runlevel`). Les démarrages (`reboot`) apparaissent déjà sans option.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch05-q040",
+      "type": "single",
+      "prompt": "À quoi sert le fichier `/etc/shells` ?",
+      "choices": [
+        "À définir le shell par défaut des nouveaux comptes",
+        "À associer chaque utilisateur à son shell",
+        "À configurer l'invite des shells",
+        "À lister les shells valides du système"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`/etc/shells` liste les shells valides ; des applications comme `sendmail` ou `ftp` l'utilisent pour refuser la connexion si le shell n'y figure pas. Il est mis à jour par les commandes de gestion de paquets. Le shell de chaque utilisateur est dans `/etc/passwd`.",
+      "difficulty": 2
+    }
+  ]
+}

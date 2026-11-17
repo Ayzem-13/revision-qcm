@@ -1,0 +1,527 @@
+{
+  "id": "al1-ch03",
+  "title": "Gestion des logiciels",
+  "group": "Cours, partie 1",
+  "order": 3,
+  "source": "AdminLinux-1.pdf, chapitre 3",
+  "questions": [
+    {
+      "id": "al1-ch03-q001",
+      "type": "single",
+      "prompt": "Sous quelle forme sont fournis tous les logiciels qui composent Ubuntu Linux ?",
+      "choices": [
+        "sous forme de packages",
+        "sous forme d'archives de sources à compiler",
+        "sous forme d'images de conteneurs",
+        "sous forme d'exécutables isolés à copier dans `/bin`"
+      ],
+      "answer": [0],
+      "explanation": "Tous les logiciels d'Ubuntu Linux sont fournis sous forme de packages, qu'on peut ensuite mettre à jour, installer, supprimer ou vérifier.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q002",
+      "type": "multi",
+      "prompt": "Que contient un package selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "le code source complet du logiciel, obligatoirement",
+        "des fichiers décrivant le package (description, version, signature, dépendances)",
+        "les fichiers à installer",
+        "une copie de toutes les bibliothèques dont il dépend",
+        "des scripts exécutés avant ou après l'installation ou la suppression"
+      ],
+      "answer": [1, 2, 4],
+      "explanation": "Un package contient des fichiers de description (version, signature, dépendances), les fichiers à installer et des scripts lancés avant ou après l'installation ou la suppression. Les dépendances sont déclarées, pas embarquées.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q003",
+      "type": "single",
+      "prompt": "Lors de l'installation du système, d'où sont lus les packages ?",
+      "choices": [
+        "uniquement depuis le support physique d'installation",
+        "depuis la source : internet ou le support physique utilisé pour l'installation",
+        "uniquement depuis les dépôts sur internet",
+        "depuis le répertoire `/var/lib/dpkg`"
+      ],
+      "answer": [1],
+      "explanation": "Les packages sont lus depuis la source, internet ou le support physique utilisé, puis ajoutés automatiquement. `/var/lib/dpkg` contient la base de données de dpkg, pas les packages à installer.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q004",
+      "type": "single",
+      "prompt": "Quel est le rôle de `dpkg` selon le cours ?",
+      "choices": [
+        "la gestion courante des paquets et de leurs dépendances",
+        "la recherche de paquets dans les dépôts en ligne",
+        "la gestion bas niveau des paquets `.deb`",
+        "la mise à jour des listes de paquets depuis les dépôts"
+      ],
+      "answer": [2],
+      "explanation": "`dpkg` assure la gestion bas niveau des paquets `.deb`. La gestion courante des paquets et de leurs dépendances est confiée à `apt`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q005",
+      "type": "single",
+      "prompt": "Selon le cours, pour quel usage `apt-get` reste-t-il notamment disponible ?",
+      "choices": [
+        "pour l'interrogation de la base de données de dpkg",
+        "pour la gestion bas niveau des fichiers `.deb`",
+        "pour la gestion des paquets au format `.rpm`",
+        "pour les scripts"
+      ],
+      "answer": [3],
+      "explanation": "Le cours indique qu'`apt-get` reste disponible, notamment pour les scripts, `apt` servant à la gestion courante. La gestion bas niveau des `.deb` est le rôle de `dpkg`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q006",
+      "type": "single",
+      "prompt": "Quelle commande liste les packages installés comportant `vim` dans leur nom ?",
+      "choices": [
+        "`dpkg-query -l \"*vim*\"`",
+        "`dpkg-query -L vim`",
+        "`dpkg-query -s vim`",
+        "`dpkg-query -S /usr/bin/vim`"
+      ],
+      "answer": [0],
+      "explanation": "`dpkg-query -l` liste les packages, ici ceux dont le nom correspond au motif `\"*vim*\"`. Attention à la casse : `-L` liste les fichiers installés par un package.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q007",
+      "type": "single",
+      "prompt": "Un administrateur veut connaître la liste des fichiers que le package `cron` a installés sur le système. Quelle commande lance-t-il ?",
+      "choices": [
+        "`dpkg-query -l \"*cron*\"`",
+        "`dpkg-query -L cron`",
+        "`dpkg-query -s cron`",
+        "`apt show cron`"
+      ],
+      "answer": [1],
+      "explanation": "`dpkg-query -L` liste les fichiers installés par un package. `-l` en minuscule liste les packages eux-mêmes, et `-s` affiche leur status et leur description.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q008",
+      "type": "single",
+      "prompt": "Quelle commande donne le status et la description du package `cron` ?",
+      "choices": [
+        "`dpkg-query -S /usr/sbin/cron`",
+        "`dpkg-query -L cron`",
+        "`dpkg-query -s cron`",
+        "`apt-cache pkgnames cron`"
+      ],
+      "answer": [2],
+      "explanation": "`dpkg-query -s` donne le status et la description d'un package, comme dans l'exemple `dpkg-query -s cron` du cours. `-S` en majuscule sert à la recherche.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q009",
+      "type": "single",
+      "prompt": "Selon le tableau des options de `dpkg-query` du cours, quelle commande correspond à l'action « Recherche un package installé » ?",
+      "choices": [
+        "`dpkg-query -s cron`",
+        "`dpkg-query -l \"*cron*\"`",
+        "`dpkg-query -L cron`",
+        "`dpkg-query -S /usr/sbin/cron`"
+      ],
+      "answer": [3],
+      "explanation": "Dans le tableau, `-S` correspond à « Recherche un package installé » ; en pratique, il retrouve le package qui a installé un fichier correspondant au chemin ou au motif donné. `-l` correspond à « Liste les packages installés » et `-s` en minuscule au status d'un package.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch03-q010",
+      "type": "single",
+      "prompt": "Dans cette sortie de `dpkg-query -l \"*vim*\"`, que signifie le préfixe `ii` de la ligne `vim` ?",
+      "code": "Desired=Unknown/Install/Remove/Purge/Hold\n| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend\n|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)\n||/ Name        Version                Architecture Description\n+++-===========-======================-============-================================\nii  vim         2:8.2.3995-1ubuntu2.13 amd64        Vi IMproved - enhanced vi editor\nun  vim-doc     <none>                 <none>       (no description available)",
+      "choices": [
+        "le paquet est souhaité installé et il est installé",
+        "l'état souhaité est inconnu et le paquet n'est pas installé",
+        "le paquet est à supprimer mais il est encore installé",
+        "le paquet est installé mais seuls ses fichiers de configuration sont présents"
+      ],
+      "answer": [0],
+      "explanation": "La première lettre donne l'état souhaité (Desired), ici Install, et la deuxième l'état réel (Status), ici Inst : le paquet est installé. Une ligne `un` correspond à un état souhaité inconnu (Unknown) et un paquet non installé (Not).",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q011",
+      "type": "single",
+      "prompt": "Dans cette même sortie de `dpkg-query -l \"*vim*\"`, que signifie le préfixe `un` de la ligne `vim-doc` ?",
+      "code": "Desired=Unknown/Install/Remove/Purge/Hold\n| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend\n|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)\n||/ Name        Version                Architecture Description\n+++-===========-======================-============-================================\nii  vim         2:8.2.3995-1ubuntu2.13 amd64        Vi IMproved - enhanced vi editor\nun  vim-doc     <none>                 <none>       (no description available)",
+      "choices": [
+        "le paquet est installé mais n'est pas encore configuré",
+        "le paquet est à mettre à jour",
+        "l'état souhaité est inconnu et le paquet n'est pas installé",
+        "le paquet a été supprimé mais ses fichiers de configuration restent"
+      ],
+      "answer": [2],
+      "explanation": "`u` vient de Desired=Unknown et `n` de Status=Not : `vim-doc` est connu de dpkg mais pas installé, d'où la version `<none>`. Le piège est de croire que tout paquet listé par `dpkg-query -l` est installé.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch03-q012",
+      "type": "single",
+      "prompt": "Dans cette sortie de `dpkg-query -s cron`, quel champ indique que le paquet est installé ?",
+      "code": "Package: cron\nStatus: install ok installed\nPriority: important\nSection: admin\nInstalled-Size: 255\nArchitecture: amd64\nVersion: 3.0pl1-137ubuntu3\nProvides: cron-daemon",
+      "choices": [
+        "`Priority`",
+        "`Status`",
+        "`Provides`",
+        "`Installed-Size`"
+      ],
+      "answer": [1],
+      "explanation": "Le champ `Status: install ok installed` indique que le paquet est installé. `Installed-Size` donne seulement la taille occupée une fois installé.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q013",
+      "type": "single",
+      "prompt": "D'après cet extrait de `dpkg-query -s cron`, quel paquet est seulement suggéré par `cron` ?",
+      "code": "Depends: libc6 (>= 2.34), libpam0g (>= 0.99.7.1), libselinux1 (>= 3.1~),\ndebianutils (>= 1.7), sensible-utils, adduser, lsb-base (>= 3.0-10), libpam-\nruntime (>= 1.0.1-11)\nPre-Depends: init-system-helpers (>= 1.54~)\nSuggests: anacron (>= 2.0-1), logrotate, checksecurity, default-mta | mail-\ntransport-agent",
+      "choices": [
+        "`adduser`",
+        "`init-system-helpers`",
+        "`libpam0g`",
+        "`logrotate`"
+      ],
+      "answer": [3],
+      "explanation": "`logrotate` figure dans le champ `Suggests`. `adduser` et `libpam0g` sont dans `Depends`, et `init-system-helpers` dans `Pre-Depends`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q014",
+      "type": "single",
+      "prompt": "Dans la sortie de `dpkg-query -s cron`, quel champ liste les fichiers de configuration du paquet, comme `/etc/cron.d/.placeholder` ?",
+      "choices": [
+        "`Conffiles`",
+        "`Provides`",
+        "`Depends`",
+        "`Section`"
+      ],
+      "answer": [0],
+      "explanation": "Le champ `Conffiles` liste les fichiers de configuration du paquet avec leur somme de contrôle. `Provides` indique un nom virtuel fourni, ici `cron-daemon`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q015",
+      "type": "single",
+      "prompt": "Quelle commande installe un package à partir d'une archive au format `.deb` ?",
+      "choices": [
+        "`dpkg -r zsh_4.3.4-24ubuntu1_i386.deb`",
+        "`dpkg-query -L zsh_4.3.4-24ubuntu1_i386.deb`",
+        "`dpkg -i zsh_4.3.4-24ubuntu1_i386.deb`",
+        "`apt-cache depends zsh_4.3.4-24ubuntu1_i386.deb`"
+      ],
+      "answer": [2],
+      "explanation": "La commande `dpkg` installe un package depuis une archive `.deb` avec l'option `-i`. L'option `-r` sert au contraire à retirer un package.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q016",
+      "type": "single",
+      "prompt": "Quelle commande `dpkg` retire le package `zsh` du système ?",
+      "choices": [
+        "`dpkg -i zsh`",
+        "`dpkg -s zsh`",
+        "`dpkg -L zsh`",
+        "`dpkg -r zsh`"
+      ],
+      "answer": [3],
+      "explanation": "`dpkg -r` (remove) retire un package du système. `-i` installe une archive `.deb`, `-s` et `-L` interrogent un package sans le modifier.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q017",
+      "type": "multi",
+      "prompt": "Dans quels fichiers sont stockées les bases de données utilisées par les commandes dpkg ? (plusieurs réponses)",
+      "choices": [
+        "`/var/log/installer/status`",
+        "`/var/lib/dpkg/available`",
+        "`/etc/dpkg/dpkg.cfg`",
+        "`/var/lib/dpkg/status`",
+        "`/var/cache/apt/archives`"
+      ],
+      "answer": [1, 3],
+      "explanation": "Les bases de données de dpkg sont `/var/lib/dpkg/available` et `/var/lib/dpkg/status`. Le piège est `/var/log/installer/status`, qui concerne les logiciels installés pendant l'installation du système.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q018",
+      "type": "single",
+      "prompt": "Quel lien le cours établit-il entre APT et dpkg ?",
+      "choices": [
+        "APT utilise dpkg dans le but d'en simplifier l'utilisation",
+        "dpkg utilise APT pour accéder aux dépôts",
+        "APT et dpkg sont indépendants et gèrent des formats de paquets différents",
+        "APT a remplacé dpkg, qui n'est plus installé sur Ubuntu"
+      ],
+      "answer": [0],
+      "explanation": "APT est un gestionnaire de packages qui utilise dpkg pour en simplifier l'utilisation. dpkg reste l'outil bas niveau sur lequel APT s'appuie.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q019",
+      "type": "single",
+      "prompt": "Qu'apporte APT par rapport à une installation directe avec `dpkg -i` ?",
+      "choices": [
+        "il installe des paquets au format `.rpm`",
+        "il installe automatiquement les dépendances",
+        "il compile les logiciels depuis leurs sources",
+        "il évite d'avoir à utiliser des packages"
+      ],
+      "answer": [1],
+      "explanation": "APT installe automatiquement les dépendances, ce que `dpkg -i` ne fait pas. Il manipule toujours des packages `.deb`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q020",
+      "type": "single",
+      "prompt": "Quel avantage d'APT le cours cite-t-il pour un parc de machines ?",
+      "choices": [
+        "il synchronise automatiquement les comptes utilisateurs entre les machines",
+        "il partitionne à distance les disques de toutes les machines",
+        "il rend plus facile la gestion centralisée d'un ensemble de machines sur un réseau",
+        "il répartit le téléchargement des paquets entre les machines"
+      ],
+      "answer": [2],
+      "explanation": "Selon le cours, APT rend plus facile la gestion centralisée d'un ensemble de machines sur un réseau. Il ne gère ni les comptes ni les disques.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q021",
+      "type": "multi",
+      "prompt": "Quelles fonctions le cours attribue-t-il à la commande `apt` ? (plusieurs réponses)",
+      "choices": [
+        "une configuration simple",
+        "la compilation des paquets depuis les sources",
+        "la gestion des dépendances",
+        "le partitionnement des disques",
+        "une interface simplifiée par rapport à dpkg"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "Le cours attribue à `apt` une configuration simple, la gestion des dépendances et une interface simplifiée par rapport à dpkg.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q022",
+      "type": "single",
+      "prompt": "Quelle sous-commande d'`apt-get` met à jour les informations des packages depuis les dépôts ?",
+      "choices": [
+        "`upgrade`",
+        "`install`",
+        "`check`",
+        "`update`"
+      ],
+      "answer": [3],
+      "explanation": "`update` met à jour les informations des packages depuis les dépôts, sans rien installer. Le piège est `upgrade`, qui met à jour les packages eux-mêmes.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q023",
+      "type": "single",
+      "prompt": "Que fait `apt-get upgrade` lancé sans nom de package ?",
+      "choices": [
+        "il met à jour uniquement les informations des packages depuis les dépôts",
+        "il met à jour tous les packages qui ont de nouvelles versions",
+        "il installe la version suivante d'Ubuntu",
+        "il vérifie les dépendances sans rien installer"
+      ],
+      "answer": [1],
+      "explanation": "Sans nom de package, `upgrade` met à jour tous les packages qui ont de nouvelles versions ; selon le cours, avec des noms, il ne met à jour que les packages listés. Mettre à jour les informations des dépôts est le rôle d'`update`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q024",
+      "type": "single",
+      "prompt": "Que fait `apt-get install` selon le cours ?",
+      "choices": [
+        "il installe un package sans ses dépendances",
+        "il installe uniquement une archive `.deb` présente sur le disque",
+        "il installe la toute dernière version d'un package et ses dépendances",
+        "il réinstalle la version du package livrée avec le système"
+      ],
+      "answer": [2],
+      "explanation": "`install` installe la toute dernière version d'un package et ses dépendances. Installer une archive `.deb` locale est le rôle de `dpkg -i`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q025",
+      "type": "single",
+      "prompt": "Selon le cours, que supprime `apt-get remove` ?",
+      "choices": [
+        "uniquement les fichiers de configuration d'un package",
+        "le cache local des archives téléchargées",
+        "la liste des dépôts configurés",
+        "un package installé ainsi que ses dépendances"
+      ],
+      "answer": [3],
+      "explanation": "Le cours définit `remove` comme la suppression d'un package installé ainsi que de ses dépendances : c'est la réponse attendue. En pratique, `remove` n'enlève que le package demandé (et ceux qui dépendent de lui) ; ses dépendances devenues inutiles s'enlèvent avec `apt autoremove`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q026",
+      "type": "single",
+      "prompt": "Que fait `apt-get check` ?",
+      "choices": [
+        "il met à jour les informations des packages stockées en local (le cache) et vérifie les dépendances",
+        "il vérifie la signature de tous les fichiers installés sur le système",
+        "il télécharge et installe les mises à jour de sécurité",
+        "il supprime les packages dont les dépendances ne sont pas satisfaites"
+      ],
+      "answer": [0],
+      "explanation": "`check` met à jour le cache local des informations de packages et vérifie les dépendances. Il signale les problèmes sans rien supprimer ni installer.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q027",
+      "type": "single",
+      "prompt": "Quel problème cette sortie de `apt check` signale-t-elle ?",
+      "code": "# apt check\nLecture des listes de paquets...\nConstruction de l'arbre des dépendances...\nLecture des informations d'état...\nLes paquets suivants contiennent des dépendances non satisfaites :\n   apache2: Dépend: apache2-mpm-worker (>= 2.2.8-1) mais il n'est pas installé ou\n            apache2-mpm-prefork (>= 2.2.8-1) mais il n'est pas installé ou\n            apache2-mpm-event (>= 2.2.8-1) mais il n'est pas installé",
+      "choices": [
+        "les trois modules MPM sont installés en même temps et entrent en conflit",
+        "`apache2` dépend d'un des trois modules MPM, et aucun n'est installé",
+        "les listes de paquets n'ont jamais été récupérées depuis les dépôts",
+        "`apache2` n'existe pas dans les dépôts configurés"
+      ],
+      "answer": [1],
+      "explanation": "La dépendance d'`apache2` est une alternative (« ou ») entre trois modules MPM, et aucun n'est installé : elle n'est pas satisfaite. Il n'y a pas de conflit, puisque aucun des trois n'est présent.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q028",
+      "type": "single",
+      "prompt": "Après une sortie de `apt check` signalant des dépendances non satisfaites, quelle commande APT propose-t-il de lancer pour corriger ces problèmes ?",
+      "choices": [
+        "`apt-get update`",
+        "`apt-cache depends apache2`",
+        "`apt-get -f install`",
+        "`dpkg -i apache2`"
+      ],
+      "answer": [2],
+      "explanation": "La sortie de `apt check` propose « Vous pouvez lancer `apt-get -f install` pour corriger ces problèmes ». `apt-get update` ne fait que rafraîchir les informations des dépôts.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch03-q029",
+      "type": "single",
+      "prompt": "Dans les exemples du cours, sous quel nom de code les dépôts d'Ubuntu 26.04 apparaissent-ils ?",
+      "choices": [
+        "`noble`",
+        "`jammy`",
+        "`focal`",
+        "`resolute`"
+      ],
+      "answer": [3],
+      "explanation": "Les sorties d'`apt update` et d'`apt install` du cours affichent les dépôts `resolute`, `resolute-security` et `resolute-updates` d'Ubuntu 26.04. `noble` et `jammy` sont des versions précédentes.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q030",
+      "type": "single",
+      "prompt": "Que signifie cette ligne affichée par `apt install zsh` ?",
+      "code": "0 mis à jour, 1 nouvellement installés, 0 à enlever et 22 non mis à jour.",
+      "choices": [
+        "un paquet sera installé, et 22 paquets ayant une nouvelle version ne seront pas mis à jour par cette commande",
+        "22 paquets seront mis à jour en même temps que `zsh`",
+        "22 paquets ont échoué à l'installation",
+        "`zsh` dépend de 22 paquets qui ne sont pas installés"
+      ],
+      "answer": [0],
+      "explanation": "Seul `zsh` est nouvellement installé ; les 22 « non mis à jour » sont des paquets qui ont une nouvelle version mais que cette commande ne met pas à jour. Ce n'est ni un échec ni une liste de dépendances.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch03-q031",
+      "type": "single",
+      "prompt": "Quelle commande recherche un motif dans les noms et descriptions des packages ?",
+      "choices": [
+        "`apt show motif`",
+        "`apt search motif`",
+        "`apt list --installed`",
+        "`apt-cache depends motif`"
+      ],
+      "answer": [1],
+      "explanation": "`apt search` recherche un motif dans les noms et descriptions des packages. `apt show` affiche les informations détaillées d'un package précis.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q032",
+      "type": "single",
+      "prompt": "Quelle commande affiche les informations détaillées d'un package ?",
+      "choices": [
+        "`apt search paquet`",
+        "`apt-cache pkgnames paquet`",
+        "`apt show paquet`",
+        "`apt list --installed`"
+      ],
+      "answer": [2],
+      "explanation": "`apt show paquet` affiche les informations détaillées d'un package. `apt search` ne fait que rechercher un motif dans les noms et descriptions.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch03-q033",
+      "type": "multi",
+      "prompt": "Quelles commandes listent les packages installés ? (plusieurs réponses)",
+      "choices": [
+        "`apt-cache pkgnames`",
+        "`apt list --installed`",
+        "`dpkg-query -L zsh`",
+        "`dpkg-query -l`",
+        "`apt search`"
+      ],
+      "answer": [1, 3],
+      "explanation": "`apt list --installed` et `dpkg-query -l` listent les packages installés. `dpkg-query -L zsh` liste les fichiers du package `zsh`, et `apt-cache pkgnames` des noms de packages disponibles.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q034",
+      "type": "single",
+      "prompt": "D'après cette sortie, que fait `apt-cache pkgnames zsh` ?",
+      "code": "# apt-cache pkgnames zsh\nzsh-static\nzsh-common\nzsh\nzsh-dev\nzsh-doc\nzsh-autosuggestions",
+      "choices": [
+        "il liste les dépendances du package `zsh`",
+        "il liste les fichiers installés par le package `zsh`",
+        "il liste les packages installés qui dépendent de `zsh`",
+        "il liste les noms de packages qui commencent par `zsh`"
+      ],
+      "answer": [3],
+      "explanation": "`apt-cache pkgnames zsh` liste les noms de packages commençant par `zsh`, installés ou non. Les dépendances s'affichent avec `apt-cache depends`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q035",
+      "type": "single",
+      "prompt": "D'après cette sortie de `apt-cache depends zsh`, quel paquet est seulement suggéré par `zsh` ?",
+      "code": "# apt-cache depends zsh\nzsh\n    Depends: zsh-common\n    Depends: libc6\n    Depends: libcap2\n    Depends: libtinfo6\n    Recommends: libc6\n    Recommends: libgdbm6\n    Recommends: libncursesw6\n    Recommends: libpcre3\n    Suggests: zsh-doc",
+      "choices": [
+        "`zsh-doc`",
+        "`zsh-common`",
+        "`libpcre3`",
+        "`libcap2`"
+      ],
+      "answer": [0],
+      "explanation": "`zsh-doc` apparaît sur la ligne `Suggests`. `libpcre3` est seulement recommandé (`Recommends`), et `zsh-common` comme `libcap2` sont des dépendances (`Depends`).",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch03-q036",
+      "type": "multi",
+      "prompt": "D'après cette sortie de `apt-cache depends zsh`, quels paquets sont des dépendances (`Depends`) de `zsh` ? (plusieurs réponses)",
+      "code": "# apt-cache depends zsh\nzsh\n    Depends: zsh-common\n    Depends: libc6\n    Depends: libcap2\n    Depends: libtinfo6\n    Recommends: libc6\n    Recommends: libgdbm6\n    Recommends: libncursesw6\n    Recommends: libpcre3\n    Suggests: zsh-doc",
+      "choices": [
+        "`libpcre3`",
+        "`zsh-common`",
+        "`zsh-doc`",
+        "`libtinfo6`",
+        "`libcap2`"
+      ],
+      "answer": [1, 3, 4],
+      "explanation": "`zsh-common`, `libcap2` et `libtinfo6` figurent sur des lignes `Depends`, tout comme `libc6`. `libpcre3` n'est que recommandé et `zsh-doc` suggéré.",
+      "difficulty": 2
+    }
+  ]
+}

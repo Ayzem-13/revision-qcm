@@ -1,0 +1,393 @@
+{
+  "id": "al2-ch04",
+  "title": "Swap et autres systèmes de fichiers",
+  "group": "Cours, partie 2",
+  "order": 14,
+  "source": "AdminLinux-2.pdf, chapitre 4",
+  "questions": [
+    {
+      "id": "al2-ch04-q001",
+      "type": "single",
+      "prompt": "Quel est le rôle de la zone de swap selon le cours ?",
+      "choices": [
+        "Fournir de la mémoire virtuelle supplémentaire où le noyau déplace les pages peu actives de la RAM",
+        "Stocker les fichiers temporaires de `/tmp` entre deux redémarrages",
+        "Servir de cache disque pour accélérer les lectures des partitions",
+        "Conserver une copie de la RAM pour la restaurer après une panne"
+      ],
+      "answer": [0],
+      "explanation": "La zone de swap fournit de la mémoire virtuelle supplémentaire et permet au noyau de déplacer hors de la RAM des pages mémoire peu actives. Les fichiers temporaires de `/tmp` relèvent de tmpfs, pas du swap.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q002",
+      "type": "multi",
+      "prompt": "Sur Linux, où le cours dit-il qu'une zone de swap peut être créée ? (plusieurs réponses)",
+      "choices": [
+        "Dans une partition dédiée",
+        "Dans le fichier `/etc/fstab`",
+        "Dans un fichier normal",
+        "Sur le réseau",
+        "Dans `/proc/meminfo`"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "Le cours cite trois emplacements : une partition dédiée, un fichier normal ou le réseau. `/etc/fstab` sert seulement à déclarer la zone pour l'activer au démarrage.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q003",
+      "type": "single",
+      "prompt": "Comment le cours définit-il la mémoire virtuelle ?",
+      "choices": [
+        "La mémoire réservée aux machines virtuelles",
+        "La mémoire physique plus les zones de swap",
+        "Les zones de swap seules",
+        "Le cache du processeur plus la RAM"
+      ],
+      "answer": [1],
+      "explanation": "La mémoire virtuelle désigne l'ensemble de la mémoire utilisée par le système : mémoire physique plus zones de swap. Le swap seul n'en est qu'une partie.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q004",
+      "type": "single",
+      "prompt": "Que dit le cours sur la taille à donner au swap ?",
+      "choices": [
+        "Elle doit être au moins égale à la RAM",
+        "Elle doit être le double de la RAM",
+        "Elle dépend de la charge, de la RAM et des besoins éventuels d'hibernation",
+        "Elle est fixée à 2 Go par Ubuntu et ne se modifie pas"
+      ],
+      "answer": [2],
+      "explanation": "Le dimensionnement dépend de la charge, de la quantité de RAM et des besoins d'hibernation. Le cours précise qu'il n'existe pas de règle générale imposant une taille au moins égale à la RAM, ce qui est le piège classique.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q005",
+      "type": "single",
+      "prompt": "Selon le cours, que vaut un fichier de swap sur Ubuntu ?",
+      "choices": [
+        "Il est déconseillé, seule une partition est fiable",
+        "Il n'est utilisable que temporairement, jusqu'au redémarrage",
+        "Il doit être placé sur un système de fichiers tmpfs",
+        "C'est une solution normale et prise en charge"
+      ],
+      "answer": [3],
+      "explanation": "Le cours dit qu'un fichier de swap est une solution normale et prise en charge sur Ubuntu, utilisable temporairement ou de façon permanente. Il le présente même comme plus simple qu'une partition dans de nombreux cas.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q006",
+      "type": "multi",
+      "prompt": "Quelles commandes le cours recommande-t-il pour connaître l'état du swap ? (plusieurs réponses)",
+      "choices": ["`mkswap`", "`swapon --show`", "`fallocate -l`", "`free -h`", "`swapoff`"],
+      "answer": [1, 3],
+      "explanation": "`swapon --show` liste les zones de swap actives et `free -h` affiche la mémoire et le swap en unités lisibles. `mkswap` initialise une zone et `swapoff` la désactive, ce ne sont pas des commandes de consultation.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q007",
+      "type": "single",
+      "prompt": "Que montre cette sortie ?",
+      "code": "# swapon --show\nFilename     Type    Size      Used   Priority\n/swap.img    file    2097148   0      -2",
+      "choices": [
+        "Un fichier de swap `/swap.img` actif, actuellement inutilisé",
+        "Une partition de swap `/swap.img` active, actuellement inutilisée",
+        "Un fichier de swap `/swap.img` entièrement utilisé",
+        "Un tmpfs monté sur `/swap.img`"
+      ],
+      "answer": [0],
+      "explanation": "La colonne Type vaut `file` : c'est un fichier de swap, et Used à 0 indique qu'il n'est pas utilisé. Une partition apparaîtrait avec le type `partition`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q008",
+      "type": "single",
+      "prompt": "Quelle commande le cours utilise-t-il pour réserver un fichier de swap de 4 Go ?",
+      "choices": [
+        "`sudo mkswap -l 4G /swapfile`",
+        "`sudo fallocate -l 4G /swapfile`",
+        "`sudo swapon --size 4G /swapfile`",
+        "`sudo mount -o size=4G /swapfile`"
+      ],
+      "answer": [1],
+      "explanation": "`fallocate -l 4G /swapfile` réserve un fichier de 4 Go. `mkswap` ne crée pas le fichier, il initialise un fichier ou une partition qui existe déjà.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q009",
+      "type": "single",
+      "prompt": "Quels droits le cours applique-t-il au fichier `/swapfile` avant de l'initialiser ?",
+      "choices": [
+        "`chmod 644 /swapfile`",
+        "`chmod 755 /swapfile`",
+        "`chmod 600 /swapfile`",
+        "`chmod 1777 /swapfile`"
+      ],
+      "answer": [2],
+      "explanation": "Le cours applique `chmod 600` : lecture et écriture pour le propriétaire (root) seulement, car le fichier recevra des pages de mémoire. `1777` est le mode d'un répertoire partagé comme `/tmp`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q010",
+      "type": "single",
+      "prompt": "Dans quel ordre le cours enchaîne-t-il les commandes pour créer et activer un fichier de swap ?",
+      "choices": [
+        "`fallocate`, `swapon`, `mkswap`, `chmod 600`",
+        "`mkswap`, `fallocate`, `chmod 600`, `swapon`",
+        "`fallocate`, `mkswap`, `swapon`, `chmod 600`",
+        "`fallocate`, `chmod 600`, `mkswap`, `swapon`"
+      ],
+      "answer": [3],
+      "explanation": "On réserve le fichier (`fallocate`), on restreint ses droits (`chmod 600`), on l'initialise (`mkswap`) puis on l'active (`swapon`). `mkswap` ne peut pas précéder `fallocate`, puisque le fichier n'existe pas encore.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch04-q011",
+      "type": "single",
+      "prompt": "Quel est le rôle de `mkswap /swapfile` ?",
+      "choices": [
+        "Initialiser le fichier comme zone de swap",
+        "Activer la zone de swap",
+        "Réserver l'espace disque du fichier",
+        "Déclarer la zone dans `/etc/fstab`"
+      ],
+      "answer": [0],
+      "explanation": "`mkswap` initialise le fichier (ou la partition) comme zone de swap. C'est `swapon` qui l'active ensuite.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q012",
+      "type": "single",
+      "prompt": "Quel est le rôle de `swapon /swapfile` ?",
+      "choices": [
+        "Initialiser le fichier comme zone de swap",
+        "Activer la zone de swap",
+        "Afficher l'état des zones de swap",
+        "Rendre la zone de swap permanente au démarrage"
+      ],
+      "answer": [1],
+      "explanation": "`swapon /swapfile` active la zone de swap immédiatement. Cette activation ne survit pas au redémarrage : il faut pour cela une ligne dans `/etc/fstab`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q013",
+      "type": "single",
+      "prompt": "Quelle commande affiche le message suivant ?",
+      "code": "Setting up swapspace version 1, size = 268431 kB",
+      "choices": ["`swapon`", "`fallocate`", "`mkswap`", "`free -h`"],
+      "answer": [2],
+      "explanation": "Ce message est produit par `mkswap` lorsqu'il initialise la zone de swap. `swapon` active la zone sans afficher ce message : dans le cours, la ligne apparaît sous `swapon` seulement parce que les deux commandes sont listées avant leur sortie.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch04-q014",
+      "type": "single",
+      "prompt": "Quelle ligne le cours ajoute-t-il à `/etc/fstab` pour activer `/swapfile` au démarrage ?",
+      "choices": [
+        "`swap none /swapfile sw 0 0`",
+        "`/swapfile /tmp tmpfs sw 0 0`",
+        "`/swapfile none ext4 sw 0 0`",
+        "`/swapfile none swap sw 0 0`"
+      ],
+      "answer": [3],
+      "explanation": "La ligne est `/swapfile none swap sw 0 0` : le fichier, pas de point de montage, le type `swap` et l'option `sw`. Inverser le fichier et le type dans les colonnes rend la ligne invalide.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q015",
+      "type": "single",
+      "prompt": "Vous avez activé `/swapfile` avec `swapon` sans toucher à `/etc/fstab`. Que se passe-t-il au prochain redémarrage ?",
+      "choices": [
+        "Le fichier de swap n'est plus activé",
+        "Le fichier de swap est réactivé automatiquement",
+        "Le fichier `/swapfile` est supprimé",
+        "Le système refuse de démarrer"
+      ],
+      "answer": [0],
+      "explanation": "`swapon` n'active la zone que pour la session en cours ; pour une activation au démarrage, le cours ajoute la ligne `/swapfile none swap sw 0 0` à `/etc/fstab`. Le fichier, lui, reste sur le disque.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q016",
+      "type": "single",
+      "prompt": "D'après cette sortie, quelles zones de swap sont actives ?",
+      "code": "# swapon --show\nFilename     Type        Size     Used   Priority\n/dev/hda5    partition   522072   0      -1\n/dev/hda6    partition   262136   0      -2\n/swapfile    file        262136   0      -3",
+      "choices": [
+        "Trois partitions de swap",
+        "Deux partitions et un fichier de swap",
+        "Une partition et deux fichiers de swap",
+        "Deux partitions de swap, `/swapfile` étant inactif"
+      ],
+      "answer": [1],
+      "explanation": "`swapon --show` ne liste que les zones actives : `/dev/hda5` et `/dev/hda6` de type `partition`, et `/swapfile` de type `file`. Un Used à 0 signifie inutilisé, pas inactif.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q017",
+      "type": "single",
+      "prompt": "Quelle commande arrête immédiatement l'utilisation de la zone de swap `/swapfile` ?",
+      "choices": [
+        "`umount /swapfile`",
+        "`rm /swapfile`",
+        "`swapoff /swapfile`",
+        "`mkswap --off /swapfile`"
+      ],
+      "answer": [2],
+      "explanation": "`swapoff /swapfile` stoppe l'utilisation de la zone ; la même commande s'applique à une partition, comme `swapoff /dev/hda6`. Le fichier ne se supprime qu'après cette désactivation.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q018",
+      "type": "single",
+      "prompt": "Pourquoi `swapoff` peut-il prendre du temps, voire échouer, sur une zone très utilisée ?",
+      "choices": [
+        "Le noyau doit d'abord réécrire le fichier `/etc/fstab`",
+        "La zone doit être remise à zéro bloc par bloc avant d'être libérée",
+        "Le système doit redémarrer pour libérer la zone",
+        "Ses pages doivent être transférées vers les autres zones de swap ou la RAM, et la mémoire virtuelle restante peut ne pas suffire"
+      ],
+      "answer": [3],
+      "explanation": "Le système transfère les pages de la zone vers les autres zones de swap, voire vers la mémoire physique ; si la mémoire virtuelle restante (RAM plus autres swaps) est insuffisante, l'opération échoue. `swapoff` ne modifie pas `/etc/fstab`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch04-q019",
+      "type": "multi",
+      "prompt": "Quelles étapes font partie de la suppression d'une zone de swap selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "Exécuter `swapoff` sur la zone",
+        "Lancer `mkswap` sur la zone pour la vider",
+        "Retirer sa ligne de `/etc/fstab` si elle y figure",
+        "Supprimer le fichier avant d'exécuter `swapoff`",
+        "Supprimer ensuite physiquement la partition ou le fichier"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "On désactive la zone avec `swapoff`, on retire sa ligne de `/etc/fstab`, puis on supprime la partition ou le fichier. Supprimer le fichier avant `swapoff` inverse l'ordre : la zone est encore utilisée.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q020",
+      "type": "single",
+      "prompt": "La procédure de suppression d'une zone de swap diffère-t-elle entre une partition et un fichier ?",
+      "choices": [
+        "Non, elle est identique",
+        "Oui, une partition doit d'abord être arrêtée avec `mdadm --stop`",
+        "Oui, un fichier se supprime sans passer par `swapoff`",
+        "Oui, une partition ne peut être retirée qu'au redémarrage"
+      ],
+      "answer": [0],
+      "explanation": "Le cours dit que pour une partition comme pour un fichier, la suppression d'une zone de swap est identique : `swapoff`, nettoyage de `/etc/fstab`, puis suppression. Un fichier doit aussi passer par `swapoff`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q021",
+      "type": "single",
+      "prompt": "Dans quel état le cours conseille-t-il de placer le serveur avant de supprimer une zone de swap ?",
+      "choices": [
+        "Avec le swap rempli au maximum",
+        "En mode maintenance",
+        "Avec `/tmp` démonté",
+        "Avec tous les ensembles RAID arrêtés"
+      ],
+      "answer": [1],
+      "explanation": "Le cours indique qu'il vaut mieux être en mode maintenance avant de supprimer une zone de swap, que ce soit une partition ou un fichier. Il n'est pas demandé d'arrêter les ensembles RAID ni de toucher à `/tmp`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q022",
+      "type": "single",
+      "prompt": "Quel espace un système de fichiers tmpfs utilise-t-il ?",
+      "choices": [
+        "Une partition dédiée du disque",
+        "Un fichier image stocké sur le disque",
+        "La mémoire virtuelle : la RAM et, si nécessaire, le swap",
+        "Uniquement la RAM, sans jamais utiliser le swap"
+      ],
+      "answer": [2],
+      "explanation": "tmpfs utilise la mémoire virtuelle, c'est-à-dire la RAM et, si nécessaire, le swap. Sa mémoire peut être paginée, ce qui le distingue de ramfs.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q023",
+      "type": "single",
+      "prompt": "Que devient le contenu d'un tmpfs au redémarrage ?",
+      "choices": [
+        "Il est sauvegardé dans la zone de swap",
+        "Il est recopié dans `/var/tmp`",
+        "Il est conservé grâce à la ligne de `/etc/fstab`",
+        "Il disparaît"
+      ],
+      "answer": [3],
+      "explanation": "Un tmpfs fournit un stockage temporaire très rapide dont le contenu disparaît au redémarrage. Une ligne dans `/etc/fstab` remonte le tmpfs au démarrage, mais vide.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q024",
+      "type": "multi",
+      "prompt": "Pourquoi tmpfs est-il généralement préférable à ramfs sur un Linux moderne ? (plusieurs réponses)",
+      "choices": [
+        "Sa taille peut être limitée",
+        "Son contenu survit au redémarrage",
+        "Sa mémoire peut être paginée",
+        "Il n'utilise jamais le swap",
+        "Il est stocké sur une partition dédiée"
+      ],
+      "answer": [0, 2],
+      "explanation": "Le cours justifie la préférence pour tmpfs par deux points : sa taille peut être limitée et sa mémoire peut être paginée vers le swap. Comme ramfs, il perd son contenu au redémarrage.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q025",
+      "type": "single",
+      "prompt": "Selon le cours, quel répertoire Ubuntu monte-t-il en tmpfs par défaut ?",
+      "choices": ["`/tmp`", "`/var/tmp`", "`/home`", "`/boot`"],
+      "answer": [0],
+      "explanation": "Le cours indique qu'Ubuntu monte `/tmp` en tmpfs par défaut. `/var/tmp` est au contraire destiné à des fichiers temporaires conservés entre deux redémarrages. C'est la réponse du cours ; en pratique cela dépend de la version (jusqu'à Ubuntu 24.04, `/tmp` est sur le disque).",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch04-q026",
+      "type": "single",
+      "prompt": "Quelle commande monte un tmpfs limité à 10 Mo sur le répertoire existant `/ramdisque` ?",
+      "choices": [
+        "`sudo mount -t ramfs -o size=10M ramfs /ramdisque`",
+        "`sudo mount -t tmpfs -o size=10M tmpfs /ramdisque`",
+        "`sudo mkfs -t tmpfs -s 10M /ramdisque`",
+        "`sudo mount -o tmpfs,size=10M /ramdisque`"
+      ],
+      "answer": [1],
+      "explanation": "Le cours monte le tmpfs avec `mount -t tmpfs -o size=10M tmpfs /ramdisque`, après avoir créé le répertoire avec `mkdir -p`. Avec `-t ramfs`, on monterait un ramfs, dont la taille ne se limite pas.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch04-q027",
+      "type": "single",
+      "prompt": "Quel est l'effet de cette ligne de `/etc/fstab` ?",
+      "code": "tmpfs /ramdisque tmpfs defaults,size=10M 0 0",
+      "choices": [
+        "Elle crée au démarrage un fichier de swap de 10 Mo nommé `/ramdisque`",
+        "Elle réserve 10 Mo de RAM dès le démarrage, même s'ils restent inutilisés",
+        "Elle monte au démarrage un tmpfs limité à 10 Mo sur `/ramdisque`",
+        "Elle conserve le contenu de `/ramdisque` entre deux redémarrages"
+      ],
+      "answer": [2],
+      "explanation": "Cette entrée rend persistant le montage du tmpfs : à chaque démarrage, un tmpfs d'au plus 10 Mo est monté sur `/ramdisque`. `size=10M` fixe une limite, et le contenu disparaît toujours au redémarrage.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch04-q028",
+      "type": "single",
+      "prompt": "Après `fallocate`, `chmod 600` et `mkswap /swapfile`, la commande `swapon --show` ne liste pas `/swapfile`. Pourquoi ?",
+      "choices": [
+        "La ligne correspondante manque dans `/etc/fstab`",
+        "Le fichier doit avoir les droits 644 pour être listé",
+        "`mkswap` doit être relancé après un redémarrage",
+        "Le fichier n'a pas été activé avec `swapon /swapfile`"
+      ],
+      "answer": [3],
+      "explanation": "`swapon --show` ne liste que les zones actives, et `mkswap` ne fait qu'initialiser le fichier : il manque `swapon /swapfile`. La ligne de `/etc/fstab` ne sert qu'à l'activation au démarrage.",
+      "difficulty": 3
+    }
+  ]
+}

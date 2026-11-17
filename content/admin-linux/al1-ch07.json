@@ -1,0 +1,474 @@
+{
+  "id": "al1-ch07",
+  "title": "Les permissions étendues",
+  "group": "Cours, partie 1",
+  "order": 7,
+  "source": "AdminLinux-1.pdf, chapitre 7",
+  "questions": [
+    {
+      "id": "al1-ch07-q001",
+      "type": "single",
+      "prompt": "En notation octale, quelle valeur correspond au droit d'écriture ?",
+      "choices": ["`4`", "`1`", "`2`", "`7`"],
+      "answer": [2],
+      "explanation": "Lecture vaut 4, écriture 2 et exécution 1. 7 est la somme des trois (`rwx`), pas une permission seule.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q002",
+      "type": "single",
+      "prompt": "Quelle valeur octale correspond au triplet `r-x` ?",
+      "choices": ["`5`", "`6`", "`3`", "`4`"],
+      "answer": [0],
+      "explanation": "`r-x` vaut 4 (lecture) + 1 (exécution) = 5. 6 serait `rw-`, et 3 serait `-wx`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q003",
+      "type": "single",
+      "prompt": "Quel triplet de permissions correspond à la valeur octale `6` ?",
+      "choices": ["`r-x`", "`-wx`", "`rwx`", "`rw-`"],
+      "answer": [3],
+      "explanation": "6 = 4 + 2, soit lecture et écriture : `rw-`. `r-x` vaut 5 et `rwx` vaut 7.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q004",
+      "type": "single",
+      "prompt": "Quelles permissions obtient le fichier après cette commande ?",
+      "code": "# chmod 0740 mon_fichier",
+      "choices": ["`rwxr--r--`", "`rwxr-----`", "`rw-r-----`", "`r--rwx---`"],
+      "answer": [1],
+      "explanation": "Le 0 de tête ne pose aucune permission particulière, puis 7 = `rwx` pour le propriétaire, 4 = `r--` pour le groupe et 0 = `---` pour les autres. `rwxr--r--` correspondrait à 744.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q005",
+      "type": "single",
+      "prompt": "Qui peut modifier les permissions d'un fichier avec `chmod` ?",
+      "choices": [
+        "Tout membre du groupe propriétaire du fichier",
+        "Tout utilisateur ayant le droit d'écriture sur le fichier",
+        "Le propriétaire du fichier et le super utilisateur",
+        "Uniquement le super utilisateur"
+      ],
+      "answer": [2],
+      "explanation": "Le super utilisateur ou le propriétaire peuvent utiliser `chmod`. Avoir le droit d'écriture sur un fichier permet d'en changer le contenu, pas les permissions.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q006",
+      "type": "single",
+      "prompt": "En notation symbolique de `chmod`, que désigne la lettre `o` ?",
+      "choices": [
+        "Les autres utilisateurs",
+        "L'utilisateur propriétaire (owner)",
+        "Tout le monde",
+        "Le groupe propriétaire"
+      ],
+      "answer": [0],
+      "explanation": "`o` désigne les autres (others). Le piège est de penser à owner : le propriétaire se note `u`, et tout le monde se note `a`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q007",
+      "type": "single",
+      "prompt": "Que fait la commande `chmod a+r mon_fichier` ?",
+      "choices": [
+        "Elle ajoute la lecture pour les autres utilisateurs seulement",
+        "Elle remplace toutes les permissions par la seule lecture",
+        "Elle ajoute la lecture pour le propriétaire seulement",
+        "Elle ajoute la lecture pour le propriétaire, le groupe et les autres"
+      ],
+      "answer": [3],
+      "explanation": "`a` désigne tout le monde et `+` ajoute une permission sans toucher aux autres. Remplacer les permissions se ferait avec `=`, et les autres seuls se notent `o`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q008",
+      "type": "single",
+      "prompt": "En notation symbolique de `chmod`, quel opérateur remplace les permissions existantes ?",
+      "choices": ["`+`", "`=`", "`-`", "`:`"],
+      "answer": [1],
+      "explanation": "`=` remplace les permissions, `+` en ajoute et `-` en supprime. `:` n'est pas un opérateur de `chmod` (on le retrouve dans les entrées d'ACL).",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q009",
+      "type": "single",
+      "prompt": "Quelle option de `chmod` modifie les permissions récursivement ?",
+      "choices": ["`-v`", "`-a`", "`-R`", "`-m`"],
+      "answer": [2],
+      "explanation": "`-R`, en majuscule, rend `chmod` récursif. Attention à la casse : en minuscule, `-r` serait lu comme la notation symbolique qui retire la lecture.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q010",
+      "type": "single",
+      "prompt": "Quel est l'effet de la permission setuid sur un exécutable ?",
+      "choices": [
+        "Tout utilisateur qui l'exécute endosse l'identité du propriétaire de l'exécutable pendant l'exécution",
+        "Seul le propriétaire de l'exécutable peut le lancer",
+        "Seul le propriétaire de l'exécutable peut le supprimer ou le renommer",
+        "L'exécutable tourne avec l'identité du groupe de l'utilisateur qui le lance"
+      ],
+      "answer": [0],
+      "explanation": "Avec le setuid, l'utilisateur qui exécute le programme endosse l'identité de son propriétaire pendant l'exécution. Empêcher la suppression par d'autres, c'est le rôle du sticky bit sur un répertoire.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q011",
+      "type": "single",
+      "prompt": "Dans cette sortie, que signifie le `s` à la place du `x` du propriétaire ?",
+      "code": "# ls -l /usr/bin/passwd\n-r-s--x--x 1 root root 16336 fév 13 2003 /usr/bin/passwd",
+      "choices": [
+        "Le sticky bit est positionné",
+        "Le fichier est un lien symbolique",
+        "Le setuid est positionné",
+        "Le fichier possède des ACL"
+      ],
+      "answer": [2],
+      "explanation": "Le setuid apparaît comme un `s` à la place du `x` dans le triplet user : `passwd` s'exécute ainsi avec l'identité de root. Le sticky bit, lui, s'affiche comme un `t` dans le troisième triplet.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q012",
+      "type": "single",
+      "prompt": "Que signifie un `S` majuscule à la place du `s` du setuid ?",
+      "choices": [
+        "Le setuid et le setgid sont tous deux positionnés",
+        "Le setuid s'applique aussi aux sous-répertoires",
+        "Le setuid a été posé par le super utilisateur",
+        "La permission d'exécution sous-jacente est retirée, le setuid ne sert donc à rien"
+      ],
+      "answer": [3],
+      "explanation": "Un `S` majuscule indique que le setuid est posé mais que le `x` sous-jacent est absent. Le setuid n'a de sens que sur un exécutable, il ne sert donc à rien dans ce cas.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch07-q013",
+      "type": "single",
+      "prompt": "Quelle est la valeur octale du setuid ?",
+      "choices": ["`2`", "`4`", "`1`", "`7`"],
+      "answer": [1],
+      "explanation": "Le setuid vaut 4, le setgid 2 et le sticky bit 1, tous placés dans la position octale la plus à gauche.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q014",
+      "type": "single",
+      "prompt": "Quelle est la valeur octale du setgid ?",
+      "choices": ["`1`", "`4`", "`6`", "`2`"],
+      "answer": [3],
+      "explanation": "Le setgid, qui fonctionne comme le setuid mais pour le groupe propriétaire, vaut 2. 4 est la valeur du setuid.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q015",
+      "type": "single",
+      "prompt": "Quelle est la valeur octale du sticky bit ?",
+      "choices": ["`1`", "`2`", "`4`", "`7`"],
+      "answer": [0],
+      "explanation": "Le sticky bit vaut 1, dans la position octale la plus à gauche, d'où `chmod 1777` pour un répertoire public. 2 est le setgid et 4 le setuid.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q016",
+      "type": "single",
+      "prompt": "En notation octale, où s'écrit la valeur des permissions particulières (setuid, setgid, sticky bit) ?",
+      "choices": [
+        "Après les trois chiffres habituels, en position la plus à droite",
+        "Dans le chiffre du propriétaire, en y ajoutant 8",
+        "Dans la position la plus à gauche, devant les trois chiffres habituels",
+        "Dans un second argument de `chmod`"
+      ],
+      "answer": [2],
+      "explanation": "Les permissions particulières occupent la position la plus à gauche, comme le 1 de `chmod 1777` ou le 0 de `chmod 0740`. Les trois chiffres suivants restent ceux du propriétaire, du groupe et des autres.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q017",
+      "type": "multi",
+      "prompt": "Quelles permissions particulières s'affichent sous la forme d'un `s` dans `ls -l` ? (plusieurs réponses)",
+      "choices": ["Le setuid", "Le sticky bit", "Le setgid", "Les ACL supplémentaires"],
+      "answer": [0, 2],
+      "explanation": "Le setuid (triplet user) et le setgid (triplet group) s'affichent tous deux comme un `s`. Le sticky bit s'affiche comme un `t`, et la présence d'ACL comme un `+` à droite des permissions.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q018",
+      "type": "single",
+      "prompt": "Quelle commande positionne le setuid sur `mon_programme` en notation symbolique ?",
+      "choices": [
+        "`chmod g+s mon_programme`",
+        "`chmod o+t mon_programme`",
+        "`chmod u+x mon_programme`",
+        "`chmod u+s mon_programme`"
+      ],
+      "answer": [3],
+      "explanation": "`u+s` pose le `s` sur le triplet du propriétaire, c'est le setuid. `g+s` poserait le setgid, sur le triplet du groupe.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q019",
+      "type": "multi",
+      "prompt": "Le sticky bit est posé sur un répertoire accessible en écriture par tout le monde. Qui peut effacer ou renommer un fichier de ce répertoire ? (plusieurs réponses)",
+      "choices": [
+        "Le propriétaire du fichier",
+        "Tout utilisateur ayant le droit d'écriture sur le répertoire",
+        "Le propriétaire du répertoire",
+        "Le super utilisateur",
+        "Tout membre du groupe propriétaire du fichier"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "Avec le sticky bit, seuls le propriétaire du fichier, le propriétaire du répertoire et le super utilisateur peuvent l'effacer ou le renommer. C'est justement ce qui empêche un utilisateur ayant le droit d'écriture d'effacer le fichier d'un autre.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q020",
+      "type": "single",
+      "prompt": "Quel répertoire le cours cite-t-il comme exemple type d'usage du sticky bit ?",
+      "choices": ["`/etc`", "`/home`", "`/usr/bin`", "`/tmp`"],
+      "answer": [3],
+      "explanation": "`/tmp` est accessible en écriture par tous, et le sticky bit y interdit d'effacer les fichiers des autres. `/usr/bin` est plutôt l'endroit où l'on trouve des exécutables setuid comme `passwd`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q021",
+      "type": "single",
+      "prompt": "Dans cette sortie, que signifie le `t` final des permissions ?",
+      "code": "# ls -ld /tmp\ndrwxrwxrwt 9 root root 4096 aou 28 10:02 /tmp",
+      "choices": [
+        "Le setgid est positionné",
+        "Le sticky bit est positionné",
+        "Le répertoire est vidé à chaque redémarrage",
+        "Le répertoire possède des ACL"
+      ],
+      "answer": [1],
+      "explanation": "Le sticky bit apparaît comme un `t` à la place du `x` dans le troisième triplet. Le setgid serait un `s` dans le deuxième triplet, et des ACL un `+` à droite.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q022",
+      "type": "multi",
+      "prompt": "Quelles commandes positionnent le sticky bit sur `/home/public` en le laissant accessible à tous en lecture, écriture et exécution ? (plusieurs réponses)",
+      "choices": [
+        "`chmod 1777 /home/public`",
+        "`chmod 4777 /home/public`",
+        "`chmod a=rwxt /home/public`",
+        "`chmod 2777 /home/public`"
+      ],
+      "answer": [0, 2],
+      "explanation": "Le sticky bit vaut 1 en octal (`1777`) et se note `t` en symbolique (`a=rwxt`). `4777` poserait le setuid et `2777` le setgid.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q023",
+      "type": "single",
+      "prompt": "Que représente la valeur du filtre `umask` ?",
+      "choices": [
+        "Les permissions accordées à la création d'un fichier ou d'un répertoire",
+        "Les permissions maximales autorisées par les ACL",
+        "Les permissions retirées à la création d'un fichier ou d'un répertoire",
+        "Les permissions particulières posées par défaut"
+      ],
+      "answer": [2],
+      "explanation": "Chaque chiffre de `umask` représente les permissions à retirer lors de la création. Le masque des ACL est une autre notion, qui n'a rien à voir avec `umask`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q024",
+      "type": "single",
+      "prompt": "Avec `umask 022`, que signifie le deuxième chiffre (`2`) ?",
+      "choices": [
+        "On retire aux autres utilisateurs le droit d'écriture",
+        "On retire au groupe le droit d'écriture",
+        "On accorde au groupe le droit d'écriture",
+        "On retire au groupe le droit d'exécution"
+      ],
+      "answer": [1],
+      "explanation": "Le deuxième chiffre concerne le groupe, et 2 correspond à l'écriture : on retire donc au groupe le droit d'écriture. Les autres utilisateurs sont concernés par le troisième chiffre.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q025",
+      "type": "single",
+      "prompt": "Avec `umask 022`, quelles permissions obtient un répertoire nouvellement créé ?",
+      "choices": ["`rw-r--r--`", "`rwxrwxr-x`", "`rwx------`", "`rwxr-xr-x`"],
+      "answer": [3],
+      "explanation": "Pour un répertoire, on prend le complément à 777 : 777 - 022 = 755, soit `rwxr-xr-x`. `rw-r--r--` (644) est le résultat pour un fichier.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q026",
+      "type": "single",
+      "prompt": "Avec `umask 022`, quelles permissions obtient un fichier nouvellement créé ?",
+      "choices": ["`rwxr-xr-x`", "`rw-r--r--`", "`rw-rw-r--`", "`r--r--r--`"],
+      "answer": [1],
+      "explanation": "Pour un fichier, on part de 666 : 666 - 022 = 644, soit `rw-r--r--`. `rwxr-xr-x` est le résultat pour un répertoire, car un fichier n'est jamais créé exécutable.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q027",
+      "type": "single",
+      "prompt": "Pourquoi calcule-t-on les permissions d'un nouveau fichier à partir de 666 et non de 777 ?",
+      "choices": [
+        "Le bit d'exécution est réservé au super utilisateur",
+        "`umask` ne s'applique pas au propriétaire d'un fichier",
+        "Un fichier n'est jamais créé exécutable, pour raison de sécurité",
+        "Les permissions particulières occupent le bit d'exécution"
+      ],
+      "answer": [2],
+      "explanation": "Un fichier n'est jamais créé exécutable pour raison de sécurité, d'où le complément à 666. Les répertoires, eux, partent de 777 car le `x` y sert à les ouvrir.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q028",
+      "type": "single",
+      "prompt": "Après `umask 027`, quelles permissions obtient un répertoire nouvellement créé ?",
+      "choices": ["`rwxr-xr-x`", "`rwxr-----`", "`rw-r-----`", "`rwxr-x---`"],
+      "answer": [3],
+      "explanation": "777 - 027 = 750, soit `rwxr-x---` : le groupe perd l'écriture et les autres perdent tout. `rw-r-----` (640) serait le résultat pour un fichier.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch07-q029",
+      "type": "single",
+      "prompt": "Selon le cours, où placer la ligne `umask 027` pour changer définitivement la valeur de `umask` ?",
+      "choices": [
+        "À la fin de son fichier `.profile`",
+        "Dans le fichier `/etc/shells`",
+        "Dans le répertoire `/etc/skel`",
+        "Dans la table `crontab` de l'utilisateur"
+      ],
+      "answer": [0],
+      "explanation": "La commande `umask 027` ne vaut que pour le shell courant ; pour la rendre définitive, le cours conseille de la placer à la fin du fichier `.profile`, exécuté au login.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q030",
+      "type": "single",
+      "prompt": "Selon le cours, quelle affirmation sur les ACL est exacte ?",
+      "choices": [
+        "Le support des ACL est activé par défaut dans toutes les distributions Linux",
+        "Les ACL NTFS de Windows ne sont pas compatibles POSIX",
+        "Les ACL POSIX ne sont disponibles que sous Linux",
+        "Les ACL remplacent les permissions UNIX, qui sont alors ignorées"
+      ],
+      "answer": [1],
+      "explanation": "Windows supporte les ACL avec NTFS, mais elles ne sont pas compatibles POSIX. Sous Linux, le support des ACL n'est pas activé par défaut dans toutes les distributions.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q031",
+      "type": "multi",
+      "prompt": "Quelles entrées constituent les trois permissions obligatoires d'une ACL ? (plusieurs réponses)",
+      "choices": ["`user::perm`", "`user:uid:perm`", "`group::perm`", "`mask:perm`", "`other:perm`"],
+      "answer": [0, 2, 4],
+      "explanation": "Les trois permissions obligatoires, compatibles avec les permissions UNIX, sont `user::perm`, `group::perm` et `other:perm`. `user:uid:perm` est une permission additionnelle, et `mask:perm` est le masque.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q032",
+      "type": "single",
+      "prompt": "Selon le cours, quelle entrée d'ACL est correctement écrite en notation symbolique ?",
+      "choices": ["`user:toto:rw`", "`user:toto:+rw`", "`user:toto:rw-`", "`user=toto:rw-`"],
+      "answer": [2],
+      "explanation": "En notation symbolique, il faut préciser toutes les composantes du triplet : `rw-` et non `rw`. Le séparateur entre les champs est `:`. C'est la règle du cours ; en pratique, `setfacl` accepte aussi `rw`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch07-q033",
+      "type": "single",
+      "prompt": "L'utilisateur toto a une ACL `rw-` sur un fichier dont le masque est `r--`. Quelle est sa permission réelle ?",
+      "choices": ["`rw-`", "`r--`", "`---`", "`-w-`"],
+      "answer": [1],
+      "explanation": "Le masque bloque les permissions des ACL à une valeur maximum : `rw-` limité par `r--` donne `r--`. Le masque ne retire pas tout, il plafonne.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q034",
+      "type": "single",
+      "prompt": "Quelle affirmation décrit le masque des ACL ?",
+      "choices": [
+        "Il fixe une valeur maximum aux permissions des ACL et n'a rien à voir avec `umask`",
+        "Il définit les permissions retirées à la création, comme `umask`",
+        "Il s'applique uniquement aux autres utilisateurs",
+        "Il remplace les permissions UNIX du propriétaire"
+      ],
+      "answer": [0],
+      "explanation": "Le masque bloque les permissions de toutes les ACL à une valeur maximum, ce qui permet de limiter de nombreux utilisateurs en une commande. Le cours précise qu'il n'a rien à voir avec `umask`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q035",
+      "type": "single",
+      "prompt": "Comment `ls -l` signale-t-il qu'un fichier possède des ACL en plus des ACL obligatoires ?",
+      "choices": [
+        "Un `t` à la place du dernier `x`",
+        "Un `@` devant le nom du fichier",
+        "Un `a` en tête des permissions",
+        "Un `+` à droite des permissions"
+      ],
+      "answer": [3],
+      "explanation": "`ls -l` ajoute un `+` à droite des permissions, comme dans `-rwxr-----+`. Le `t` à la place du dernier `x` est le sticky bit.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q036",
+      "type": "single",
+      "prompt": "Quelle commande permet de consulter les ACL d'un fichier ?",
+      "choices": ["`setfacl`", "`getfacl`", "`lsattr`", "`chmod -l`"],
+      "answer": [1],
+      "explanation": "`getfacl` affiche les ACL de n'importe quel fichier. `setfacl` sert à les ajouter, modifier ou supprimer.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch07-q037",
+      "type": "multi",
+      "prompt": "D'après cette sortie, qui peut lire et écrire dans `ch3.doc` ? (plusieurs réponses)",
+      "code": "# getfacl ch3.doc\n#file:ch3.doc\n#owner:1203\n#group:14\nuser::rwx\nuser:toto:rw-\ngroup::r--\nmask:rw-\nother:---",
+      "choices": [
+        "L'utilisateur propriétaire",
+        "Les autres utilisateurs",
+        "L'utilisateur toto",
+        "Les membres du groupe propriétaire"
+      ],
+      "answer": [0, 2],
+      "explanation": "Le propriétaire a `rwx` et toto a `rw-`, que le masque `rw-` laisse passer : tous deux lisent et écrivent. Le groupe n'a que `r--` et les autres `---`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q038",
+      "type": "single",
+      "prompt": "Quelle option de `setfacl` supprime toutes les ACL supplémentaires d'un fichier ?",
+      "choices": ["`-x`", "`-m`", "`-b`", "`-R`"],
+      "answer": [2],
+      "explanation": "`setfacl -b` supprime toutes les ACL supplémentaires. `-x` ne supprime qu'une ACL particulière.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q039",
+      "type": "single",
+      "prompt": "Quelle option de `setfacl` supprime une ACL particulière ?",
+      "choices": ["`-x`", "`-b`", "`-m`", "`-d`"],
+      "answer": [0],
+      "explanation": "`setfacl -x` supprime une ACL particulière, alors que `-b` les supprime toutes. `-m` modifie ou ajoute des ACL.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch07-q040",
+      "type": "single",
+      "prompt": "Quelle commande donne à l'utilisateur toto la lecture et l'écriture sur `rapport.txt` par une ACL ?",
+      "choices": [
+        "`setfacl -x user:toto:rw- rapport.txt`",
+        "`getfacl -m user:toto:rw- rapport.txt`",
+        "`setfacl -m user::toto:rw- rapport.txt`",
+        "`setfacl -m user:toto:rw- rapport.txt`"
+      ],
+      "answer": [3],
+      "explanation": "`setfacl -m` ajoute ou modifie une ACL, et une permission pour un utilisateur précis s'écrit `user:uid:perm`. `user::` sans nom désigne le propriétaire, et `-x` supprimerait l'entrée.",
+      "difficulty": 2
+    }
+  ]
+}

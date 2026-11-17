@@ -1,0 +1,483 @@
+{
+  "id": "al1-ch10",
+  "title": "Les systèmes de fichiers",
+  "group": "Cours, partie 1",
+  "order": 10,
+  "source": "AdminLinux-1.pdf, chapitre 10",
+  "questions": [
+    {
+      "id": "al1-ch10-q001",
+      "type": "multi",
+      "prompt": "Quels systèmes de fichiers le cours associe-t-il aux systèmes Microsoft ? (plusieurs réponses)",
+      "choices": ["`vfat`", "`ufs`", "`ntfs`", "`hfs`"],
+      "answer": [0, 2],
+      "explanation": "`fat`/`vfat` (FAT12, FAT16, FAT32) est le système de MS-DOS et Windows, `ntfs` celui de Windows NT. `ufs` est celui de Solaris et des BSD, `hfs` celui de MacOS.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q002",
+      "type": "single",
+      "prompt": "Quel système de fichiers est celui des CD-ROM ?",
+      "choices": ["`udf`", "`iso9660`", "`hfs`", "`ufs`"],
+      "answer": [1],
+      "explanation": "`iso9660` est le système des CD-ROM, que Linux lit avec les extensions Joliet (Microsoft) et Rock Ridge (UNIX). `udf` le remplace pour les DVD.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q003",
+      "type": "single",
+      "prompt": "Quel système de fichiers Linux permet d'accéder aux partages Windows et Samba ?",
+      "choices": ["`nfs`", "`ntfs`", "`cifs`", "`vfat`"],
+      "answer": [2],
+      "explanation": "`cifs` est le pilote Linux des partages SMB/CIFS, utilisés par Windows et Samba. `ntfs` est un système de fichiers sur disque, et `nfs` le système réseau courant entre machines UNIX/Linux.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q004",
+      "type": "multi",
+      "prompt": "Quels systèmes de fichiers résident en mémoire plutôt que sur un disque ? (plusieurs réponses)",
+      "choices": ["`tmpfs`", "`udf`", "`proc`", "`ext4`", "`ramfs`"],
+      "answer": [0, 2, 4],
+      "explanation": "`ramfs`, `tmpfs` et `proc` sont des systèmes de fichiers en mémoire, parfois appelés pseudo systèmes de fichiers. `udf` (DVD) et `ext4` sont des systèmes de fichiers sur disque.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q005",
+      "type": "single",
+      "prompt": "Selon le cours, comment `/tmp` est-il monté par défaut sur Ubuntu ?",
+      "choices": [
+        "En `ramfs`, déclaré dans `/etc/fstab`",
+        "Sur la partition racine, en ext4",
+        "En `proc`, comme `/proc`",
+        "En `tmpfs`, via systemd"
+      ],
+      "answer": [3],
+      "explanation": "Le cours indique que `/tmp` est monté par défaut en `tmpfs` via systemd. `tmpfs` est un système en mémoire qui peut utiliser la mémoire virtuelle, alors que `ramfs` sert à créer un disque en mémoire. En pratique cela dépend de la version (sur Ubuntu Server 24.04, `/tmp` reste par défaut un répertoire de la partition racine), mais c'est la réponse du cours qui est attendue.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q006",
+      "type": "single",
+      "prompt": "Quel pseudo système de fichiers donne accès aux informations sur le noyau, les pilotes et les processus ?",
+      "choices": ["`proc`", "`tmpfs`", "`devpts`", "`ramfs`"],
+      "answer": [0],
+      "explanation": "`proc`, habituellement monté sur `/proc`, expose des informations du système sous forme de fichiers. `tmpfs` et `ramfs` servent au contraire à stocker des fichiers en mémoire.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q007",
+      "type": "single",
+      "prompt": "Quelle est la taille par défaut d'un bloc de données indiquée dans le cours ?",
+      "choices": ["512 octets (1 secteur)", "1 Ko (2 secteurs)", "4 Ko (8 secteurs)", "64 Ko (128 secteurs)"],
+      "answer": [2],
+      "explanation": "La taille des blocs est fixée à la création du système de fichiers : 8 secteurs par défaut, soit 4 Ko. Un secteur de 512 octets n'est que la taille minimale d'un bloc.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q008",
+      "type": "single",
+      "prompt": "Dans un système de fichiers ext2, quel superbloc est réellement utilisé ?",
+      "choices": [
+        "Celui du dernier groupe",
+        "Celui du premier groupe ; les autres sont des copies",
+        "Chaque groupe utilise le sien pour ses propres fichiers",
+        "Celui du secteur de démarrage de la partition"
+      ],
+      "answer": [1],
+      "explanation": "Chaque groupe contient un superbloc, mais seul celui du premier groupe est utilisé ; les autres sont des copies de secours, qui servent à réparer un superbloc endommagé.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q009",
+      "type": "multi",
+      "prompt": "Que contient chaque groupe d'un système de fichiers ext2 ? (plusieurs réponses)",
+      "choices": [
+        "Une table d'inodes",
+        "La table de partitions du disque",
+        "Un superbloc ou sa copie",
+        "Une carte d'occupation des inodes et des blocs",
+        "Le secteur de démarrage de la partition"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "Un groupe comprend un superbloc (une copie hors du premier groupe), les informations du groupe, une table d'inodes, les cartes d'occupation des inodes et des blocs, puis les données. Le secteur de démarrage précède les groupes, en tête de partition.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q010",
+      "type": "single",
+      "prompt": "Quelle commande affiche le contenu du superbloc d'une partition ext ?",
+      "choices": ["`fsck /dev/sda2`", "`blkid /dev/sda2`", "`mkfs -t ext4 /dev/sda2`", "`tune2fs -l /dev/sda2`"],
+      "answer": [3],
+      "explanation": "`tune2fs -l` affiche le superbloc : état, nombre d'inodes et de blocs, blocs et inodes libres, taille de bloc, dates. `mkfs` créerait un nouveau système de fichiers et effacerait l'existant.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q011",
+      "type": "single",
+      "prompt": "Qu'est-ce qu'une inode ?",
+      "choices": [
+        "Une entrée de répertoire qui associe un nom à un fichier",
+        "La description interne d'un fichier et de l'emplacement de ses blocs de données",
+        "Un bloc de données de 4 Ko réservé aux métadonnées",
+        "Une copie de secours du superbloc placée dans chaque groupe"
+      ],
+      "answer": [1],
+      "explanation": "L'inode (index-node) décrit un fichier : type, permissions, propriétaires, taille, dates, nombre de liens et pointeurs vers ses blocs. Associer un nom à une inode est le rôle d'une entrée de répertoire.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q012",
+      "type": "single",
+      "prompt": "Laquelle de ces informations n'est pas stockée dans l'inode d'un fichier ?",
+      "choices": ["L'UID du propriétaire", "Le nombre de liens physiques", "La taille du fichier en octets", "Le nom du fichier"],
+      "answer": [3],
+      "explanation": "Le nom n'est pas dans l'inode mais dans les entrées des répertoires qui y mènent, ce qui permet à un même fichier d'avoir plusieurs noms. L'inode stocke bien l'UID, la taille et le nombre de liens physiques.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch10-q013",
+      "type": "single",
+      "prompt": "Pourquoi le nombre de fichiers d'une partition ext est-il limité ?",
+      "choices": [
+        "Chaque groupe contient un nombre d'inodes fixé à la création du système de fichiers",
+        "Un répertoire ne peut pas contenir plus de 255 entrées de fichiers",
+        "Le superbloc ne peut décrire que 65536 fichiers par partition",
+        "La table de partitions fixe le nombre maximal de fichiers"
+      ],
+      "answer": [0],
+      "explanation": "Un fichier consomme une inode, et chaque groupe contient une portion fixe des inodes de la partition ; cette limite se choisit à la création du système de fichiers. 255 octets est la longueur maximale d'un nom, pas un nombre d'entrées.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q014",
+      "type": "single",
+      "prompt": "D'après le cours, avec des blocs de 4 Ko, quelle taille de fichier les seuls pointeurs directs d'une inode permettent-ils d'adresser ?",
+      "choices": ["12 Ko", "48 Ko", "1 Mo", "64 Ko"],
+      "answer": [1],
+      "explanation": "Les 12 premiers pointeurs sont directs : 12 x 4 Ko = 48 Ko. Au-delà, le treizième pointeur ouvre une simple indirection vers une table de 256 pointeurs.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q015",
+      "type": "single",
+      "prompt": "Selon le cours, jusqu'à quelle taille maximale de fichier la triple indirection (quinzième pointeur) permet-elle d'aller ?",
+      "choices": ["64 Go", "257 Mo", "16 To", "1 Eo"],
+      "answer": [0],
+      "explanation": "Selon le cours, la simple indirection mène à un peu plus de 1 Mo, la double à 257 Mo et la triple à 64 Go, des valeurs théoriques calculées avec des tables de 256 pointeurs (en pratique, un bloc de 4 Ko en contient 1024). 16 To est la taille maximale d'un fichier ext4 actuel, et 1 Eo celle d'une partition ext4.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q016",
+      "type": "single",
+      "prompt": "Que contient chaque entrée d'un répertoire ext2 ?",
+      "choices": [
+        "Le nom, la taille et les permissions du fichier",
+        "Le nom du fichier et la liste de ses blocs de données",
+        "Le numéro d'inode, l'UID et les dates du fichier",
+        "Le numéro d'inode, la longueur du nom et le nom du fichier"
+      ],
+      "answer": [3],
+      "explanation": "Un répertoire est un fichier dont les données sont une table d'entrées : inode, longueur du nom (255 octets au plus) et nom. Taille, permissions, UID et dates sont dans l'inode.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q017",
+      "type": "single",
+      "prompt": "Quand l'inode et les données d'un fichier ayant plusieurs liens physiques sont-elles réellement détruites ?",
+      "choices": [
+        "Dès que l'on supprime l'un de ses noms",
+        "Quand le lien symbolique qui pointe vers lui est supprimé",
+        "Quand il n'est plus référencé dans aucun répertoire",
+        "Au prochain passage de `fsck`"
+      ],
+      "answer": [2],
+      "explanation": "Un lien physique est un nom de plus pour la même inode. L'inode et les données ne sont détruites que lorsque le fichier n'a plus aucun nom, c'est-à-dire plus aucune entrée de répertoire.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q018",
+      "type": "single",
+      "prompt": "Que contiennent les blocs de données d'un lien symbolique ?",
+      "choices": [
+        "Le chemin du fichier vers lequel il pointe",
+        "Le numéro d'inode du fichier cible",
+        "Une copie des données du fichier cible",
+        "La liste des noms du fichier cible"
+      ],
+      "answer": [0],
+      "explanation": "Un lien symbolique est un fichier qui contient le chemin de sa cible, ce qui lui permet de pointer vers n'importe quoi, même vers un fichier qui n'existe pas. Partager le numéro d'inode, c'est le principe du lien physique.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q019",
+      "type": "single",
+      "prompt": "Quelle commande crée un système de fichiers ext4 sur la partition `/dev/sdb1` ?",
+      "choices": ["`mount -t ext4 /dev/sdb1`", "`tune2fs -l /dev/sdb1`", "`mkfs.ext4 /dev/sdb1`", "`fsck.ext4 /dev/sdb1`"],
+      "answer": [2],
+      "explanation": "`mkfs.ext4` est l'outil spécialisé, équivalent à `mkfs -t ext4`. `mount -t ext4` monte un système de fichiers existant sans en créer.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q020",
+      "type": "single",
+      "prompt": "À quoi sert l'option `-c` de `mkfs` ?",
+      "choices": [
+        "Choisir le type de système de fichiers à créer",
+        "Afficher les superblocs de secours sans rien écrire",
+        "Créer le journal du système de fichiers",
+        "Chercher les secteurs défectueux avant la création"
+      ],
+      "answer": [3],
+      "explanation": "`-c` vérifie le disque à la recherche de secteurs défectueux avant de créer le système de fichiers. Le type se choisit avec `-t`, et `-n` réaffiche les superblocs de secours.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q021",
+      "type": "single",
+      "prompt": "Qu'est-ce qu'un point de montage ?",
+      "choices": [
+        "Une partition réservée au montage",
+        "Un simple répertoire auquel on attache un système de fichiers",
+        "Un fichier spécial du répertoire `/dev`",
+        "Une ligne du fichier `/etc/fstab`"
+      ],
+      "answer": [1],
+      "explanation": "Monter un système de fichiers l'attache à l'arborescence en un point de montage, qui est un simple répertoire. Ce répertoire doit exister, d'où l'étape `mkdir` lors de l'ajout d'un disque.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q022",
+      "type": "single",
+      "prompt": "Quel fichier indique les systèmes de fichiers à monter au démarrage ?",
+      "choices": ["`/etc/mtab`", "`/proc/partitions`", "`/etc/fstab`", "`/etc/mount.conf`"],
+      "answer": [2],
+      "explanation": "`/etc/fstab` décrit, une ligne par système de fichiers, ce qui est monté au démarrage et démonté à l'arrêt. `/proc/partitions` présente la table des partitions vue par le noyau.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q023",
+      "type": "single",
+      "prompt": "Dans quel ordre apparaissent les six champs d'une ligne de `/etc/fstab` ?",
+      "choices": [
+        "`spec rep type opts dump passno`",
+        "`spec type rep opts dump passno`",
+        "`rep spec type opts passno dump`",
+        "`spec rep opts type passno dump`"
+      ],
+      "answer": [0],
+      "explanation": "Périphérique ou UUID (`spec`), point de montage (`rep`), type, options, puis `dump` et enfin `passno`, l'ordre de vérification par `fsck`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q024",
+      "type": "single",
+      "prompt": "Pour un disque local, que recommande le cours dans le premier champ de `/etc/fstab` ?",
+      "choices": [
+        "`UUID=<uuid>`, plutôt qu'un nom `/dev/sdX` susceptible de changer",
+        "Le nom `/dev/sdX`, plus court et plus lisible qu'un identifiant",
+        "Le point de montage, qui identifie l'entrée de façon unique",
+        "Les numéros majeur et mineur du périphérique de la partition"
+      ],
+      "answer": [0],
+      "explanation": "Le nom `/dev/sdX` dépend de l'ordre de détection et peut changer, alors que l'UUID désigne le système de fichiers lui-même. On le trouve avec `blkid` ou `lsblk -f`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q025",
+      "type": "single",
+      "prompt": "Que se passe-t-il si le dernier champ (`passno`) d'une ligne de `/etc/fstab` vaut 0 ?",
+      "choices": [
+        "Le système de fichiers est vérifié en premier",
+        "Le système de fichiers n'est pas monté au démarrage",
+        "La commande `dump` ne le sauvegarde pas",
+        "`fsck` ignore ce système de fichiers"
+      ],
+      "answer": [3],
+      "explanation": "`passno` donne l'ordre de vérification par `fsck` : 1 pour la racine, 2 pour les autres, 0 pour l'ignorer. La sauvegarde par `dump` dépend de l'avant-dernier champ, et l'absence de montage automatique de l'option `noauto`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q026",
+      "type": "multi",
+      "prompt": "Que peut-on lire dans cet extrait de `/etc/fstab` ? (plusieurs réponses)",
+      "code": "UUID=<uuid-racine>  /          ext4   defaults               0  1\nUUID=<uuid-data>    /srv/data  ext4   defaults               0  2\n/swap.img           none       swap   sw                     0  0\ntmpfs               /tmp       tmpfs  defaults,nosuid,nodev  0  0",
+      "choices": [
+        "`/srv/data` est vérifié par `fsck` après la racine",
+        "La racine est sauvegardée par `dump`",
+        "Le fichier `/swap.img` n'a pas de point de montage",
+        "`/tmp` est vérifié par `fsck` au démarrage",
+        "`/tmp` est monté sans interpréter les fichiers périphériques"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "`passno` vaut 1 pour la racine et 2 pour `/srv/data`, vérifié ensuite, et 0 fait ignorer `/tmp` par `fsck`. Le swap a `none` comme point de montage, `nodev` empêche d'interpréter les fichiers périphériques, et le champ `dump` à 0 exclut la racine de `dump`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch10-q027",
+      "type": "single",
+      "prompt": "Que fait la commande `mount /opt`, sans préciser de périphérique ?",
+      "choices": [
+        "Elle cherche les paramètres de `/opt` dans `/etc/fstab` et le monte",
+        "Elle affiche le système de fichiers monté sur `/opt`",
+        "Elle crée `/opt` puis y monte un `tmpfs`",
+        "Elle monte la première partition libre sur `/opt`"
+      ],
+      "answer": [0],
+      "explanation": "Avec un seul argument, `mount` cherche l'entrée correspondante dans `/etc/fstab`. Pour savoir ce qui est monté sur `/opt`, le cours propose `findmnt /opt`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q028",
+      "type": "single",
+      "prompt": "Que fait `mount -a` ?",
+      "choices": [
+        "Il affiche tous les systèmes de fichiers montés",
+        "Il monte tous les périphériques détectés par le noyau",
+        "Il monte tous les systèmes de fichiers de `/etc/fstab` qui n'ont pas l'option `noauto`",
+        "Il remonte tous les systèmes de fichiers en lecture seule"
+      ],
+      "answer": [2],
+      "explanation": "`mount -a` tente de monter toutes les entrées de `/etc/fstab` sauf celles marquées `noauto` ; c'est aussi ce qui teste un `/etc/fstab` modifié. Pour lister les montages, on lance `mount` sans argument.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q029",
+      "type": "multi",
+      "prompt": "Quelles options sont incluses dans l'option de montage `defaults` ? (plusieurs réponses)",
+      "choices": ["`rw`", "`noauto`", "`exec`", "`sync`", "`suid`"],
+      "answer": [0, 2, 4],
+      "explanation": "`defaults` équivaut à `rw`, `suid`, `dev`, `exec`, `auto`, `nouser` et `async`. Elle contient donc `auto` et `async`, l'inverse de `noauto` et `sync`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q030",
+      "type": "single",
+      "prompt": "Quelle option de montage interdit l'exécution des programmes ?",
+      "choices": ["`nodev`", "`nouser`", "`ro`", "`noexec`"],
+      "answer": [3],
+      "explanation": "`noexec` interdit l'exécution des programmes. `nodev` empêche d'interpréter les fichiers périphériques et `nouser` interdit le montage par un utilisateur autre que root.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q031",
+      "type": "single",
+      "prompt": "Pourquoi ce démontage échoue-t-il ?",
+      "code": "# cd /opt\n# umount /opt\numount : /opt : périphérique occupé",
+      "choices": [
+        "`/opt` n'est pas listé dans `/etc/fstab`",
+        "Le shell courant a pour répertoire de travail `/opt`",
+        "Il faut démonter par le nom du périphérique",
+        "`umount` exige l'option `-a`"
+      ],
+      "answer": [1],
+      "explanation": "Le shell s'est placé dans `/opt` avec `cd`, donc le système de fichiers est utilisé et ne peut pas être démonté. Démonter par le nom du périphérique (`umount /dev/sdb1`) échouerait de la même façon.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch10-q032",
+      "type": "single",
+      "prompt": "Un `umount /opt` répond « périphérique occupé ». Quelle commande liste les processus qui utilisent ce système de fichiers ?",
+      "choices": ["`fuser -k /opt`", "`df -h /opt`", "`umount -f /opt`", "`fuser -u /opt`"],
+      "answer": [3],
+      "explanation": "`fuser -u /opt` liste les processus (avec leur utilisateur) qui accèdent au système de fichiers. `fuser -k` les tue, et `umount -f`, qui force le démontage, est à éviter selon le cours.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q033",
+      "type": "single",
+      "prompt": "Lequel de ces contrôles `fsck` effectue-t-il, selon le cours ?",
+      "choices": [
+        "Il vérifie que le compteur de liens de chaque inode correspond aux entrées de répertoire qui y mènent",
+        "Il vérifie que chaque bloc de données est pointé par au moins deux inodes différentes",
+        "Il vérifie que chaque fichier possède au moins deux noms dans les répertoires",
+        "Il vérifie que la table de partitions du disque est bien au format GPT"
+      ],
+      "answer": [0],
+      "explanation": "`fsck` s'appuie sur des informations redondantes : le compteur de liens d'une inode doit égaler le nombre d'entrées de répertoire qui y mènent, et un bloc ne doit pas être pointé par plus d'une inode à la fois.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q034",
+      "type": "multi",
+      "prompt": "Selon le cours, dans quels cas les données d'un système de fichiers sont-elles souvent endommagées ? (plusieurs réponses)",
+      "choices": ["Arrêt intempestif du système", "Montage en lecture seule", "Panne secteur", "Panne matérielle"],
+      "answer": [0, 2, 3],
+      "explanation": "Le cours cite l'arrêt intempestif, la panne secteur et la panne matérielle. Un montage en lecture seule, au contraire, n'écrit rien sur le système de fichiers.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch10-q035",
+      "type": "single",
+      "prompt": "Pourquoi faut-il éviter de lancer `fsck` sur un système de fichiers monté en lecture-écriture ?",
+      "choices": [
+        "Il ne peut pas lire le superbloc d'un système de fichiers déjà monté",
+        "Il démonte automatiquement le système de fichiers avant de le vérifier",
+        "Il peut corriger des erreurs qui n'en sont pas, sur des fichiers en cours d'écriture",
+        "Il efface le journal du système de fichiers pendant la vérification"
+      ],
+      "answer": [2],
+      "explanation": "Sur un système en cours d'utilisation, les inodes et blocs des fichiers en cours d'écriture sont incomplets, et `fsck` les prendrait pour des erreurs. La maintenance se fait démontée, depuis un environnement de secours ou une cible systemd adaptée.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q036",
+      "type": "single",
+      "prompt": "Selon le cours, quelle commande réaffiche la liste des superblocs de secours d'une partition ext, même si son système de fichiers est endommagé ?",
+      "choices": ["`mkfs -c /dev/sda6`", "`mkfs -n /dev/sda6`", "`e2fsck -b 98304 /dev/sda6`", "`tune2fs -c /dev/sda6`"],
+      "answer": [1],
+      "explanation": "`mkfs -n` réaffiche les informations de création, dont la liste des superblocs de secours. `e2fsck -b` utilise ensuite l'une de ces copies pour réparer, et `mkfs -c` lancerait une vraie création après recherche des secteurs défectueux.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch10-q037",
+      "type": "single",
+      "prompt": "Le superbloc principal de `/dev/sda6` est endommagé et une copie existe au bloc 98304. Quelle commande restaure le superbloc ?",
+      "choices": ["`e2fsck -b 98304 /dev/sda6`", "`mkfs.ext4 /dev/sda6`", "`tune2fs -l /dev/sda6`", "`mkfs -n /dev/sda6`"],
+      "answer": [0],
+      "explanation": "`e2fsck`, la commande qu'appelle `fsck` pour ext, restaure le superbloc à partir de la copie indiquée avec `-b`. `mkfs.ext4` créerait un système de fichiers neuf et ferait perdre les données.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch10-q038",
+      "type": "single",
+      "prompt": "Quelle est la différence entre `df` et `du` ?",
+      "choices": [
+        "`df` donne l'espace occupé par des répertoires et fichiers, `du` l'occupation des systèmes de fichiers montés",
+        "`df` donne l'occupation de chaque système de fichiers monté, `du` l'espace occupé par des répertoires et fichiers",
+        "`df` ne fonctionne que sur la racine, `du` sur tous les systèmes de fichiers montés",
+        "`df` liste les systèmes de fichiers montés avec leurs options, `du` leur taille en blocs"
+      ],
+      "answer": [1],
+      "explanation": "`df -h` affiche taille, espace utilisé et disponible de chaque système de fichiers monté, ou d'un seul (`df -h /opt`), et `du -h` ce qu'occupent des répertoires et fichiers. La liste des montages avec leurs options vient de `mount` sans argument.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q039",
+      "type": "single",
+      "prompt": "Dans la procédure d'ajout d'un nouveau disque, dans quel mode démarre-t-on le système après l'installation physique du disque ?",
+      "choices": [
+        "En mode graphique normal",
+        "Depuis le disque nouvellement installé",
+        "En mode multi-utilisateur avec le réseau",
+        "En mode mono-utilisateur"
+      ],
+      "answer": [3],
+      "explanation": "Après avoir averti les utilisateurs, arrêté le système et installé le disque, on démarre en mode mono-utilisateur, on monte les partitions système puis on partitionne le nouveau disque avec `parted`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch10-q040",
+      "type": "single",
+      "prompt": "Dans la procédure d'ajout d'un disque, quelle étape suit la création des systèmes de fichiers avec `mkfs` et `e2label` ?",
+      "choices": [
+        "Ajouter les lignes correspondantes dans `/etc/fstab`",
+        "Tester les modifications avec `mount -a`",
+        "Créer les points de montage avec `mkdir`",
+        "Partitionner le nouveau disque avec `parted`"
+      ],
+      "answer": [2],
+      "explanation": "L'ordre est : partitionner (`parted`), créer les systèmes de fichiers (`mkfs`, `e2label`), créer les points de montage (`mkdir`), compléter `/etc/fstab`, tester avec `mount -a`, puis continuer le démarrage.",
+      "difficulty": 3
+    }
+  ]
+}

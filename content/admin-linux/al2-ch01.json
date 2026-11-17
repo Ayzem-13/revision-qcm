@@ -1,0 +1,674 @@
+{
+  "id": "al2-ch01",
+  "title": "L'environnement réseau",
+  "group": "Cours, partie 2",
+  "order": 11,
+  "source": "AdminLinux-2.pdf, chapitre 1",
+  "questions": [
+    {
+      "id": "al2-ch01-q001",
+      "type": "single",
+      "prompt": "Quel protocole de niveau réseau sert aux messages d'erreur et de diagnostic ?",
+      "choices": [
+        "ARP",
+        "ICMP",
+        "UDP",
+        "RARP"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "ICMP (Internet Control Message Protocol) transporte les messages d'erreur et de diagnostic, c'est lui qu'utilise `ping`. ARP et RARP convertissent des adresses Internet en adresses physiques et inversement.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q002",
+      "type": "single",
+      "prompt": "Quel est le rôle du protocole ARP ?",
+      "choices": [
+        "Convertir une adresse Internet en adresse ethernet (physique)",
+        "Attribuer automatiquement une adresse IP aux postes du réseau local",
+        "Faire correspondre un nom de machine à son adresse Internet",
+        "Transporter les messages d'erreur et de diagnostic du réseau"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "ARP (Address Resolution Protocol) convertit une adresse Internet en adresse ethernet, RARP fait l'inverse. Attribuer une adresse IP est le rôle de DHCP, et associer un nom à une adresse celui de DNS.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q003",
+      "type": "single",
+      "prompt": "Que dit le cours du protocole UDP ?",
+      "choices": [
+        "Il est orienté connexion et fournit un service fiable à double sens",
+        "Il convertit les adresses Internet en adresses physiques",
+        "Il fournit un service de transfert moins fiable, en mode déconnecté",
+        "Il appartient au niveau réseau, comme IP et ICMP"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "UDP est un protocole de niveau transport, moins fiable et en mode déconnecté. Le service fiable, orienté connexion et à double sens, c'est TCP.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q004",
+      "type": "multi",
+      "prompt": "Quels protocoles le cours classe-t-il au niveau réseau ? (plusieurs réponses)",
+      "choices": [
+        "IP",
+        "UDP",
+        "ICMP",
+        "DNS",
+        "ARP"
+      ],
+      "answer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "Au niveau réseau, le cours cite IP, ARP/RARP et ICMP. UDP (comme TCP) est au niveau transport, et DNS au niveau application.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q005",
+      "type": "multi",
+      "prompt": "Parmi ces protocoles, lesquels le cours range-t-il au niveau application ? (plusieurs réponses)",
+      "choices": [
+        "TCP",
+        "DHCP",
+        "NFS",
+        "ICMP",
+        "SMTP"
+      ],
+      "answer": [
+        1,
+        2,
+        4
+      ],
+      "explanation": "DHCP, NFS et SMTP sont des protocoles de niveau application, avec DNS, RPC et HTTP. TCP est un protocole de transport et ICMP un protocole de niveau réseau.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q006",
+      "type": "single",
+      "prompt": "Que montrent ces lignes de `dmesg` ?",
+      "code": "[ 4.803578] e1000 0000:00:08.0 enp0s8: renamed from eth1\n[ 4.806159] e1000 0000:00:03.0 enp0s3: renamed from eth0",
+      "choices": [
+        "Deux nouvelles cartes `eth0` et `eth1` ont remplacé `enp0s3` et `enp0s8`",
+        "Les cartes, d'abord nommées `eth0` et `eth1` par le pilote, ont été renommées par le système",
+        "Les interfaces `eth0` et `eth1` ont perdu leur liaison et sont passées en secours",
+        "Quatre interfaces distinctes sont actives sur la machine"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Le pilote e1000 détecte les cartes sous les noms `eth0` et `eth1`, puis le système leur donne leur nom prédictible (`enp0s3`, `enp0s8`). Il n'y a que deux cartes physiques.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q007",
+      "type": "single",
+      "prompt": "Parmi les méthodes présentées pour voir les cartes réseau détectées au démarrage, laquelle le cours qualifie-t-il de moins pratique ?",
+      "choices": [
+        "`ip link`",
+        "`lspci | grep Ethernet`",
+        "`ip addr`",
+        "`dmesg | grep eth`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Le cours présente `dmesg` comme la méthode la moins pratique, et la commande `ip` comme la plus pratique sur Ubuntu. `lspci` est la méthode intermédiaire, limitée aux cartes PCI.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q008",
+      "type": "single",
+      "prompt": "Un administrateur ne voit pas sa carte réseau USB dans la sortie de `lspci | grep Ethernet`. Pourquoi ?",
+      "choices": [
+        "`lspci` ne liste que les périphériques PCI, pas les cartes externes de type USB",
+        "La carte n'a pas encore d'adresse IP configurée",
+        "La carte est désactivée (état DOWN) et `lspci` l'ignore",
+        "`lspci` ne voit les cartes externes qu'avec les droits root"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`lspci` liste les périphériques du bus PCI : le cours précise qu'elle ne fonctionne donc pas avec des cartes externes de type USB. L'adresse IP ou l'état de l'interface n'ont aucun rôle ici.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q009",
+      "type": "single",
+      "prompt": "Dans cette sortie de `ip addr`, quelle est l'adresse IPv4 de `enp0s8` et son masque ?",
+      "code": "3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000\n    link/ether 08:00:27:4a:af:f4 brd ff:ff:ff:ff:ff:ff\n    inet 10.0.3.15/24 metric 100 brd 10.0.3.255 scope global dynamic enp0s8",
+      "choices": [
+        "`10.0.3.255` avec le masque `255.255.255.0`",
+        "`10.0.3.15` avec le masque `255.255.0.0`",
+        "`10.0.3.15` avec le masque `255.255.255.0`",
+        "`08:00:27:4a:af:f4` avec le masque `255.255.255.0`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "La ligne `inet 10.0.3.15/24` donne l'adresse et un préfixe /24, soit `255.255.255.0`. `10.0.3.255` est l'adresse de diffusion (`brd`) et `08:00:27:4a:af:f4` l'adresse ethernet.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q010",
+      "type": "multi",
+      "prompt": "Quelles commandes historiques le paquet `net-tools` fournit-il encore ? (plusieurs réponses)",
+      "choices": [
+        "`ifconfig`",
+        "`ip`",
+        "`route`",
+        "`hostnamectl`",
+        "`netstat`"
+      ],
+      "answer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "`net-tools` fournit les commandes historiques `ifconfig`, `route` et `netstat`. La commande `ip`, présentée comme la plus pratique, n'en fait pas partie, pas plus que `hostnamectl`, qui relève de systemd.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q011",
+      "type": "single",
+      "prompt": "Quand une modification de configuration réseau faite à la main avec `ip addr add` est-elle prise en compte ?",
+      "choices": [
+        "Au prochain redémarrage de la machine",
+        "Après la commande `netplan apply`",
+        "Immédiatement, sans redémarrage",
+        "Après le redémarrage de `systemd-resolved`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le cours indique que tout changement fait manuellement est pris en compte immédiatement, sans redémarrage. `netplan apply` sert à appliquer les fichiers YAML de `/etc/netplan/`, pas une commande `ip`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q012",
+      "type": "single",
+      "prompt": "Quelle commande stoppe la carte réseau `enp0s8` ?",
+      "choices": [
+        "`ip addr delete dev enp0s8`",
+        "`ip link set dev enp0s8 down`",
+        "`ip link show enp0s8`",
+        "`ip route del dev enp0s8`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`ip link set dev enp0s8 down` stoppe la carte (et `up` la redémarre). `ip link show enp0s8` se contente d'afficher sa configuration courante.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q013",
+      "type": "single",
+      "prompt": "Quelle commande ajoute l'adresse `192.168.1.201/24` à la carte `enp0s8` ?",
+      "choices": [
+        "`ip link add 192.168.1.201/24 dev enp0s8`",
+        "`ip route add 192.168.1.201/24 dev enp0s8`",
+        "`ip addr set 192.168.1.201/24 dev enp0s8`",
+        "`ip addr add 192.168.1.201/24 dev enp0s8`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Les adresses se gèrent avec `ip addr add` et `ip addr delete`. `ip link` agit sur l'interface elle-même (up, down) et `ip route` sur les routes.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q014",
+      "type": "single",
+      "prompt": "À quoi correspond la passerelle par défaut ?",
+      "choices": [
+        "À la route utilisée pour les paquets qui ne correspondent à aucune route plus spécifique",
+        "À l'adresse du serveur DNS utilisé pour résoudre les noms",
+        "À la route vers le réseau local auquel la carte est directement reliée",
+        "À l'adresse de diffusion (broadcast) du sous-réseau de la carte"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "La passerelle par défaut est la route empruntée par les paquets pour lesquels aucune route plus spécifique n'existe. La route vers le réseau directement relié est une route spécifique, marquée `scope link` dans `ip route`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q015",
+      "type": "single",
+      "prompt": "Quelle commande définit `192.168.1.254` comme passerelle par défaut ?",
+      "choices": [
+        "`ip addr add default via 192.168.1.254`",
+        "`ip link set default via 192.168.1.254`",
+        "`ip route set gateway 192.168.1.254`",
+        "`ip route add default via 192.168.1.254`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "La passerelle se configure avec `ip route` : `ip route del default` pour retirer l'ancienne, puis `ip route add default via 192.168.1.254`. `ip addr` et `ip link` ne gèrent pas les routes.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q016",
+      "type": "single",
+      "prompt": "D'après cette sortie de `ip route`, quelle est la passerelle par défaut et comment a-t-elle été obtenue ?",
+      "code": "default via 10.0.3.2 dev enp0s8 proto dhcp src 10.0.3.15 metric 100\n10.0.3.0/24 dev enp0s8 proto kernel scope link src 10.0.3.15 metric 100\n192.168.56.0/24 dev enp0s3 proto kernel scope link src 192.168.56.104 metric 100",
+      "choices": [
+        "`10.0.3.15`, obtenue par DHCP sur `enp0s8`",
+        "`10.0.3.2`, obtenue par DHCP sur `enp0s8`",
+        "`192.168.56.104`, configurée statiquement sur `enp0s3`",
+        "`10.0.3.2`, configurée statiquement sur `enp0s3`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "La ligne `default via 10.0.3.2 dev enp0s8 proto dhcp` désigne la passerelle `10.0.3.2`, joignable par `enp0s8` et apprise par DHCP. `10.0.3.15` (`src`) est l'adresse de la machine elle-même.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q017",
+      "type": "single",
+      "prompt": "Quelle commande historique du paquet `net-tools` affiche la table de routage du noyau ?",
+      "choices": [
+        "`netstat -i`",
+        "`netstat -s`",
+        "`netstat -nr`",
+        "`netstat --inet`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`netstat -nr` affiche la table de routage (Kernel IP routing table), l'équivalent historique de `ip route`. `netstat -i` résume le trafic par carte et `netstat -s` donne des statistiques par protocole.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q018",
+      "type": "single",
+      "prompt": "Quelle commande modifie le nom d'hôte statique géré par systemd ?",
+      "choices": [
+        "`hostnamectl hostname monnom`",
+        "`hostname -s monnom`",
+        "`resolvectl hostname monnom`",
+        "`netplan set hostname monnom`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`hostnamectl` affiche et modifie le nom d'hôte statique géré par systemd ; le cours utilise `sudo hostnamectl hostname monnom`. La commande `hostname` reste pratique pour afficher rapidement le nom courant.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q019",
+      "type": "single",
+      "prompt": "Dans quel fichier est stocké le nom d'hôte statique de la machine ?",
+      "choices": [
+        "`/etc/hosts`",
+        "`/etc/hostname`",
+        "`/etc/resolv.conf`",
+        "`/etc/netplan/hostname.yaml`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Le nom d'hôte statique est stocké dans `/etc/hostname`, qui contient simplement le nom (par exemple `mamachine`) et peut être géré avec `hostnamectl`. `/etc/hosts` est la base locale de résolution des noms.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q020",
+      "type": "single",
+      "prompt": "D'après le cours, de quoi dépend la résolution du nom complet (FQDN) d'une machine ?",
+      "choices": [
+        "Uniquement du contenu de `/etc/hostname`",
+        "Du renderer choisi dans la configuration Netplan",
+        "De la commande `hostnamectl`, qui l'enregistre avec le nom statique",
+        "De DNS et/ou du fichier `/etc/hosts`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "La résolution du FQDN dépend de DNS et/ou de `/etc/hosts`, et elle est distincte du nom d'hôte statique. Le nom statique doit donc rester cohérent avec DNS ou `/etc/hosts` quand une application a besoin d'un FQDN.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q021",
+      "type": "single",
+      "prompt": "Où se trouve la configuration réseau persistante sur Ubuntu ?",
+      "choices": [
+        "Dans `/etc/network/interfaces`, au format clé-valeur",
+        "Dans `/etc/netplan/`, sous forme de fichiers YAML",
+        "Dans `/etc/sysconfig/network-scripts/`, en fichiers `ifcfg`",
+        "Dans `/etc/resolv.conf`, géré par `systemd-resolved`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Sur Ubuntu, la configuration réseau persistante est écrite en YAML dans `/etc/netplan/`. `/etc/network/interfaces` est l'ancien fichier Debian, et `/etc/sysconfig/network-scripts/` celui des distributions Red Hat.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q022",
+      "type": "multi",
+      "prompt": "Pour quels gestionnaires Netplan génère-t-il la configuration ? (plusieurs réponses)",
+      "choices": [
+        "`systemd-resolved`",
+        "`systemd-networkd`",
+        "`ifupdown`",
+        "NetworkManager",
+        "`rsyslog`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explanation": "Netplan lit les fichiers YAML et génère la configuration pour `systemd-networkd` ou pour NetworkManager, selon le renderer choisi. `systemd-resolved` est le résolveur DNS local, pas un renderer.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q023",
+      "type": "single",
+      "prompt": "Vous modifiez un fichier de `/etc/netplan/` sur un serveur administré à distance. Quelle commande le cours conseille-t-il pour valider la configuration avant de l'appliquer ?",
+      "choices": [
+        "`netplan apply`",
+        "`netplan generate`",
+        "`netplan try`",
+        "`netplan get`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le cours conseille de valider avec `netplan try`, particulièrement utile à distance car la configuration est annulée si on ne la confirme pas, puis d'appliquer avec `netplan apply`. Lancer directement `netplan apply` peut couper la connexion sans retour possible. En pratique, confirmer `netplan try` conserve déjà la configuration testée, mais le test suit l'enchaînement du cours.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q024",
+      "type": "single",
+      "prompt": "Quel renderer Netplan le cours présente-t-il comme fréquent sur un serveur ?",
+      "choices": [
+        "NetworkManager",
+        "`systemd-resolved`",
+        "`ifupdown`",
+        "`networkd`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Le renderer `networkd` est fréquent sur serveur, NetworkManager sur poste de travail.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q025",
+      "type": "single",
+      "prompt": "Dans cette configuration Netplan, quelle est la passerelle par défaut ?",
+      "code": "network:\n  ethernets:\n    enp0s8:\n      addresses: [192.168.1.200/24]\n      routes:\n        - to: default\n          via: 192.168.1.1\n      nameservers:\n        addresses: [8.8.8.8, 8.8.4.4]\n      dhcp4: false\n      dhcp6: false\n  version: 2",
+      "choices": [
+        "`192.168.1.200`",
+        "`8.8.8.8`",
+        "`192.168.1.1`",
+        "`192.168.1.255`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "La route `to: default` passe `via: 192.168.1.1` : c'est la passerelle. `192.168.1.200` est l'adresse statique de la carte et `8.8.8.8` un serveur DNS listé sous `nameservers`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q026",
+      "type": "multi",
+      "prompt": "Quels inconvénients le cours attribue-t-il à la base locale `/etc/hosts` ? (plusieurs réponses)",
+      "choices": [
+        "Elle doit être maintenue manuellement sur chaque machine",
+        "Elle ne peut contenir que des adresses IPv6",
+        "Elle peut être perdue lors d'une mise à jour ou d'une réinstallation du système",
+        "Elle impose de redémarrer la machine après chaque modification",
+        "Elle n'est lisible que si `systemd-resolved` est actif"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explanation": "Le cours reproche à `/etc/hosts` d'être maintenu à la main sur chaque machine et de pouvoir être perdu en cas de mise à jour ou de réinstallation. C'est un simple fichier texte, lu sans dépendre de `systemd-resolved`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q027",
+      "type": "single",
+      "prompt": "Avec ce fichier `/etc/hosts`, à quelle adresse le nom `mail` est-il résolu ?",
+      "code": "127.0.0.1    localhost.localdomain localhost\n172.16.0.1   servnet mail cache servnet.e-cml.org\n172.16.0.2   servux servux.e-cml.org",
+      "choices": [
+        "`172.16.0.2`",
+        "`172.16.0.1`",
+        "`127.0.0.1`",
+        "Il n'est pas résolu par ce fichier"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Chaque ligne associe une adresse à un ou plusieurs noms : `servnet`, `mail`, `cache` et `servnet.e-cml.org` désignent tous `172.16.0.1`. `172.16.0.2` correspond à `servux`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q028",
+      "type": "single",
+      "prompt": "Sur une installation par défaut d'Ubuntu, `/etc/resolv.conf` contient ces lignes. Qu'en déduire ?",
+      "code": "nameserver 127.0.0.53\noptions edns0 trust-ad\nsearch esimed.lan",
+      "choices": [
+        "La résolution DNS est désactivée et seul `/etc/hosts` est consulté",
+        "Le serveur DNS de l'entreprise a l'adresse `127.0.0.53` sur le réseau local",
+        "Un résolveur DNS interne au système, `systemd-resolved`, est utilisé",
+        "Les requêtes DNS sont envoyées au domaine `esimed.lan` sans serveur"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`127.0.0.53` est une adresse locale : elle indique qu'un résolveur DNS interne au système (`systemd-resolved`) est installé. `search esimed.lan` donne seulement le domaine ajouté aux noms courts.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q029",
+      "type": "single",
+      "prompt": "Que dit le cours de l'édition directe de `/etc/resolv.conf` sur Ubuntu ?",
+      "choices": [
+        "Il est géré automatiquement et ne doit pas être édité directement",
+        "Il faut l'éditer puis lancer `netplan apply` pour l'activer",
+        "C'est la méthode recommandée pour changer les serveurs DNS",
+        "Il faut l'éditer puis redémarrer la machine"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "La résolution DNS est configurée par Netplan ou NetworkManager et `systemd-resolved` : `/etc/resolv.conf` est généralement géré automatiquement et ne doit pas être édité à la main. Les serveurs DNS se déclarent par exemple sous `nameservers` dans Netplan.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q030",
+      "type": "multi",
+      "prompt": "Quelles commandes le cours cite-t-il pour examiner la configuration et la résolution DNS ? (plusieurs réponses)",
+      "choices": [
+        "`resolvectl`",
+        "`nmap`",
+        "`dig`",
+        "`tcpdump`",
+        "`nslookup`"
+      ],
+      "answer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "`resolvectl` (par exemple `resolvectl status` ou `resolvectl query`), `dig` et `nslookup` examinent la configuration et la résolution DNS. `nmap` recherche les ports ouverts et `tcpdump` capture le trafic.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q031",
+      "type": "single",
+      "prompt": "Que fait `ping -c 1 esimed.fr` ?",
+      "choices": [
+        "Il envoie une seule requête ICMP puis affiche les statistiques et s'arrête",
+        "Il teste en TCP si le port 1 de `esimed.fr` répond",
+        "Il envoie des requêtes en continu et émet un bip à chaque réponse",
+        "Il envoie une requête par seconde pendant une minute"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`-c 1` limite l'envoi à une requête : `ping` vérifie que la machine répond à ICMP, mesure le temps aller-retour, puis affiche ses statistiques. Le bip à chaque réponse correspond au mode audible `-a`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q032",
+      "type": "single",
+      "prompt": "Quelle option de `ping` active le mode audible, qui permet de surveiller le réseau tout en travaillant sur une autre machine ?",
+      "choices": [
+        "`-c`",
+        "`-a`",
+        "`-s`",
+        "`-i`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`ping -a` émet un signal sonore à chaque réponse : on peut le laisser tourner et travailler ailleurs en surveillant le réseau à l'oreille. `-c` fixe le nombre de requêtes à envoyer.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q033",
+      "type": "single",
+      "prompt": "Pour savoir quels services d'une machine distante sont accessibles ou filtrés par un pare-feu, quel outil utiliser ?",
+      "choices": [
+        "`nmap`",
+        "`tcpdump`",
+        "`ping`",
+        "`netstat -i`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`nmap` se connecte aux différents ports d'une machine pour voir lesquels sont accessibles, et repère les services actifs ou filtrés. `tcpdump` observe le trafic qui passe, il ne sonde pas les ports.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q034",
+      "type": "single",
+      "prompt": "Que fait la commande `tcpdump host servux` ?",
+      "choices": [
+        "Elle affiche seulement les paquets émis par `servux`",
+        "Elle liste les ports ouverts de la machine `servux`",
+        "Elle enregistre le trafic de `servux` dans un fichier de capture",
+        "Elle affiche tout le trafic à destination ou en provenance de `servux`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Le filtre `host servux` retient les paquets dont `servux` est la source ou la destination. Pour ne garder que les paquets émis par `servux`, on utiliserait `src servux`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q035",
+      "type": "single",
+      "prompt": "Quels paquets la commande suivante affiche-t-elle ?",
+      "code": "# tcpdump src servux and not port nfs and not host 172.16.255.255",
+      "choices": [
+        "Les paquets émis par `servux`, sauf ceux du port NFS et ceux qui concernent l'hôte `172.16.255.255`",
+        "Les paquets reçus par `servux`, sauf ceux du port NFS et ceux qui concernent l'hôte `172.16.255.255`",
+        "Les paquets émis par `servux` vers le port NFS de l'hôte `172.16.255.255` uniquement",
+        "Tous les paquets du réseau, sauf ceux de `servux`, du port NFS et de l'hôte `172.16.255.255`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`src servux` ne retient que les paquets dont `servux` est la source, et les deux `not` excluent le trafic NFS et celui de l'hôte `172.16.255.255`. Les paquets reçus par `servux` se filtreraient avec `dst servux`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch01-q036",
+      "type": "single",
+      "prompt": "Quel paquet fournit la version de Wireshark utilisable uniquement en ligne de commande ?",
+      "choices": [
+        "`tcpdump`",
+        "`nmap`",
+        "`wireshark-common`",
+        "`tshark`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`tshark` est la version en ligne de commande de Wireshark, qui peut analyser des paquets capturés par `tcpdump` ou le remplacer. `tcpdump` est un outil distinct, fourni par son propre paquet.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch01-q037",
+      "type": "single",
+      "prompt": "Que révèle cette capture `tshark` d'une session FTP ?",
+      "code": "FTP Request: USER ttoto\nFTP Response: 331 Password required for ttoto.\nFTP Request: PASS azerty\nFTP Response: 530 Login incorrect.",
+      "choices": [
+        "Le mot de passe est chiffré, seule sa longueur est visible",
+        "La connexion de l'utilisateur `ttoto` a réussi",
+        "Le mot de passe saisi, `azerty`, circule en clair sur le réseau",
+        "La capture ne contient que les en-têtes TCP, sans les commandes FTP"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "La requête `PASS azerty` apparaît en clair : FTP transmet identifiant et mot de passe sans chiffrement. La réponse `530 Login incorrect` montre que la connexion a échoué.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch01-q038",
+      "type": "single",
+      "prompt": "Quelle commande donne un résumé du trafic par carte, utile pour repérer erreurs et collisions ?",
+      "choices": [
+        "`netstat -s`",
+        "`netstat -i`",
+        "`netstat --inet`",
+        "`netstat -nr`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`netstat -i` affiche une table par interface (paquets reçus et émis, erreurs, pertes). `netstat -s` donne un résumé de toutes les communications par protocole, et `netstat --inet` les connexions TCP/IP en cours.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q039",
+      "type": "single",
+      "prompt": "Quelle commande affiche un résumé de toutes les communications, avec des compteurs comme ceux-ci ?",
+      "code": "Ip:\n    Forwarding: 2\n    12019 total packets received\n    3 with invalid addresses\n    12014 incoming packets delivered\n    5 dropped because of missing route",
+      "choices": [
+        "`netstat -i`",
+        "`netstat --inet`",
+        "`netstat -nr`",
+        "`netstat -s`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`netstat -s` affiche les statistiques de toutes les communications, regroupées par protocole (`Ip:`, puis les autres). `netstat -i` se limite à une ligne de compteurs par interface.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch01-q040",
+      "type": "single",
+      "prompt": "Quelle commande affiche les connexions TCP/IP en cours, avec leur état (`ESTABLISHED`, `TIME_WAIT`) ?",
+      "choices": [
+        "`netstat --inet`",
+        "`netstat -i`",
+        "`netstat -s`",
+        "`netstat -nr`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`netstat --inet` liste les connexions Internet actives, avec adresses locale et distante et état. Le cours rappelle que `netstat` est surtout utile pour résoudre les problèmes.",
+      "difficulty": 2
+    }
+  ]
+}

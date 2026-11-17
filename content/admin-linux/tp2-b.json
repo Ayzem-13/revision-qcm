@@ -1,0 +1,439 @@
+{
+  "id": "tp2-b",
+  "title": "TP 2 : services réseau (DNS, DHCP, routage, NAT)",
+  "group": "Travaux pratiques",
+  "order": 24,
+  "source": "AdminLinux-2-TP-1.pdf, chapitre 5",
+  "questions": [
+    {
+      "id": "tp2-b-q001",
+      "type": "single",
+      "prompt": "Dans VirtualBox, quel mode d'accès réseau relie la troisième carte du serveur et la carte du client sur un réseau isolé, partagé seulement entre ces machines virtuelles ?",
+      "choices": ["NAT", "Réseau interne", "Accès par pont", "Réseau privé hôte"],
+      "answer": [1],
+      "explanation": "Le réseau interne relie entre elles les machines virtuelles qui portent le même nom de réseau, sans l'hôte ni l'extérieur : c'est là que le serveur peut jouer le rôle de serveur DHCP et DNS sans perturber un autre réseau. Le mode NAT donne un accès sortant propre à chaque machine.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-b-q002",
+      "type": "multi",
+      "prompt": "Quelles plages peut-on choisir comme réseau IPv4 privé pour le réseau interne ? (plusieurs réponses)",
+      "choices": ["10.20.0.0/24", "172.32.0.0/24", "192.168.50.0/24", "172.16.5.0/24", "169.254.10.0/24"],
+      "answer": [0, 2, 3],
+      "explanation": "Les plages privées sont 10.0.0.0/8, 172.16.0.0/12 (de 172.16 à 172.31) et 192.168.0.0/16. 172.32 sort de la plage 172.16/12, et 169.254.0.0/16 est réservée aux adresses lien-local attribuées automatiquement.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q003",
+      "type": "single",
+      "prompt": "Quelle commande donne de façon persistante le nom d'hôte `srv-tp` au serveur ?",
+      "choices": ["`sudo hostname srv-tp`", "`sudo hostnamectl hostname srv-tp`", "`sudo resolvectl hostname srv-tp`", "`echo srv-tp | sudo tee -a /etc/hosts`"],
+      "answer": [1],
+      "explanation": "`hostnamectl` modifie le nom d'hôte statique géré par systemd, stocké dans `/etc/hostname`. `hostname` change le nom courant sans le rendre persistant, et `/etc/hosts` sert à la résolution de noms, pas à fixer le nom de la machine.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-b-q004",
+      "type": "single",
+      "prompt": "Après `sudo apt install kea`, quelle commande active et démarre le service DHCPv4 ?",
+      "choices": ["`sudo systemctl enable --now isc-dhcp-server`", "`sudo systemctl enable --now kea-dhcp4`", "`sudo systemctl enable --now kea-dhcp4-server`", "`sudo systemctl enable --now bind9`"],
+      "answer": [2],
+      "explanation": "Le cours nomme le service `kea-dhcp4-server` ; `kea-dhcp4` est le nom du programme, utilisé avec `-t` pour tester la configuration. `isc-dhcp-server` est l'ancien serveur DHCP d'ISC, remplacé par Kea sur Ubuntu.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q005",
+      "type": "single",
+      "prompt": "Selon le cours, dans quel fichier BIND lit-il sa configuration et dans quel répertoire stocke-t-il ses informations ?",
+      "choices": ["`/etc/bind/named.conf` et `/var/cache/bind/`", "`/etc/named.conf` et `/var/named/`", "`/etc/bind/named.conf` et `/var/lib/bind/zones/`", "`/etc/resolv.conf` et `/var/cache/bind/`"],
+      "answer": [0],
+      "explanation": "Le cours indique que BIND (démon `/usr/sbin/named`) lit `/etc/bind/named.conf` et stocke ses informations dans `/var/cache/bind/`, le `directory` de l'exemple. `/etc/named.conf` et `/var/named/` sont l'organisation d'autres distributions.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-b-q006",
+      "type": "single",
+      "prompt": "Le réseau interne est 192.168.50.0/24. Quel nom donner à la zone de résolution inverse correspondant à ce sous-réseau ?",
+      "choices": ["`192.168.50.in-addr.arpa`", "`0.50.168.192.in-addr.arpa`", "`50.168.192.in-addr.arpa`", "`168.192.in-addr.arpa`"],
+      "answer": [2],
+      "explanation": "On écrit les octets du réseau à l'envers, suivis de `in-addr.arpa`, comme `0.168.192.IN-ADDR.ARPA` dans l'exemple du cours. `168.192.in-addr.arpa` couvrirait tout 192.168.0.0/16, et l'ordre naturel des octets est le piège classique.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q007",
+      "type": "single",
+      "prompt": "Dans la déclaration de zone de `named.conf`, quel type donner à une zone dont le serveur est le serveur principal ?",
+      "choices": ["`type secondary;`", "`type forward;`", "`type hint;`", "`type primary;`"],
+      "answer": [3],
+      "explanation": "Le cours donne `primary` pour le serveur principal et `secondary` pour un serveur secondaire ; les anciens termes `master` et `slave` apparaissent encore dans certaines configurations. Une zone de type `forward` ne contient aucun enregistrement : elle renvoie les requêtes vers d'autres serveurs.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-b-q008",
+      "type": "single",
+      "prompt": "Avec ce fichier de zone, `dig tp.lan` et `dig client.tp.lan` répondent, mais `dig -x 192.168.50.10` ne donne rien. Que manque-t-il ?",
+      "code": "$TTL 86400\n@       IN  SOA srv.tp.lan. root.tp.lan. (\n            2026111701 ; serial\n            21600 3600 604800 86400 )\n        IN  NS  srv.tp.lan.\nsrv     IN  A   192.168.50.1\nclient  IN  A   192.168.50.10",
+      "choices": ["Un enregistrement `CNAME` pour `client` dans cette même zone", "Un second enregistrement `NS` dans cette même zone", "Un enregistrement `A` pour 10.50.168.192 dans cette même zone", "Une zone inverse contenant `10 IN PTR client.tp.lan.`"],
+      "answer": [3],
+      "explanation": "La résolution adresse vers nom passe par un enregistrement `PTR` dans une zone inverse distincte, ici `50.168.192.in-addr.arpa`, déclarée elle aussi dans `named.conf`. Les enregistrements `A` ne servent qu'au sens nom vers adresse.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q009",
+      "type": "single",
+      "prompt": "Dans la zone `50.168.192.in-addr.arpa`, on a écrit cette ligne. Quel nom renverra `dig -x 192.168.50.10` ?",
+      "code": "10      IN  PTR     client.tp.lan",
+      "choices": ["`client.tp.lan.`", "`client.tp.lan.50.168.192.in-addr.arpa.`", "`10.client.tp.lan.`", "Aucun : named-checkzone refuse un nom sans point final"],
+      "answer": [1],
+      "explanation": "Sans point final, un nom est relatif et BIND lui ajoute l'origine de la zone ($ORIGIN). Il faut écrire `client.tp.lan.` avec le point, comme dans tous les enregistrements des exemples du cours ; la zone reste syntaxiquement valide, d'où une erreur silencieuse.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q010",
+      "type": "single",
+      "prompt": "Vous ajoutez un enregistrement dans un fichier de zone. Que faut-il faire du numéro de série du SOA ?",
+      "choices": ["L'augmenter, pour que les serveurs secondaires rafraîchissent leur copie", "Le remettre à 0, pour que BIND relise toute la zone", "Ne pas y toucher, `rndc reload` suffit à tout propager", "Lui donner la même valeur que `$TTL`"],
+      "answer": [0],
+      "explanation": "Le commentaire de l'exemple du cours le dit : le numéro de série est à augmenter à chaque modification pour que les serveurs secondaires rafraîchissent leur base. Un secondaire compare les séries et ignore une zone dont le numéro n'a pas augmenté.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q011",
+      "type": "single",
+      "prompt": "Quelle commande valide le fichier de zone de `tp.lan` avant de recharger BIND ?",
+      "choices": ["`named-checkconf /var/cache/bind/db.tp.lan`", "`named-checkzone /var/cache/bind/db.tp.lan tp.lan`", "`rndc reload tp.lan`", "`named-checkzone tp.lan /var/cache/bind/db.tp.lan`"],
+      "answer": [3],
+      "explanation": "`named-checkzone` prend le nom de la zone puis le fichier, comme `named-checkzone intra.net /var/cache/bind/intra.net.hosts` dans le cours. `named-checkconf` vérifie `named.conf`, pas un fichier de zone, et `rndc reload` recharge sans rien valider.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q012",
+      "type": "single",
+      "prompt": "Dans quel ordre le cours enchaîne-t-il les commandes après une modification de la configuration BIND ?",
+      "choices": ["`rndc reload`, puis `named-checkconf`, puis `named-checkzone`", "`named-checkzone`, puis `rndc reload`, puis `named-checkconf`", "`named-checkconf`, puis `named-checkzone`, puis `rndc reload`", "`journalctl -u bind9`, puis `rndc reload`, puis `named-checkconf`"],
+      "answer": [2],
+      "explanation": "On vérifie d'abord `named.conf` et les fichiers de zones, puis on recharge avec `rndc reload` et on consulte `journalctl -u bind9` en cas de souci. Recharger avant de valider risque de laisser une zone en erreur, donc non servie.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q013",
+      "type": "single",
+      "prompt": "Quelle commande teste la résolution inverse de 192.168.50.10 ?",
+      "choices": ["`dig 192.168.50.10`", "`dig -x 192.168.50.10`", "`dig +trace 192.168.50.10`", "`dig PTR 192.168.50.10`"],
+      "answer": [1],
+      "explanation": "`dig -x` construit la requête `PTR` sur `10.50.168.192.in-addr.arpa`. Le piège : `dig PTR 192.168.50.10` cherche un PTR pour le nom littéral `192.168.50.10`, sans retourner les octets ni ajouter `in-addr.arpa`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q014",
+      "type": "single",
+      "prompt": "Que change `dig @192.168.50.1 client.tp.lan` par rapport à `dig client.tp.lan` lancé sur le client ?",
+      "choices": ["La requête est envoyée directement au serveur 192.168.50.1 au lieu du résolveur configuré sur la machine", "La requête est envoyée en TCP au lieu d'UDP", "La réponse est forcée depuis le cache local de systemd-resolved", "La requête cherche le nom inverse de 192.168.50.1"],
+      "answer": [0],
+      "explanation": "`@serveur` désigne le serveur DNS à interroger. Sans lui, dig utilise le résolveur du système, sur Ubuntu le résolveur local 127.0.0.53 qui relaie vers les serveurs reçus par DHCP : comparer les deux permet de savoir si le client utilise bien BIND.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q015",
+      "type": "single",
+      "prompt": "Dans cette réponse obtenue depuis le client, que signifie le drapeau `aa` ?",
+      "code": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 4242\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; ANSWER SECTION:\nclient.tp.lan.      86400   IN  A   192.168.50.10\n\n;; SERVER: 192.168.50.1#53(192.168.50.1) (UDP)",
+      "choices": ["La réponse vient du cache du serveur", "Le serveur accepte les requêtes récursives", "La réponse fait autorité : le serveur gère lui-même la zone `tp.lan`", "Le serveur l'a obtenue auprès d'un forwarder"],
+      "answer": [2],
+      "explanation": "`aa` (authoritative answer) signifie que le serveur est responsable de la zone et répond depuis son propre fichier de zone. `ra` indique que la récursion est disponible ; une réponse servie par récursion ou depuis le cache n'a pas `aa`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q016",
+      "type": "single",
+      "prompt": "Quelle option du bloc `options` de `named.conf` fait suivre à des serveurs DNS externes les requêtes portant sur des noms que BIND ne gère pas, comme les noms Internet ?",
+      "choices": ["`directory`", "`notify`", "`allow-transfer`", "`forwarders`"],
+      "answer": [3],
+      "explanation": "Le cours définit `forwarders` comme la liste des serveurs vers lesquels diriger les requêtes pour les machines inconnues. `directory` désigne le répertoire des fichiers de zones et `notify` la notification des secondaires.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-b-q017",
+      "type": "multi",
+      "prompt": "On lance deux fois de suite `dig @192.168.50.1 www.debian.org` depuis le client. À quoi reconnaît-on que la seconde réponse vient du cache de BIND ? (plusieurs réponses)",
+      "choices": ["Le TTL est plus petit que dans la première réponse", "Le drapeau `aa` apparaît dans la seconde réponse", "Le `Query time` est proche de 0 msec", "Le statut passe à `NXDOMAIN`"],
+      "answer": [0, 2],
+      "explanation": "Une entrée en cache voit son TTL décroître jusqu'à expiration, et BIND répond sans interroger d'autre serveur, donc presque instantanément. Pour un nom Internet, BIND n'est pas autoritaire : ni la réponse récursive ni la réponse en cache ne portent `aa`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q018",
+      "type": "single",
+      "prompt": "Que fait `dig +trace www.debian.org` ?",
+      "choices": ["Il interroge uniquement le serveur indiqué par `@`", "Il part des serveurs racine et suit les délégations jusqu'au serveur faisant autorité, sans s'appuyer sur le cache du résolveur", "Il affiche le chemin IP des paquets jusqu'au serveur DNS, comme traceroute", "Il active le journal des requêtes de BIND pour ce nom"],
+      "answer": [1],
+      "explanation": "`+trace` fait la résolution itérative : racine, puis serveurs de `org.`, puis serveurs de `debian.org.`, en affichant chaque étape. Il ne s'agit pas d'un traceroute réseau.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q019",
+      "type": "single",
+      "prompt": "`dig @192.168.50.1 client.tp.lan` répond, mais `dig +trace client.tp.lan` échoue. Pourquoi ?",
+      "choices": ["BIND refuse les requêtes itératives venant du client", "La zone inverse n'est pas déclarée", "Le numéro de série de la zone n'a pas été augmenté", "La zone `tp.lan` n'est déléguée par aucun serveur racine : seul le BIND local la connaît"],
+      "answer": [3],
+      "explanation": "`+trace` part des serveurs racine d'Internet, qui ignorent tout de la zone privée `tp.lan`. Seule une requête adressée au serveur autoritaire local, directement ou par le résolveur du client, peut la résoudre.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q020",
+      "type": "single",
+      "prompt": "Dans quel fichier configure-t-on le service DHCPv4 de Kea ?",
+      "choices": ["`/etc/kea/kea-dhcp4.conf`", "`/etc/dhcp/dhcpd.conf`", "`/etc/netplan/kea.yaml`", "`/etc/bind/named.conf`"],
+      "answer": [0],
+      "explanation": "Le cours indique que Kea se configure dans `/etc/kea/kea-dhcp4.conf`, au format JSON. `/etc/dhcp/dhcpd.conf` est le fichier de l'ancien serveur isc-dhcp-server.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-b-q021",
+      "type": "single",
+      "prompt": "Dans cet extrait de configuration Kea, quelle option fournit la passerelle par défaut au client ?",
+      "code": "\"subnet4\": [ {\n  \"subnet\": \"192.168.50.0/24\",\n  \"pools\": [ { \"pool\": \"192.168.50.100 - 192.168.50.200\" } ],\n  \"option-data\": [\n    { \"name\": \"routers\", \"data\": \"192.168.50.1\" },\n    { \"name\": \"domain-name-servers\", \"data\": \"192.168.50.1\" }\n  ]\n} ]",
+      "choices": ["`domain-name-servers`", "`routers`", "`pools`", "`subnet`"],
+      "answer": [1],
+      "explanation": "L'option `routers` transmet la passerelle et `domain-name-servers` le serveur DNS, comme dans l'exemple du cours. Le préfixe se déduit de `subnet` et l'adresse est tirée de `pools`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q022",
+      "type": "single",
+      "prompt": "Après avoir modifié la configuration de Kea, quelle commande vérifie le fichier avant de redémarrer le service ?",
+      "choices": ["`sudo systemctl status kea-dhcp4-server`", "`sudo named-checkconf /etc/kea/kea-dhcp4.conf`", "`sudo kea-dhcp4 -t /etc/kea/kea-dhcp4.conf`", "`sudo journalctl -u kea-dhcp4-server`"],
+      "answer": [2],
+      "explanation": "Le cours donne `kea-dhcp4 -t` pour tester la configuration, puis `systemctl restart kea-dhcp4-server`. `named-checkconf` ne vérifie que la configuration de BIND, et `systemctl status` ou `journalctl` ne montrent l'erreur qu'après coup.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q023",
+      "type": "single",
+      "prompt": "Kea tourne sans erreur, mais le client du réseau interne ne reçoit aucune adresse. La configuration contient `\"interfaces-config\": { \"interfaces\": [ \"enp0s3\" ] }`, alors que la carte interne du serveur est `enp0s9`. Quelle est la cause ?",
+      "choices": ["Kea n'écoute que sur `enp0s3` et ne voit pas les requêtes du réseau interne", "Kea n'écoute que sur une seule interface à la fois, il faut en déclarer deux", "Le client doit d'abord recevoir une réservation pour obtenir une adresse", "BIND doit être démarré avant Kea"],
+      "answer": [0],
+      "explanation": "`interfaces-config` désigne les cartes sur lesquelles Kea écoute les requêtes DHCP diffusées. Le cours insiste aussi sur la configuration réseau stable du serveur : la carte interne doit avoir son adresse statique dans le sous-réseau servi.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q024",
+      "type": "single",
+      "prompt": "Le serveur a l'adresse statique 192.168.50.1 et la configuration Kea déclare `\"pool\": \"192.168.50.1 - 192.168.50.50\"`. Quel problème cela pose-t-il ?",
+      "choices": ["Aucun, Kea exclut automatiquement l'adresse de la machine qui l'héberge", "Un pool doit toujours commencer à .100", "Kea peut attribuer 192.168.50.1 à un client et créer un conflit d'adresse avec le serveur", "La plage est trop petite pour un réseau /24"],
+      "answer": [2],
+      "explanation": "Les adresses fixes du réseau (serveur, passerelle) doivent rester hors du pool. L'exemple du cours distribue de .100 à .250 et laisse .1 et .254 à des machines fixes ; une adresse précise pour un client se donne par réservation.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q025",
+      "type": "multi",
+      "prompt": "Le client est passé en DHCP. Quelles commandes vérifient les paramètres reçus du serveur Kea ? (plusieurs réponses)",
+      "choices": ["`ip -br addr`, pour l'adresse et le préfixe", "`ip route`, pour la passerelle par défaut", "`hostnamectl`, pour le bail DHCP", "`resolvectl status`, pour le serveur DNS", "`swapon --show`, pour la durée du bail"],
+      "answer": [0, 1, 3],
+      "explanation": "Kea doit fournir adresse, préfixe, passerelle et DNS : `ip -br addr` montre l'adresse, `ip route` la route `default via ... proto dhcp`, `resolvectl status` le serveur DNS de l'interface. `hostnamectl` ne concerne que le nom d'hôte.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q026",
+      "type": "single",
+      "prompt": "Dans la capture tshark d'une acquisition de bail, dans quel ordre apparaissent les quatre messages DHCP ?",
+      "choices": ["Request, Offer, Discover, ACK", "Discover, Request, Offer, ACK", "Offer, Discover, ACK, Request", "Discover, Offer, Request, ACK"],
+      "answer": [3],
+      "explanation": "Le client diffuse un Discover pour trouver un serveur (le broadcast décrit dans le cours), le serveur répond par un Offer, le client demande l'adresse proposée par un Request, et le serveur confirme le bail par un ACK.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q027",
+      "type": "single",
+      "prompt": "Quel filtre de capture tshark retient l'échange DHCP entre le client et le serveur ?",
+      "choices": ["`tshark -i enp0s9 -f \"port 67 or port 68\"`", "`tshark -i enp0s9 -f \"port 53\"`", "`tshark -i enp0s9 -f \"tcp port 67\"`", "`tshark -i enp0s9 -f \"port 69\"`"],
+      "answer": [0],
+      "explanation": "DHCP circule en UDP, le serveur sur le port 67 et le client sur le port 68. Le port 53 est celui du DNS et le port 69 celui de TFTP ; un filtre `tcp` ne verrait rien puisque DHCP n'utilise pas TCP.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q028",
+      "type": "single",
+      "prompt": "Dans cette capture d'échange DNS, qu'est-ce qui relie chaque réponse à sa requête ?",
+      "code": "s3p14.intra.e-cml.org.32778 > servux.domain: 18346+ PTR? 232.0.16.172.in-addr.arpa. (43)\nservux.domain > s3p14.intra.e-cml.org.32778: 18346* 1/1/1\ns3p14.intra.e-cml.org.32778 > servux.domain: 18347+ PTR? 14.3.16.172.in-addr.arpa. (42)\nservux.domain > s3p14.intra.e-cml.org.32778: 18347* 1/1/1",
+      "choices": ["La taille du paquet, entre parenthèses en fin de ligne", "L'adresse IP du serveur, `servux`", "L'identifiant de transaction (18346, 18347), identique dans la requête et sa réponse", "Le port `domain` (53), différent pour chaque requête"],
+      "answer": [2],
+      "explanation": "Chaque requête DNS porte un identifiant que le serveur recopie dans sa réponse ; c'est ce numéro qui apparie les paquets. Le port `domain` (53) est le même pour toutes les requêtes adressées au serveur.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q029",
+      "type": "single",
+      "prompt": "Quelle commande, lancée sur les deux machines, crée un utilisateur `tpuser` avec le même UID 1500 ?",
+      "choices": ["`sudo useradd -m -g 1500 tpuser`", "`sudo useradd -m -u 1500 tpuser`", "`sudo usermod -u 1500 tpuser`", "`sudo adduser tpuser`"],
+      "answer": [1],
+      "explanation": "L'option `-u` de `useradd` fixe l'UID, sans quoi chaque machine prend le premier libre à partir de 1000. `-g` fixe le groupe principal, et `usermod` modifie un compte qui doit déjà exister.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q030",
+      "type": "single",
+      "prompt": "Quel avantage `getent passwd tpuser` a-t-il sur `grep tpuser /etc/passwd` ?",
+      "choices": ["Il affiche aussi le haché du mot de passe", "Il interroge toutes les machines du réseau", "Il crée le compte s'il n'existe pas", "Il passe par le commutateur de services de noms (`/etc/nsswitch.conf`), donc trouve aussi les comptes LDAP ou SSSD"],
+      "answer": [3],
+      "explanation": "`getent` interroge les sources déclarées dans `/etc/nsswitch.conf` (files, ldap, ...), comme la vérification `getent passwd utilisateur` du cours après la configuration de SSSD. `grep` ne lit que le fichier local.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q031",
+      "type": "single",
+      "prompt": "`tpuser` a le même nom et le même UID sur le serveur et sur le client. S'agit-il du même compte ?",
+      "choices": ["Oui, Linux identifie un compte par son UID sur tout le réseau", "Oui, dès que la résolution DNS directe et inverse fonctionne", "Non : ce sont deux comptes locaux distincts, chacun avec sa ligne dans `/etc/passwd`, son mot de passe dans `/etc/shadow` et son répertoire personnel", "Non, car deux machines ne peuvent pas attribuer le même UID"],
+      "answer": [2],
+      "explanation": "Chaque machine gère sa propre base de comptes : seuls le nom et le numéro coïncident, le mot de passe ou le répertoire peuvent différer. Partager réellement un compte demande un annuaire central comme LDAP ; la coïncidence d'UID compte par exemple pour les droits sur des fichiers partagés.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q032",
+      "type": "single",
+      "prompt": "Dans une réservation Kea, quelle clé identifie le client par son adresse MAC ?",
+      "code": "\"reservations\": [\n  { \"???\": \"08:00:27:4a:af:f4\", \"ip-address\": \"192.168.50.20\", \"hostname\": \"client\" }\n]",
+      "choices": ["`client-id`", "`hw-address`", "`hostname`", "`mac`"],
+      "answer": [1],
+      "explanation": "L'exemple du cours utilise `hw-address` suivi de l'adresse MAC, que l'on relève sur le client avec `ip link` (ligne `link/ether`). `client-id` identifie le client par l'identifiant DHCP qu'il envoie, pas par sa MAC.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q033",
+      "type": "single",
+      "prompt": "Côté serveur, où vérifier les baux attribués par Kea après plusieurs renouvellements ?",
+      "choices": ["Dans `/var/lib/dhcp/dhcpd.leases`", "Dans `/etc/kea/kea-dhcp4.conf`", "Dans `/var/cache/bind/`", "Dans `/var/lib/kea/kea-leases4.csv` et avec `journalctl -u kea-dhcp4-server`"],
+      "answer": [3],
+      "explanation": "Kea enregistre ses baux dans `kea-leases4.csv` et journalise chaque attribution, consultable avec `journalctl -u kea-dhcp4-server` comme dans le cours. `/var/lib/dhcp/dhcpd.leases` est le fichier de l'ancien isc-dhcp-server.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q034",
+      "type": "single",
+      "prompt": "Dans cette sortie de `timedatectl`, quelle ligne indique que l'horloge est effectivement synchronisée ?",
+      "code": "               Local time: mar. 2026-11-17 10:12:03 CET\n           Universal time: mar. 2026-11-17 09:12:03 UTC\n                 RTC time: mar. 2026-11-17 09:12:03\n                Time zone: Europe/Paris (CET, +0100)\nSystem clock synchronized: yes\n              NTP service: active\n          RTC in local TZ: no",
+      "choices": ["`System clock synchronized: yes`", "`NTP service: active`", "`RTC in local TZ: no`", "`Time zone: Europe/Paris`"],
+      "answer": [0],
+      "explanation": "`System clock synchronized: yes` confirme que l'horloge a été synchronisée. `NTP service: active` dit seulement que le service de synchronisation tourne : il peut être actif sans avoir encore joint de source.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q035",
+      "type": "single",
+      "prompt": "Sur un système qui utilise systemd-timesyncd, quelle commande affiche le serveur de temps utilisé et l'état de la synchronisation ?",
+      "choices": ["`timedatectl set-ntp true`", "`timedatectl list-timezones`", "`timedatectl timesync-status`", "`hwclock --show`"],
+      "answer": [2],
+      "explanation": "`timedatectl timesync-status` affiche le serveur NTP, le décalage mesuré et l'intervalle d'interrogation. `set-ntp true` active la synchronisation sans rien afficher, et `hwclock` lit l'horloge matérielle.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q036",
+      "type": "multi",
+      "prompt": "Pourquoi une heure incorrecte pose-t-elle problème ? (plusieurs réponses)",
+      "choices": ["Les journaux de plusieurs machines ne se recoupent plus, ce qui fausse l'analyse d'un incident", "Un certificat TLS peut être jugé pas encore valide ou déjà expiré", "L'adresse attribuée par DHCP change à chaque minute", "Les mécanismes d'authentification à durée de validité, comme Kerberos ou les codes à usage unique, rejettent les échanges", "Les UID des comptes sont recalculés au démarrage"],
+      "answer": [0, 1, 3],
+      "explanation": "Les journaux reposent sur l'horodatage, les certificats sur une période de validité et plusieurs mécanismes d'authentification sur une tolérance de quelques minutes. Une horloge fausse ne change ni les adresses ni les UID.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q037",
+      "type": "single",
+      "prompt": "Comment activer le routage IPv4 sur le serveur de façon persistante ?",
+      "choices": ["`echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward` seulement", "`sudo ip route add default via 192.168.50.1`", "`sudo systemctl enable --now ip_forward`", "Ajouter `net.ipv4.ip_forward=1` dans un fichier de `/etc/sysctl.d/` et l'appliquer avec `sudo sysctl --system`"],
+      "answer": [3],
+      "explanation": "Le paramètre noyau `net.ipv4.ip_forward` autorise le transfert de paquets entre interfaces ; placé dans `/etc/sysctl.d/` (ou `/etc/sysctl.conf`), il est réappliqué à chaque démarrage. Écrire dans `/proc` l'active tout de suite mais se perd au redémarrage.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q038",
+      "type": "single",
+      "prompt": "Le serveur relie 192.168.50.0/24 (.1) et 192.168.60.0/24 (.1), avec `ip_forward` à 1. La machine A (192.168.50.10) a une route vers 192.168.60.0/24 par 192.168.50.1, mais son ping vers B (192.168.60.10) reste sans réponse ; tcpdump sur le serveur montre les requêtes transmises à B. Quelle est la cause la plus probable ?",
+      "choices": ["`ip_forward` ne s'applique qu'aux réponses, il faut aussi un NAT", "B n'a pas de route vers 192.168.50.0/24 par 192.168.60.1, sa réponse ne revient pas", "Le DNS ne résout pas le nom de B", "A doit utiliser l'adresse 192.168.60.1 comme adresse source"],
+      "answer": [1],
+      "explanation": "Le routage doit fonctionner dans les deux sens : la requête arrive à B, mais B ne sait pas joindre 192.168.50.0/24 et sa réponse part vers sa route par défaut ou nulle part. Il faut une route de retour ou une route par défaut via le serveur.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q039",
+      "type": "single",
+      "prompt": "La table `nat` et sa chaîne `postrouting` sont créées dans nftables. Quelle règle permet aux machines du réseau interne de sortir sur Internet par l'interface externe `enp0s3` du serveur ?",
+      "choices": ["`nft add rule ip nat postrouting oifname \"enp0s3\" masquerade`", "`nft add rule ip nat prerouting iifname \"enp0s3\" masquerade`", "`nft add rule ip filter forward oifname \"enp0s3\" accept`", "`nft add rule ip nat postrouting oifname \"enp0s9\" masquerade`"],
+      "answer": [0],
+      "explanation": "Le masquerading remplace l'adresse source par celle de l'interface de sortie, au point `postrouting`, sur l'interface externe. Une règle de la table `filter` relève du filtrage, que l'exercice demande justement de ne pas mettre en place ; l'équivalent iptables est `iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q040",
+      "type": "single",
+      "prompt": "Le client 192.168.50.10 navigue sur Internet par le serveur NAT, dont l'interface externe a l'adresse 10.0.2.15. Quelle adresse source voit-on dans une capture sur cette interface externe ?",
+      "choices": ["192.168.50.10, l'adresse du client", "192.168.50.1, l'adresse interne du serveur", "L'adresse de la passerelle de l'hyperviseur", "10.0.2.15, l'adresse externe du serveur"],
+      "answer": [3],
+      "explanation": "Le masquerading réécrit l'adresse source avec celle de l'interface de sortie du serveur ; le serveur garde la correspondance pour renvoyer les réponses au client. L'adresse privée 192.168.50.10 n'apparaît que côté réseau interne.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q041",
+      "type": "multi",
+      "prompt": "Que faut-il pour qu'une machine placée uniquement sur le réseau interne accède à Internet par le serveur ? (plusieurs réponses)",
+      "choices": ["`net.ipv4.ip_forward=1` sur le serveur", "Une règle de masquerading sur l'interface externe du serveur", "Une réservation DHCP pour la machine interne", "Une route par défaut de la machine interne vers l'adresse interne du serveur", "Une politique `drop` sur la chaîne `forward`"],
+      "answer": [0, 1, 3],
+      "explanation": "Le serveur doit transmettre les paquets entre ses interfaces et traduire l'adresse source, et le client doit lui envoyer son trafic par défaut, que fournit l'option `routers` de Kea. Une réservation est inutile, et une politique `drop` bloquerait tout, sans compter que l'exercice exclut le filtrage.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q042",
+      "type": "single",
+      "prompt": "Après `ip netns add ns1` et `ip netns add ns2`, quelle commande crée la paire veth qui les reliera ?",
+      "choices": ["`ip netns add veth0 peer veth1`", "`ip link add veth0 type bridge`", "`ip link add veth0 type veth peer name veth1`", "`ip addr add veth0 peer veth1`"],
+      "answer": [2],
+      "explanation": "Une paire veth se crée avec `ip link add ... type veth peer name ...` : ce qui entre par un bout sort par l'autre. On place ensuite chaque bout dans son namespace avec `ip link set veth0 netns ns1` et `ip link set veth1 netns ns2`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q043",
+      "type": "single",
+      "prompt": "Comment examiner les interfaces et la table de routage vues depuis le namespace `ns1` ?",
+      "choices": ["`ip netns exec ns1 ip addr` et `ip netns exec ns1 ip route`", "`ip addr show ns1` et `ip route show ns1`", "`ip netns list` et `ip netns list ns1`", "`ip link show type veth`"],
+      "answer": [0],
+      "explanation": "`ip netns exec ns1` lance une commande à l'intérieur du namespace, qui a ses propres interfaces et sa propre table de routage. Depuis l'hôte, `ip addr` ne montre que les interfaces de l'espace de noms principal.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q044",
+      "type": "single",
+      "prompt": "10.99.0.1/24 est posé sur `veth0` dans `ns1` et 10.99.0.2/24 sur `veth1` dans `ns2`, mais `ip netns exec ns1 ping 10.99.0.2` échoue. Quel oubli est le plus probable ?",
+      "choices": ["Une route par défaut dans chaque namespace", "L'activation des interfaces avec `ip link set ... up` dans chaque namespace", "`net.ipv4.ip_forward=1` sur l'hôte", "Une règle de masquerading entre `ns1` et `ns2`"],
+      "answer": [1],
+      "explanation": "Une interface déplacée dans un namespace reste à l'état DOWN tant qu'on ne l'active pas, comme `lo` dans un namespace neuf. Les deux adresses étant dans le même /24, la route directe suffit : ni route par défaut, ni routage, ni NAT.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-b-q045",
+      "type": "single",
+      "prompt": "Que devient la paire veth après `ip netns delete ns1` et `ip netns delete ns2` ?",
+      "choices": ["Elle revient dans l'espace de noms principal de l'hôte", "Elle reste en mémoire jusqu'au redémarrage", "Elle doit être supprimée avant les namespaces, sinon la commande échoue", "Elle est détruite : supprimer un namespace détruit ses interfaces virtuelles, et un bout de veth n'existe pas sans l'autre"],
+      "answer": [3],
+      "explanation": "À la suppression d'un namespace, ses interfaces virtuelles disparaissent avec lui ; la destruction d'un bout de la paire entraîne celle de son pair. On vérifie ensuite avec `ip netns list` qu'il ne reste rien.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q046",
+      "type": "single",
+      "prompt": "Pour le diagnostic final, quel outil vu en cours relève depuis le client les ports TCP ouverts sur le serveur ?",
+      "choices": ["`netstat -i`", "`nmap srv-tp.tp.lan`", "`ping -a srv-tp.tp.lan`", "`resolvectl query srv-tp.tp.lan`"],
+      "answer": [1],
+      "explanation": "Le cours présente `nmap` pour trouver les services actifs d'une machine en se connectant à ses ports. `netstat -i` résume le trafic des interfaces locales et `ping` ne teste que la réponse ICMP ; sur le serveur, `ss -tulpn` liste les ports en écoute.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-b-q047",
+      "type": "multi",
+      "prompt": "À la fin du TP, quels ports doivent apparaître en écoute sur le serveur ? (plusieurs réponses)",
+      "choices": ["53 en UDP et TCP, pour BIND", "67 en UDP, pour Kea", "80 en TCP, pour un serveur web", "22 en TCP, pour SSH", "445 en TCP, pour Samba"],
+      "answer": [0, 1, 3],
+      "explanation": "Le serveur fait tourner BIND (port 53), Kea DHCPv4 (port 67) et accepte les connexions SSH testées entre les deux machines (port 22). Aucun service web ni Samba n'a été installé à ce stade du TP.",
+      "difficulty": 2
+    }
+  ]
+}

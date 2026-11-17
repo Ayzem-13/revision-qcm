@@ -1,0 +1,431 @@
+{
+  "id": "al2-ch02",
+  "title": "Surveillance et audits du système",
+  "group": "Cours, partie 2",
+  "order": 12,
+  "source": "AdminLinux-2.pdf, chapitre 2",
+  "questions": [
+    {
+      "id": "al2-ch02-q001",
+      "type": "single",
+      "prompt": "Sous Ubuntu, systemd gère les journaux des services. Quelle commande permet de les visualiser ?",
+      "choices": ["`logger`", "`journalctl`", "`dmesg`", "`last`"],
+      "answer": [1],
+      "explanation": "Les journaux gérés par systemd se lisent avec `journalctl`. `logger` sert au contraire à écrire un message dans le journal, et `last` liste les connexions des utilisateurs.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q002",
+      "type": "single",
+      "prompt": "Quelle commande affiche en temps réel les messages qui arrivent dans les journaux ?",
+      "choices": ["`journalctl -r`", "`journalctl -k`", "`journalctl -f`", "`journalctl -e`"],
+      "answer": [2],
+      "explanation": "`journalctl -f` (follow) suit le journal et affiche les nouveaux messages au fil de l'eau. `-r` inverse l'ordre d'affichage, `-k` se limite aux messages du noyau.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q003",
+      "type": "single",
+      "prompt": "Quelle commande affiche les messages du journal des dix dernières minutes ?",
+      "choices": [
+        "`journalctl --until \"10 minutes ago\"`",
+        "`journalctl -n 10`",
+        "`journalctl -f 10`",
+        "`journalctl --since \"10 minutes ago\"`"
+      ],
+      "answer": [3],
+      "explanation": "`--since` filtre à partir d'une date (`\"2023-12-01 09:07:00\"`) ou d'un délai (`\"10 minutes ago\"`). `--until` donnerait au contraire les messages antérieurs, et `-n 10` les dix dernières lignes.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q004",
+      "type": "single",
+      "prompt": "Que montre cette ligne obtenue avec `journalctl | grep sudo` ?",
+      "code": "Nov 27 12:42:40 ubuntuserver sudo[1025]: tp_user : TTY=pts/0 ; PWD=/home/tp_user ; USER=root ; COMMAND=/usr/bin/apt-get install cron",
+      "choices": [
+        "`tp_user` a lancé `apt-get install cron` en tant que `root` grâce à `sudo`",
+        "`root` a installé `cron` pour le compte de `tp_user`",
+        "`tp_user` a été ajouté au groupe `sudo` pour pouvoir installer `cron`",
+        "L'installation de `cron` a été refusée à `tp_user` faute de droits"
+      ],
+      "answer": [0],
+      "explanation": "Le message `sudo` indique qui a lancé la commande (`tp_user`), depuis quel terminal et quel répertoire, sous quelle identité (`USER=root`) et quelle commande. L'ajout au groupe `sudo` apparaît dans d'autres lignes, émises par `useradd`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q005",
+      "type": "single",
+      "prompt": "Pourquoi `grep` est-il l'un des outils les plus utilisés pour l'audit ?",
+      "choices": [
+        "Parce qu'il est le seul outil capable de filtrer les journaux par date",
+        "Parce que les fichiers de logs sont au format texte",
+        "Parce que `syslogd` n'accepte que des filtres écrits pour `grep`",
+        "Parce qu'il affiche les journaux en temps réel"
+      ],
+      "answer": [1],
+      "explanation": "Les logs étant du texte, `grep` permet d'y chercher un motif, par exemple `journalctl | grep \"su\"`. Le filtrage par date se fait avec `journalctl --since`, et le temps réel avec `journalctl -f`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q006",
+      "type": "single",
+      "prompt": "D'après le cours, le service syslog est-il installé par défaut sur Ubuntu aujourd'hui ?",
+      "choices": [
+        "Oui, il remplace `journalctl` sur les serveurs",
+        "Oui, mais seulement sur les postes de travail",
+        "Non, ce n'est plus le cas : systemd gère les journaux",
+        "Non, il a été remplacé par la commande `logger`"
+      ],
+      "answer": [2],
+      "explanation": "Le cours précise que syslog n'est plus installé par défaut sur Ubuntu de nos jours ; c'est systemd qui gère les journaux, consultés avec `journalctl`. `logger` sert seulement à envoyer un message au journal. C'est la réponse du cours ; en pratique, rsyslog est encore préinstallé sur certaines versions d'Ubuntu Server (24.04 par exemple).",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q007",
+      "type": "multi",
+      "prompt": "Vers quelles destinations le démon `syslogd` peut-il transmettre les messages qu'il reçoit ? (plusieurs réponses)",
+      "choices": [
+        "Un fichier journal ou un périphérique",
+        "La sortie standard du processus qui a émis le message",
+        "Les consoles d'un ou de plusieurs utilisateurs",
+        "Le démon `syslogd` d'une autre machine",
+        "La table de routage du noyau"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "`syslogd` envoie les messages dans un fichier (ou un périphérique), sur les consoles d'utilisateurs, sur la console système ou vers le `syslogd` d'une autre machine. Les processus système passent justement par lui parce qu'ils n'interagissent pas avec la console.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q008",
+      "type": "single",
+      "prompt": "Dans ce message syslog, à quoi correspond `servux` ?",
+      "code": "Oct 7 15:17:00 servux ftpd[23824]: FTP LOGIN FAILED FROM s3p14",
+      "choices": [
+        "À l'hôte sur lequel tourne le `syslogd` qui a reçu le message",
+        "À la machine cliente qui a tenté la connexion FTP",
+        "À l'utilisateur dont la connexion a échoué",
+        "À l'hôte sur lequel tourne le processus qui a émis le message"
+      ],
+      "answer": [3],
+      "explanation": "Le format est `date et heure nom d'hôte nom du processus[PID]: message`, et le nom d'hôte est celui où tourne le processus émetteur, pas celui de `syslogd`. La machine cliente, ici `s3p14`, n'apparaît que dans le texte du message.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch02-q009",
+      "type": "single",
+      "prompt": "Dans un message syslog, à quoi correspondent la date et l'heure ?",
+      "choices": [
+        "À la date d'émission du message",
+        "À la date de réception du message par `syslogd`",
+        "À la date d'écriture du message dans le fichier journal",
+        "À la date de démarrage du processus émetteur"
+      ],
+      "answer": [0],
+      "explanation": "Le cours précise que la date et l'heure sont celles de l'émission du message, et non de sa réception par `syslogd`. De même, le nom d'hôte est celui de la machine émettrice.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q010",
+      "type": "single",
+      "prompt": "Sous Ubuntu, quand le logiciel rsyslog est installé, quel fichier de configuration le cours indique-t-il ?",
+      "choices": [
+        "`/etc/syslog.conf`",
+        "`/etc/systemd/journald.conf`",
+        "`/etc/rsyslog.d/50-default.conf`",
+        "`/var/log/syslog`"
+      ],
+      "answer": [2],
+      "explanation": "Avec rsyslog sous Ubuntu, le cours désigne `/etc/rsyslog.d/50-default.conf`. `/etc/syslog.conf` est le fichier du `syslogd` classique, et `/var/log/syslog` un fichier journal, pas une configuration.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q011",
+      "type": "single",
+      "prompt": "De quoi se compose une entrée du fichier `/etc/syslog.conf` ?",
+      "choices": [
+        "D'un sélecteur et d'une action, séparés par un point-virgule",
+        "D'une fonction, d'un niveau et d'un fichier, séparés par des virgules",
+        "D'un sélecteur et d'une action, séparés par des tabulations",
+        "D'un nom de processus et d'un fichier, séparés par deux-points"
+      ],
+      "answer": [2],
+      "explanation": "Une entrée a deux champs séparés par des tabulations : le sélecteur (filtre `fonction.niveau`) et l'action (destination). Le point-virgule sert à enchaîner plusieurs sélecteurs dans le premier champ.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q012",
+      "type": "single",
+      "prompt": "Dans le champ sélecteur, comment indique-t-on plusieurs sélecteurs `fonction.niveau` pour une même destination ?",
+      "choices": [
+        "En les séparant par des espaces",
+        "En les séparant par des points-virgules",
+        "En les séparant par des deux-points",
+        "En les séparant par des barres verticales"
+      ],
+      "answer": [1],
+      "explanation": "Plusieurs sélecteurs se séparent par des points-virgules, comme dans `*.info;mail.none;authpriv.none;cron.none`. Les espaces ou tabulations, eux, séparent le sélecteur de l'action.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q013",
+      "type": "single",
+      "prompt": "Quelle fonction syslog correspond aux messages du noyau ou des pilotes de périphériques ?",
+      "choices": ["`daemon`", "`syslog`", "`user`", "`kern`"],
+      "answer": [3],
+      "explanation": "`kern` regroupe les messages du noyau et des pilotes. `syslog` est réservée aux messages internes de `syslogd`, et `daemon` aux démons sans classification particulière.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q014",
+      "type": "single",
+      "prompt": "Quelle fonction syslog regroupe les messages des démons horaires `cron` et `at` ?",
+      "choices": ["`cron`", "`daemon`", "`local0`", "`user`"],
+      "answer": [0],
+      "explanation": "La fonction `cron` couvre les démons horaires, `cron` comme `at`. `daemon` est réservée aux démons sans classification particulière.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q015",
+      "type": "single",
+      "prompt": "À quoi servent les fonctions syslog `local0` à `local7` ?",
+      "choices": [
+        "Aux messages des connexions locales sur les consoles",
+        "Aux messages des applications non systèmes",
+        "Aux messages internes de `syslogd`",
+        "Aux messages du système d'impression"
+      ],
+      "answer": [1],
+      "explanation": "`local0` à `local7` sont laissées aux applications non systèmes. Les messages internes de `syslogd` vont dans `syslog`, ceux de l'impression dans `lpr`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q016",
+      "type": "single",
+      "prompt": "Quel est le niveau syslog le plus important, celui d'un système devenu inutilisable ?",
+      "choices": ["`alert`", "`crit`", "`emerg`", "`err`"],
+      "answer": [2],
+      "explanation": "Par ordre croissant d'importance : `debug`, `info`, `notice`, `warning`, `err`, `crit`, `alert`, `emerg`. `emerg` signale un système inutilisable ; `alert`, juste en dessous, une erreur grave à traiter au plus vite.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q017",
+      "type": "multi",
+      "prompt": "Quels niveaux syslog sont plus importants que `warning` ? (plusieurs réponses)",
+      "choices": ["`err`", "`notice`", "`crit`", "`info`", "`alert`"],
+      "answer": [0, 2, 4],
+      "explanation": "L'ordre croissant est `debug`, `info`, `notice`, `warning`, `err`, `crit`, `alert`, `emerg`. `notice` et `info` sont donc moins importants que `warning`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch02-q018",
+      "type": "single",
+      "prompt": "Quelle suite respecte l'ordre croissant d'importance des niveaux syslog ?",
+      "choices": [
+        "`info`, `debug`, `notice`, `warning`",
+        "`debug`, `notice`, `info`, `warning`",
+        "`debug`, `info`, `warning`, `notice`",
+        "`debug`, `info`, `notice`, `warning`"
+      ],
+      "answer": [3],
+      "explanation": "Les niveaux vont de `debug` (mise au point) à `info`, `notice`, puis `warning`, avant `err`, `crit`, `alert` et `emerg`. Le piège classique est de placer `notice` avant `info`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q019",
+      "type": "single",
+      "prompt": "Quels messages cette règle envoie-t-elle dans `/var/log/messages` ?",
+      "code": "*.info;mail.none;authpriv.none;cron.none               /var/log/messages",
+      "choices": [
+        "Les messages de niveau `info` et plus de toutes les fonctions, sauf `mail`, `authpriv` et `cron`",
+        "Uniquement les messages de niveau `info`, sauf ceux de `mail`, `authpriv` et `cron`",
+        "Les messages de niveau `info` et plus de toutes les fonctions, `mail`, `authpriv` et `cron` compris",
+        "Uniquement les messages des fonctions `mail`, `authpriv` et `cron`, de niveau `info` et plus"
+      ],
+      "answer": [0],
+      "explanation": "`*.info` retient toutes les fonctions à partir du niveau `info`, et le niveau `none` exclut tous les messages de la fonction indiquée. `mail.none` retire donc `mail`, au lieu de l'ajouter.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch02-q020",
+      "type": "single",
+      "prompt": "Que fait la règle `*.emerg *` ?",
+      "choices": [
+        "Elle écrit les messages `emerg` dans tous les fichiers journaux",
+        "Elle écrit les messages `emerg` sur les consoles de tous les utilisateurs connectés",
+        "Elle transmet les messages `emerg` au `syslogd` de toutes les machines du réseau",
+        "Elle écrit tous les messages, quel que soit leur niveau, sur la console système"
+      ],
+      "answer": [1],
+      "explanation": "Le sélecteur `*.emerg` prend les messages `emerg` de toutes les fonctions, et l'action `*` les écrit sur les consoles de tous les utilisateurs connectés. Le transfert vers une autre machine s'écrit `@hôte`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q021",
+      "type": "single",
+      "prompt": "Dans le champ action, que signifie une destination de la forme `@hôte` ?",
+      "choices": [
+        "Les messages sont écrits sur la console de l'utilisateur `hôte`",
+        "Les messages sont écrits dans le fichier `/var/log/hôte`",
+        "Les messages sont transmis à l'hôte indiqué, qui doit exécuter `syslogd`",
+        "Les messages sont envoyés par courrier à l'administrateur de l'hôte"
+      ],
+      "answer": [2],
+      "explanation": "`@hôte` transmet les messages à une autre machine, qui doit faire tourner `syslogd` pour les recevoir. Pour écrire sur la console d'utilisateurs, on liste leurs noms (`user1, user2`).",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q022",
+      "type": "single",
+      "prompt": "Que précise le cours pour une action qui envoie les messages dans un fichier ?",
+      "choices": [
+        "Le chemin doit être absolu, et le message est ajouté à la fin du fichier",
+        "Le chemin est relatif à `/var/log`, et le fichier est réécrit à chaque message",
+        "Le fichier doit être un fichier ordinaire, jamais un périphérique",
+        "Le chemin doit être précédé de `@` pour être reconnu comme fichier"
+      ],
+      "answer": [0],
+      "explanation": "L'action `/fichier` attend un chemin absolu et ajoute chaque message à la fin du fichier, quel que soit le type de celui-ci (un périphérique convient). Le préfixe `@` désigne un hôte distant.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q023",
+      "type": "single",
+      "prompt": "Après avoir modifié la configuration de rsyslog, quelle commande le cours utilise-t-il pour la prendre en compte ?",
+      "choices": [
+        "`sudo netplan apply`",
+        "`sudo systemctl enable rsyslog`",
+        "`sudo logger -p syslog.info reload`",
+        "`sudo systemctl reload rsyslog`"
+      ],
+      "answer": [3],
+      "explanation": "On recharge le service avec `sudo systemctl reload rsyslog`, ou on le redémarre avec `sudo systemctl restart rsyslog` si nécessaire. `systemctl enable` active seulement le service au démarrage. C'est la réponse du cours ; en pratique, rsyslog ne relit ses règles qu'après un `restart`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q024",
+      "type": "single",
+      "prompt": "Quelle commande envoie un message au service syslog depuis un script, par exemple pour tester une modification de la configuration ?",
+      "choices": ["`journalctl`", "`logger`", "`syslogd`", "`tail`"],
+      "answer": [1],
+      "explanation": "`logger` envoie un message au service syslog, ce qui permet de l'utiliser dans un script ou de vérifier une règle. `syslogd` est le démon qui reçoit les messages, pas un outil d'envoi.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q025",
+      "type": "single",
+      "prompt": "Quel message cette commande produit-elle dans le journal ?",
+      "code": "# logger -p \"daemon.crit\" -t \"test\" -i \"mon message\"",
+      "choices": [
+        "`oct 7 17:49:40 s3p14 daemon[8653]: mon message`",
+        "`oct 7 17:49:40 s3p14 logger[8653]: test mon message`",
+        "`oct 7 17:49:40 s3p14 test: daemon.crit mon message`",
+        "`oct 7 17:49:40 s3p14 test[8653]: mon message`"
+      ],
+      "answer": [3],
+      "explanation": "`-t \"test\"` remplace le nom du processus par l'étiquette `test`, `-i` ajoute le PID entre crochets, et `-p \"daemon.crit\"` fixe la fonction et le niveau, qui servent au tri sans apparaître dans la ligne.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch02-q026",
+      "type": "single",
+      "prompt": "Quelle commande donne une liste courte des utilisateurs connectés et leur nombre total ?",
+      "choices": ["`who -q`", "`who -H`", "`who -m`", "`w -s`"],
+      "answer": [0],
+      "explanation": "`who -q` affiche les noms sur une ligne puis `# users=2`. `who -H` détaille qui est connecté avec des en-têtes de colonnes, et `who -m` ne montre que le terminal courant.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q027",
+      "type": "single",
+      "prompt": "Quelle commande affiche les caractéristiques de la connexion du terminal courant ?",
+      "choices": ["`who -q`", "`last`", "`who -m`", "`uptime`"],
+      "answer": [2],
+      "explanation": "`who -m` n'affiche que la ligne du terminal courant (utilisateur, terminal, date, origine). `who -q` compte les utilisateurs connectés.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q028",
+      "type": "single",
+      "prompt": "Que produit la commande `who is god` ?",
+      "choices": [
+        "Une erreur, car `is` et `god` ne sont pas des options valides",
+        "La liste de tous les utilisateurs connectés avec des en-têtes",
+        "L'historique des connexions de l'utilisateur `god`",
+        "La même chose que `who -m` : la connexion du terminal courant"
+      ],
+      "answer": [3],
+      "explanation": "Appelé avec deux arguments, `who` se comporte comme `who -m` (c'est le principe de `who am i`) : le cours montre `tp_user pts/1`. L'historique d'un utilisateur s'obtient avec `last`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch02-q029",
+      "type": "multi",
+      "prompt": "Quelles commandes renseignent sur les utilisateurs actuellement connectés et sur leurs sessions ? (plusieurs réponses)",
+      "choices": ["`who -H`", "`vmstat 1`", "`w`", "`free -m`", "`last reboot`"],
+      "answer": [0, 2],
+      "explanation": "`who -H` liste qui est connecté, et `w` affiche les utilisateurs connectés et ce qu'ils font. `last reboot` trace les redémarrages, et `vmstat` comme `free` portent sur la mémoire.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q030",
+      "type": "single",
+      "prompt": "Quelle commande liste toutes les connexions et déconnexions de l'utilisateur `tp_user` ?",
+      "choices": ["`who tp_user`", "`last tp_user`", "`w tp_user`", "`journalctl -f tp_user`"],
+      "answer": [1],
+      "explanation": "`last tp_user` donne l'historique des connexions de cet utilisateur, avec durée ou mention `still logged in`, à partir du fichier `wtmp`. `w tp_user` ne montre que ses sessions en cours.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q031",
+      "type": "single",
+      "prompt": "Quelle commande permet de tracer les redémarrages du système ?",
+      "choices": ["`uptime`", "`w -s`", "`last reboot`", "`journalctl -f`"],
+      "answer": [2],
+      "explanation": "`last reboot` liste les démarrages (`reboot system boot`) avec la version du noyau et leur durée. `uptime` ne donne que la durée depuis le dernier démarrage.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q032",
+      "type": "single",
+      "prompt": "D'après cette sortie de `uptime`, depuis combien de temps le système fonctionne-t-il ?",
+      "code": "11:55:48 up 2:13, 4 users, load average: 0.00, 0.00, 0.07",
+      "choices": ["11 h 55 min", "2 h 13 min", "4 heures", "7 minutes"],
+      "answer": [1],
+      "explanation": "Le champ `up 2:13` indique 2 h 13 min de fonctionnement. `11:55:48` est l'heure courante, `4 users` le nombre d'utilisateurs connectés, et les trois derniers nombres la charge du système.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q033",
+      "type": "single",
+      "prompt": "Quelle commande suit en temps réel l'activité de la mémoire virtuelle, du swap, des processus, des entrées/sorties et des processeurs ?",
+      "choices": ["`free -m`", "`uptime`", "`df`", "`vmstat 1`"],
+      "answer": [3],
+      "explanation": "`vmstat` (ici rafraîchi chaque seconde) affiche des colonnes `procs`, `memory`, `swap`, `io`, `system` et `cpu`. `free` donne un instantané de la mémoire et du swap, sans les processus ni les entrées/sorties.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch02-q034",
+      "type": "single",
+      "prompt": "Quelle option de `free` affiche les valeurs en mégaoctets ?",
+      "choices": ["`-k`", "`-m`", "`-g`", "`-s`"],
+      "answer": [1],
+      "explanation": "`free -m` affiche les valeurs en mégaoctets, alors que `free` sans option les donne en kilooctets. `-g` passerait en gigaoctets.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch02-q035",
+      "type": "multi",
+      "prompt": "Quelles informations la commande `free` affiche-t-elle ? (plusieurs réponses)",
+      "choices": [
+        "La charge moyenne du système",
+        "La mémoire physique totale et son utilisation",
+        "L'espace libre de chaque partition",
+        "Les zones de swap et leur utilisation",
+        "Le nombre d'utilisateurs connectés"
+      ],
+      "answer": [1, 3],
+      "explanation": "`free` affiche la mémoire physique et le swap, avec leur utilisation (libre, partagée, buffers, cache). La charge et le nombre d'utilisateurs viennent de `uptime`, l'espace disque de `df`.",
+      "difficulty": 2
+    }
+  ]
+}

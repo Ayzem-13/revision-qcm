@@ -1,0 +1,643 @@
+{
+  "id": "tp1-b",
+  "title": "TP 1 : permissions, processus, disques, systèmes de fichiers, diagnostic",
+  "group": "Travaux pratiques",
+  "order": 22,
+  "source": "AdminLinux-1-TP.pdf, chapitres 7 à 11",
+  "questions": [
+    {
+      "id": "tp1-b-q001",
+      "type": "single",
+      "prompt": "Après `sudo -i`, la commande `umask` affiche `0022`. Quelles permissions aura un fichier créé ensuite avec `touch` ?",
+      "choices": [
+        "`rwxr-xr-x` (755)",
+        "`rw-rw-r--` (664)",
+        "`rw-r--r--` (644)",
+        "`rw-------` (600)"
+      ],
+      "answer": [2],
+      "explanation": "Pour un fichier, on part de 666 (jamais créé exécutable) et on retire le masque : 666 - 022 = 644. Le 755 est le résultat pour un répertoire, calculé à partir de 777.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q002",
+      "type": "multi",
+      "prompt": "Lors d'une connexion SSH, quels éléments peuvent fixer la valeur de umask de la session ? (plusieurs réponses)",
+      "choices": [
+        "Une commande `umask` placée dans `~/.profile`",
+        "L'option `umask=` d'une ligne de `/etc/fstab`",
+        "Le module `pam_umask` appelé depuis `/etc/pam.d/common-session`",
+        "La variable `SKEL` de `/etc/default/useradd`",
+        "La valeur `UMASK` de `/etc/login.defs`, lue par `pam_umask`"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "À l'ouverture de session, PAM applique `pam_umask`, déclaré dans `common-session`, qui lit `UMASK` dans `/etc/login.defs` ; le shell de login lit ensuite `/etc/profile` et `~/.profile`, où une commande `umask` peut encore changer la valeur. L'option `umask=` de fstab ne concerne que les fichiers d'un montage vfat, et `SKEL` désigne le répertoire modèle.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q003",
+      "type": "single",
+      "prompt": "Quelle commande règle `/home/public` pour que chacun puisse y créer des fichiers sans pouvoir effacer ceux des autres ?",
+      "choices": [
+        "`chmod 1777 /home/public`",
+        "`chmod 4777 /home/public`",
+        "`chmod 2777 /home/public`",
+        "`chmod 0777 /home/public`"
+      ],
+      "answer": [0],
+      "explanation": "Le chiffre de gauche 1 pose le sticky bit et 777 donne l'écriture à tous. En position de gauche, 4 vaut setuid et 2 setgid ; avec 0777 seul, n'importe qui pourrait effacer les fichiers des autres.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q004",
+      "type": "single",
+      "prompt": "Que signifie le `t` à la place du dernier `x` ?",
+      "code": "$ ls -ld /home/public\ndrwxrwxrwt 2 root root 4096 nov. 17 10:12 /home/public",
+      "choices": [
+        "Le setuid est posé sur le répertoire",
+        "Le répertoire porte des ACL supplémentaires",
+        "Le setgid est posé sur le répertoire",
+        "Le sticky bit est posé, avec le droit d'exécution pour les autres"
+      ],
+      "answer": [3],
+      "explanation": "Le sticky bit apparaît comme un `t` à la place du `x` du troisième triplet, comme sur `/tmp`. Les ACL se signalent par un `+` après les permissions, et setuid ou setgid par un `s` dans le triplet user ou group.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-b-q005",
+      "type": "multi",
+      "prompt": "`user1` a créé un fichier dans `/home/public` (mode 1777, propriétaire root). Qui peut le supprimer ? (plusieurs réponses)",
+      "choices": [
+        "`user3`, s'il a le droit d'écriture sur ce fichier",
+        "`user1`, propriétaire du fichier",
+        "Tout membre du groupe `mesusers`",
+        "root"
+      ],
+      "answer": [1, 3],
+      "explanation": "Avec le sticky bit, seuls le propriétaire du fichier, le propriétaire du répertoire (ici root) et le super utilisateur peuvent effacer ou renommer un fichier. Le droit d'écriture sur le fichier permet de modifier son contenu, pas de le supprimer.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q006",
+      "type": "single",
+      "prompt": "Le paquet acl est installé et `/home/projet` appartient à root, en mode `700`. Quelle commande permet à `user1` d'y entrer, de lire et de créer des fichiers, et à `user3` d'y entrer et de lire seulement ?",
+      "choices": [
+        "`setfacl -m u:user1:rw-,u:user3:r-- /home/projet`",
+        "`setfacl -m u:user1:rwx,u:user3:r-x /home/projet`",
+        "`setfacl -x u:user1:rwx,u:user3:r-x /home/projet`",
+        "`setfacl -b u:user1:rwx,u:user3:r-x /home/projet`"
+      ],
+      "answer": [1],
+      "explanation": "Sur un répertoire, le `x` permet d'y entrer et d'utiliser ses fichiers, d'où `rwx` et `r-x`. Avec `rw-` et `r--`, la traduction mot à mot de « lecture et écriture » et « lecture seule » du TP, `user1` ne pourrait ni ouvrir ni créer un fichier et `user3` ne ferait que lister les noms. `-m` ajoute ou modifie des ACL, `-x` en retire une et `-b` les supprime toutes.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q007",
+      "type": "single",
+      "prompt": "Voici les ACL de `/home/projet` après un `chmod 750`. Quels droits effectifs a `user1` ?",
+      "code": "# file: home/projet\n# owner: root\n# group: root\nuser::rwx\nuser:user1:rwx\nuser:user3:r-x\ngroup::---\nmask::r-x\nother::---",
+      "choices": [
+        "`rwx`, comme indiqué sur sa ligne",
+        "`---`, comme le groupe propriétaire",
+        "`r-x`, car le masque limite les droits",
+        "`r--`, la lecture seule"
+      ],
+      "answer": [2],
+      "explanation": "Le masque bloque toutes les ACL additionnelles à une valeur maximale : `rwx` limité par `r-x` donne `r-x`. Quand un fichier a des ACL, les bits de groupe de `chmod` modifient justement ce masque, d'où le piège.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q008",
+      "type": "single",
+      "prompt": "Quelle commande affiche le PID du shell que vous utilisez ?",
+      "choices": [
+        "`echo $!`",
+        "`echo $?`",
+        "`echo $PPID`",
+        "`echo $$`"
+      ],
+      "answer": [3],
+      "explanation": "`$$` contient le PID du shell courant. `$PPID` donne celui de son père, `$!` celui du dernier processus lancé en arrière-plan et `$?` le code de retour de la dernière commande.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-b-q009",
+      "type": "single",
+      "prompt": "En remontant les PPID de proche en proche depuis votre shell, quel processus trouvez-vous en haut de la hiérarchie ?",
+      "choices": [
+        "`systemd`, de PID 1",
+        "`sshd`, de PID 0",
+        "`bash`, de PID 1",
+        "`kthreadd`, de PID 1"
+      ],
+      "answer": [0],
+      "explanation": "Le noyau lance systemd comme premier processus de l'espace utilisateur, avec le PID 1 : tous les autres en descendent. `ps` peut l'afficher sous le nom `/sbin/init`, conservé pour compatibilité et qui pointe vers systemd.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-b-q010",
+      "type": "single",
+      "prompt": "Depuis la session sur `pts/0`, quelle commande ferme la session SSH ouverte sur `pts/1` ?",
+      "code": "$ tty\n/dev/pts/0\n$ ps -ft pts/1\nUID          PID    PPID  C STIME TTY          TIME CMD\ntp          2412    2398  0 10:21 pts/1    00:00:00 -bash",
+      "choices": [
+        "`kill 2412`",
+        "`kill -9 2412`",
+        "`kill -9 $$`",
+        "`pkill -t pts/0 bash`"
+      ],
+      "answer": [1],
+      "explanation": "SIGKILL (9) ne peut pas être ignoré : le shell 2412 meurt et la session SSH se ferme. `kill 2412` envoie SIGTERM, qu'un bash interactif ignore ; `$$` et `pts/0` désignent votre propre session.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q011",
+      "type": "single",
+      "prompt": "Pourquoi `kill 2412`, sans option, laisse-t-il la session de `pts/1` ouverte ?",
+      "choices": [
+        "Parce que `kill` sans option envoie SIGKILL, réservé aux processus en arrière-plan",
+        "Parce qu'il faut être root pour envoyer un signal à un autre terminal",
+        "Parce qu'un bash interactif ignore SIGTERM, le signal envoyé par défaut",
+        "Parce que `kill` attend un nom de processus et non un PID"
+      ],
+      "answer": [2],
+      "explanation": "Sans signal précisé, `kill` envoie le 15, SIGTERM, une demande polie de fin que bash ignore quand il est interactif. Il faut SIGKILL (`-9`) ; un utilisateur peut envoyer des signaux à ses propres processus sans être root.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q012",
+      "type": "single",
+      "prompt": "Depuis une de ses sessions, `user1` lance `pkill -9 -U user1 bash`. Que se passe-t-il ?",
+      "choices": [
+        "Tous ses shells bash sont tués, y compris celui où il a tapé la commande",
+        "Tous ses shells bash sont tués, sauf celui où il a tapé la commande",
+        "Les PID de ses shells bash s'affichent sans être tués",
+        "Les shells bash de tous les utilisateurs reçoivent SIGTERM"
+      ],
+      "answer": [0],
+      "explanation": "`-U user1` sélectionne les processus de user1, le motif `bash` leur nom, et `-9` envoie SIGKILL : toutes ses sessions se ferment, la sienne comprise. Pour seulement lister les PID, c'est `pgrep`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q013",
+      "type": "single",
+      "prompt": "Pourquoi `sshd` et `ssh-agent` apparaissent-ils dans ce résultat ?",
+      "code": "# pgrep -l sh\n4968 sshd\n5338 ssh-agent\n5495 bash\n5545 bash",
+      "choices": [
+        "Parce que pgrep affiche aussi les parents de chaque shell",
+        "Parce que `-l` étend la recherche à tous les utilisateurs",
+        "Parce que pgrep compare le motif au nom du propriétaire",
+        "Parce que le motif `sh` est cherché n'importe où dans le nom du processus"
+      ],
+      "answer": [3],
+      "explanation": "Le motif de `pgrep` est une expression rationnelle non ancrée : tout nom qui contient `sh` correspond. `-l` ajoute seulement le nom du processus à côté de son PID.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q014",
+      "type": "single",
+      "prompt": "Le service atd tourne. Quelle séquence programme l'écriture du message dans le journal à 12h10 ?",
+      "choices": [
+        "`at -l 12:10 logger -t tp-at \"A la bouffe !\"`",
+        "`at 12:10`, puis `logger -t tp-at \"A la bouffe !\"`, puis Ctrl-D",
+        "`atq 12:10`, puis `logger -t tp-at \"A la bouffe !\"`, puis Ctrl-D",
+        "`batch 12:10`, puis `logger -t tp-at \"A la bouffe !\"`, puis Ctrl-D"
+      ],
+      "answer": [1],
+      "explanation": "`at` lit les commandes à exécuter sur l'entrée standard, à l'invite `at>`, jusqu'à Ctrl-D. `at -l` équivaut à `atq` et liste les travaux en attente ; `batch` lance les commandes quand la charge est basse, pas à une heure précise.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q015",
+      "type": "single",
+      "prompt": "Après 12h10, quelle commande retrouve dans le journal le message écrit par `logger -t tp-at` ?",
+      "choices": [
+        "`journalctl -u tp-at`",
+        "`journalctl -b tp-at`",
+        "`journalctl -t tp-at`",
+        "`journalctl -p tp-at`"
+      ],
+      "answer": [2],
+      "explanation": "`logger -t` attribue une étiquette (identifiant syslog) au message, et `journalctl -t` filtre sur cette étiquette. `-u` filtre sur une unité systemd et `-p` sur une priorité ; avant l'exécution, c'est `atq` qui montre le travail en attente.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q016",
+      "type": "single",
+      "prompt": "Quelles lignes de crontab écrivent le message du lundi au vendredi à 10h30 et à 15h00, en janvier et février seulement ?",
+      "choices": [
+        "`30,0 10,15 * 1,2 1-5 logger \"La pause s'impose\"`, sur une seule ligne",
+        "`30 10 1,2 * 1-5 ...` et `0 15 1,2 * 1-5 ...`, sur deux lignes",
+        "`30 10 * 1,2 0-4 ...` et `0 15 * 1,2 0-4 ...`, sur deux lignes",
+        "`30 10 * 1,2 1-5 ...` et `0 15 * 1,2 1-5 ...`, sur deux lignes"
+      ],
+      "answer": [3],
+      "explanation": "Les champs sont minute, heure, jour du mois, mois et jour de la semaine (0 et 7 pour dimanche, 1-5 du lundi au vendredi). Les minutes diffèrent entre 10h30 et 15h00, il faut donc deux lignes : en une seule, `30,0 10,15` lancerait aussi à 10h00 et 15h30.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q017",
+      "type": "single",
+      "prompt": "Comment vérifier la crontab installée pour votre utilisateur ?",
+      "choices": [
+        "`crontab -l`",
+        "`crontab -r`",
+        "`atq`",
+        "`systemctl status cron -l`"
+      ],
+      "answer": [0],
+      "explanation": "`crontab -l` affiche la table de l'utilisateur et `crontab -e` l'édite. Attention, `crontab -r` supprime la table entière ; `atq` ne concerne que les travaux `at`.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-b-q018",
+      "type": "multi",
+      "prompt": "D'après cet extrait, quelles affirmations sont vraies ? (plusieurs réponses)",
+      "code": "$ sudo fdisk -l /dev/sda\nDisk /dev/sda: 25 GiB, 26843545600 bytes, 52428800 sectors\nDisk model: VBOX HARDDISK\nUnits: sectors of 1 * 512 = 512 bytes\nSector size (logical/physical): 512 bytes / 512 bytes\nDisklabel type: gpt",
+      "choices": [
+        "Ses secteurs logiques font 4 Kio",
+        "Le disque décrit s'appelle `/dev/sda`",
+        "Son modèle est `VBOX HARDDISK`",
+        "Il contient trois partitions primaires et une étendue",
+        "Sa table de partitions est de type GPT"
+      ],
+      "answer": [1, 2, 4],
+      "explanation": "`Disk model` donne le modèle, `Disklabel type: gpt` le type de table et les secteurs font ici 512 octets. GPT ne connaît pas les partitions étendues, qui n'existent qu'avec une table MBR.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q019",
+      "type": "single",
+      "prompt": "Que conclure de cette sortie ?",
+      "code": "$ swapon --show\nNAME      TYPE SIZE USED PRIO\n/swap.img file   4G   0B   -2",
+      "choices": [
+        "Il n'y a pas de swap actif, puisque USED vaut 0B",
+        "Le swap est un fichier, `/swap.img`, et non une partition",
+        "Le swap est une partition de 4G nommée `swap.img`",
+        "Le swap est un système de fichiers tmpfs en mémoire"
+      ],
+      "answer": [1],
+      "explanation": "`TYPE file` indique un fichier de swap, créé par défaut par l'installateur ; `lsblk` ne montre d'ailleurs aucune partition `[SWAP]`. USED à 0B veut seulement dire que le swap est actif mais pas encore utilisé.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q020",
+      "type": "single",
+      "prompt": "Le système a démarré en UEFI. D'après cette sortie, quelle est la partition système EFI ?",
+      "code": "$ lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINTS\nNAME   SIZE FSTYPE MOUNTPOINTS\nsda     25G\n├─sda1   1G vfat   /boot/efi\n└─sda2  24G ext4   /",
+      "choices": [
+        "`sda2`, en ext4, montée sur `/`",
+        "`sda`, le disque entier",
+        "`sda1`, en vfat, montée sur `/boot/efi`",
+        "Aucune, car l'ESP n'est jamais montée"
+      ],
+      "answer": [2],
+      "explanation": "La partition système EFI (ESP) est une petite partition formatée en FAT32, montée sur Ubuntu dans `/boot/efi` ; l'UEFI y charge l'application EFI qui lance GRUB. La partition ext4 contient la racine.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q021",
+      "type": "single",
+      "prompt": "Supprimer une partition de la table des partitions avec fdisk efface-t-il les données qu'elle contenait ?",
+      "choices": [
+        "Oui : fdisk remet à zéro tous les secteurs de la partition",
+        "Oui, mais seulement si la table est de type GPT",
+        "Non : fdisk refuse de supprimer une partition qui contient des données",
+        "Non : seule l'entrée de la table disparaît, les données restent sur le disque"
+      ],
+      "answer": [3],
+      "explanation": "fdisk ne modifie que la table : les blocs de données restent en place tant qu'ils ne sont pas écrasés. C'est ce qui permet à la commande `rescue` de parted de retrouver une partition supprimée trop vite.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q022",
+      "type": "single",
+      "prompt": "Après `sudo fdisk /dev/sdb` sur le disque ajouté, quelle suite de commandes crée une table GPT puis la partition de 500 Mio ?",
+      "choices": [
+        "`g`, puis `n` avec `+500M` comme dernier secteur, puis `w`",
+        "`o`, puis `n` avec `+500M` comme dernier secteur, puis `w`",
+        "`g`, puis `n` avec `+500M` comme dernier secteur, puis `q`",
+        "`n` avec `500` comme dernier secteur, puis `w`"
+      ],
+      "answer": [0],
+      "explanation": "`g` crée une table GPT vide (`o` crée une table DOS/MBR), `n` ajoute la partition, `+500M` en fixe la taille et `w` écrit la table. `q` quitte sans enregistrer, et `500` seul serait un numéro de secteur, pas une taille.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q023",
+      "type": "single",
+      "prompt": "Comment supprimer la partition de 50 Mio, `/dev/sdb2`, avec fdisk ?",
+      "choices": [
+        "`fdisk /dev/sdb2`, puis `d` et `w`",
+        "`fdisk /dev/sdb`, puis `d`, `2` et `w`",
+        "`fdisk /dev/sdb`, puis `d`, `2` et `q`",
+        "`fdisk /dev/sdb`, puis `t`, `2` et `w`"
+      ],
+      "answer": [1],
+      "explanation": "fdisk s'ouvre sur le disque entier, pas sur une partition. `d` supprime la partition choisie et `w` enregistre ; `q` abandonnerait la modification et `t` change seulement le type de partition.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q024",
+      "type": "single",
+      "prompt": "Quelle différence le cours souligne-t-il entre fdisk et parted ?",
+      "choices": [
+        "fdisk ne gère que les tables MBR, parted seulement les tables GPT",
+        "parted crée aussi le système de fichiers, fdisk non",
+        "Les commandes de parted s'appliquent immédiatement, fdisk n'écrit qu'avec `w`",
+        "parted ne sait pas supprimer une partition, fdisk si"
+      ],
+      "answer": [2],
+      "explanation": "Avec parted, chaque commande prend effet tout de suite, alors que fdisk garde les changements en mémoire jusqu'à `w`. Les deux gèrent GPT et MBR, `mkpart` ne crée pas de système de fichiers et parted supprime avec `rm`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q025",
+      "type": "single",
+      "prompt": "Quelle commande crée un système de fichiers ext4 sur la partition de 500 Mio ?",
+      "choices": [
+        "`mkfs.ext4 /dev/sdb`",
+        "`mkpart ext4 /dev/sdb1`",
+        "`tune2fs -t ext4 /dev/sdb1`",
+        "`mkfs.ext4 /dev/sdb1`"
+      ],
+      "answer": [3],
+      "explanation": "`mkfs.ext4` (ou `mkfs -t ext4`) s'applique à la partition `/dev/sdb1`. Sur `/dev/sdb`, il formaterait le disque entier en écrasant la table de partitions ; `mkpart` est une commande interne de parted.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-b-q026",
+      "type": "single",
+      "prompt": "Quelle valeur reporter dans `/etc/fstab` sous la forme `UUID=...` ?",
+      "code": "$ sudo blkid /dev/sdb1\n/dev/sdb1: UUID=\"3f6c0e5a-8d2b-4c1e-9a7f-2b5d8e1c4a90\" BLOCK_SIZE=\"4096\" TYPE=\"ext4\" PARTUUID=\"a1b2c3d4-0001-4e5f-8a9b-112233445566\"",
+      "choices": [
+        "`3f6c0e5a-8d2b-4c1e-9a7f-2b5d8e1c4a90`",
+        "`a1b2c3d4-0001-4e5f-8a9b-112233445566`",
+        "`/dev/sdb1`",
+        "`4096`"
+      ],
+      "answer": [0],
+      "explanation": "`UUID` identifie le système de fichiers créé par `mkfs.ext4`. `PARTUUID` identifie l'entrée de la table GPT et s'écrit `PARTUUID=...` dans fstab ; `/dev/sdb1` peut changer selon l'ordre de détection des disques.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q027",
+      "type": "single",
+      "prompt": "Quelle séquence monte manuellement la nouvelle partition dans `/mnt/data` ?",
+      "choices": [
+        "`mount /mnt/data /dev/sdb1`, sans créer le répertoire",
+        "`mkdir /mnt/data` puis `mount /dev/sdb1 /mnt/data`",
+        "`mkdir /mnt/data` puis `mount -a /dev/sdb1`",
+        "`mkfs /mnt/data` puis `mount /dev/sdb1`"
+      ],
+      "answer": [1],
+      "explanation": "Le point de montage est un simple répertoire qui doit exister, et `mount` prend la partition puis le répertoire. `findmnt /mnt/data` vérifie ensuite le montage ; `mount -a` sert à monter les entrées de `/etc/fstab`.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-b-q028",
+      "type": "single",
+      "prompt": "Pourquoi le démontage échoue-t-il ?",
+      "code": "# cd /mnt/data\n# umount /mnt/data\numount: /mnt/data: target is busy.",
+      "choices": [
+        "La partition n'a pas d'entrée dans `/etc/fstab`",
+        "Le système de fichiers contient encore des fichiers",
+        "Le shell courant se trouve dans `/mnt/data` et utilise donc le système de fichiers",
+        "Seul `umount -a` peut démonter une partition montée à la main"
+      ],
+      "answer": [2],
+      "explanation": "Un processus qui travaille dans le système de fichiers, ici votre propre shell, le rend occupé : il suffit de sortir du répertoire avant `umount`. `fuser -u` liste les processus en cause ; `umount -f` est à éviter.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q029",
+      "type": "single",
+      "prompt": "Quelle ligne de `/etc/fstab` monte la partition dans `/mnt/data` à chaque démarrage, avec l'ordre de vérification `fsck` que le cours prévoit pour une partition autre que la racine ?",
+      "choices": [
+        "`UUID=3f6c0e5a-8d2b-4c1e-9a7f-2b5d8e1c4a90 /mnt/data ext4 defaults 0 1`",
+        "`/mnt/data UUID=3f6c0e5a-8d2b-4c1e-9a7f-2b5d8e1c4a90 ext4 defaults 0 2`",
+        "`UUID=3f6c0e5a-8d2b-4c1e-9a7f-2b5d8e1c4a90 /mnt/data ext4 noauto 0 2`",
+        "`UUID=3f6c0e5a-8d2b-4c1e-9a7f-2b5d8e1c4a90 /mnt/data ext4 defaults 0 2`"
+      ],
+      "answer": [3],
+      "explanation": "L'ordre des champs est spec, point de montage, type, options, dump, passno. Selon le cours, le passno 1 est réservé à la racine et les autres systèmes de fichiers prennent 2 (en pratique, une ligne en `0 1` monterait aussi la partition) ; `noauto` empêcherait le montage au démarrage.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q030",
+      "type": "single",
+      "prompt": "Pourquoi lancer `findmnt --verify` puis `mount -a` avant de redémarrer, et de nouveau après avoir faussé l'UUID ?",
+      "choices": [
+        "Pour détecter tout de suite une erreur de `/etc/fstab` qui bloquerait le démarrage",
+        "Pour créer automatiquement le point de montage `/mnt/data`",
+        "Pour inscrire l'UUID de la partition dans `/etc/fstab`",
+        "Pour vérifier la structure du système de fichiers comme `fsck`"
+      ],
+      "answer": [0],
+      "explanation": "`findmnt --verify` contrôle les entrées de fstab sans rien monter et `mount -a` tente de monter toutes celles sans `noauto`, ce qui révèle un UUID introuvable. Au démarrage, la même erreur peut faire basculer le système en mode emergency ; on corrige avec la valeur donnée par `blkid`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q031",
+      "type": "single",
+      "prompt": "Quelle séquence met en place l'authentification SSH par clé publique depuis la machine hôte ?",
+      "choices": [
+        "`ssh-keygen` sur le serveur, puis `ssh-copy-id` vers l'hôte",
+        "`ssh-keygen` sur l'hôte, puis `ssh-copy-id user1@<ip>`",
+        "`ssh-keygen` sur l'hôte, puis copie de la clé privée dans `authorized_keys`",
+        "`ssh-agent` sur l'hôte, puis `ssh-keygen -R <ip>`"
+      ],
+      "answer": [1],
+      "explanation": "La paire de clés se génère sur le poste client, puis `ssh-copy-id` ajoute la clé publique au fichier `~/.ssh/authorized_keys` du compte distant. La clé privée ne quitte jamais l'hôte ; `ssh-keygen -R` retire un hôte de `known_hosts`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q032",
+      "type": "single",
+      "prompt": "Quels droits recommandés pour `~/.ssh` puis pour `~/.ssh/authorized_keys` ?",
+      "choices": [
+        "`600` puis `700`",
+        "`775` puis `664`",
+        "`700` puis `600`",
+        "`777` puis `666`"
+      ],
+      "answer": [2],
+      "explanation": "Le répertoire a besoin du `x` pour être traversé, d'où 700, et le fichier se contente de 600. Si ces fichiers sont modifiables par le groupe ou les autres, sshd refuse la clé et retombe sur le mot de passe.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q033",
+      "type": "multi",
+      "prompt": "Dans `/etc/ssh/sshd_config`, quels paramètres concernent l'authentification par mot de passe et la connexion directe de root ? (plusieurs réponses)",
+      "choices": [
+        "`Port`",
+        "`PasswordAuthentication`",
+        "`PubkeyAuthentication`",
+        "`PermitRootLogin`",
+        "`X11Forwarding`"
+      ],
+      "answer": [1, 3],
+      "explanation": "`PasswordAuthentication` autorise ou non le mot de passe et `PermitRootLogin` règle la connexion directe de root. `PubkeyAuthentication` concerne les clés ; le TP demande de laisser le mot de passe actif pour garder un accès de secours.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q034",
+      "type": "single",
+      "prompt": "Quelle règle, placée dans un fichier de `/etc/sudoers.d`, autorise `user1` à redémarrer uniquement le service cron ?",
+      "choices": [
+        "`user1 ALL=(ALL) ALL`",
+        "`user1 ALL=(root) systemctl restart cron`",
+        "`%user1 ALL=(root) /usr/bin/systemctl restart cron`",
+        "`user1 ALL=(root) /usr/bin/systemctl restart cron`"
+      ],
+      "answer": [3],
+      "explanation": "La règle donne l'utilisateur, les machines, l'identité cible puis la commande avec son chemin absolu et ses arguments. Le `%` désigne un groupe et non un utilisateur, et `(ALL) ALL` donnerait tous les droits ; on édite le fichier avec `visudo -f` pour en vérifier la syntaxe.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q035",
+      "type": "single",
+      "prompt": "Que se passe-t-il pour la dernière commande ?",
+      "code": "$ sudo -l\nUser user1 may run the following commands on srv:\n    (root) /usr/bin/systemctl restart cron\n$ sudo systemctl stop cron",
+      "choices": [
+        "sudo refuse : seule `systemctl restart cron` est autorisée",
+        "cron s'arrête, car la règle autorise `systemctl` en entier",
+        "sudo demande le mot de passe de root",
+        "cron redémarre au lieu de s'arrêter"
+      ],
+      "answer": [0],
+      "explanation": "sudo compare la commande complète, arguments compris, à la règle : `stop cron` ne correspond pas et sudo répond que user1 n'est pas autorisé à l'exécuter. Le mot de passe demandé est celui de user1, pas celui de root.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q036",
+      "type": "multi",
+      "prompt": "Dans cette unité, quelles directives répondent aux exigences « utilisateur non privilégié » et « redémarrage en cas d'arrêt anormal » ? (plusieurs réponses)",
+      "code": "[Unit]\nDescription=Service de test\n\n[Service]\nUser=user1\nExecStart=/usr/local/bin/test.sh\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target",
+      "choices": [
+        "`User=user1`",
+        "`Description=Service de test`",
+        "`Restart=on-failure`",
+        "`ExecStart=/usr/local/bin/test.sh`",
+        "`WantedBy=multi-user.target`"
+      ],
+      "answer": [0, 2],
+      "explanation": "`User=` fait tourner le processus sous ce compte au lieu de root, et `Restart=on-failure` le relance après un arrêt anormal. `WantedBy=multi-user.target` répond à une autre exigence, le démarrage au boot après `systemctl enable`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q037",
+      "type": "single",
+      "prompt": "Le service tourne avec `Restart=on-failure`. Vous tuez son processus avec `kill -9`. Que fait systemd ?",
+      "choices": [
+        "Il laisse le service arrêté, puisque SIGKILL ne peut pas être intercepté",
+        "Il relance le service, car une fin par signal est un arrêt anormal",
+        "Il désactive le service pour les prochains démarrages",
+        "Il redémarre toute la machine"
+      ],
+      "answer": [1],
+      "explanation": "Une fin par SIGKILL, comme un code de sortie non nul, compte comme un échec : systemd relance le service, ce que `journalctl -u` montre. Un `systemctl stop` est un arrêt propre et ne provoque pas de relance ; avec `on-failure`, un simple SIGTERM est lui aussi considéré comme propre.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q038",
+      "type": "single",
+      "prompt": "Après une modification de l'unité, `systemctl status test` affiche ceci. Que révèle `status=203/EXEC` ?",
+      "code": "× test.service - Service de test\n     Active: failed (Result: exit-code) since Tue 2026-11-17 11:40:02 CET; 5s ago\n    Process: 1834 ExecStart=/usr/local/bin/tset.sh (code=exited, status=203/EXEC)",
+      "choices": [
+        "Le script s'est exécuté mais a renvoyé le code d'erreur 203",
+        "`user1` n'a pas le droit d'utiliser `systemctl`",
+        "systemd n'a pas pu lancer le programme d'`ExecStart` : chemin faux ou fichier non exécutable",
+        "Le service attend la fin du démarrage de `multi-user.target`"
+      ],
+      "answer": [2],
+      "explanation": "`203/EXEC` signifie que systemd a échoué à l'étape d'exécution : ici le chemin `tset.sh` est mal orthographié. On corrige l'unité, puis `systemctl daemon-reload` et `systemctl restart test`, et `journalctl -u test` détaille l'erreur.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-b-q039",
+      "type": "single",
+      "prompt": "Quelle commande affiche le nombre d'inodes libres sur chaque système de fichiers monté ?",
+      "choices": [
+        "`df -i`",
+        "`df -h`",
+        "`du -i`",
+        "`tune2fs -i`"
+      ],
+      "answer": [0],
+      "explanation": "`df -i` remplace les blocs par les inodes : total, utilisés et libres. `df -h` donne l'espace en unités lisibles ; `tune2fs -l` montre aussi les inodes libres, mais d'une seule partition ext, alors que `tune2fs -i` règle l'intervalle de vérification.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q040",
+      "type": "single",
+      "prompt": "Que montre cette sortie ?",
+      "code": "$ ln fichier dur\n$ ln -s fichier sym\n$ ls -li fichier dur sym\n1311 -rw-r--r-- 2 tp tp 6 nov. 17 11:02 dur\n1311 -rw-r--r-- 2 tp tp 6 nov. 17 11:02 fichier\n1315 lrwxrwxrwx 1 tp tp 7 nov. 17 11:02 sym -> fichier",
+      "choices": [
+        "`dur` et `sym` ont chacun leur inode, différent de celui de `fichier`",
+        "`fichier` et `dur` partagent l'inode 1311 ; `sym` a son propre inode",
+        "`sym` et `fichier` partagent un inode, `dur` est une copie",
+        "Les trois noms désignent le même inode 1311"
+      ],
+      "answer": [1],
+      "explanation": "Un lien physique est un second nom pour le même inode, d'où le même numéro et le compteur de liens à 2. Le lien symbolique est un fichier distinct dont les données contiennent le chemin `fichier`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q041",
+      "type": "single",
+      "prompt": "Vous modifiez le contenu via `dur`, puis vous supprimez `fichier`. Que deviennent les deux liens ?",
+      "choices": [
+        "`dur` et `sym` deviennent tous deux inutilisables",
+        "`dur` perd la modification, `sym` affiche le nouveau contenu",
+        "`dur` garde le contenu modifié ; `sym` pointe vers un nom qui n'existe plus",
+        "`dur` disparaît avec `fichier` ; `sym` garde le contenu"
+      ],
+      "answer": [2],
+      "explanation": "Un fichier n'est réellement effacé que lorsqu'il n'a plus aucun nom : l'inode reste accessible par `dur`, avec la modification. `sym` contient seulement le chemin `fichier`, qui ne mène plus à rien : le lien est cassé.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q042",
+      "type": "single",
+      "prompt": "Le processus 4321 consomme beaucoup de CPU avec une valeur nice de 0. Quelle commande baisse sa priorité ?",
+      "choices": [
+        "`renice -n 10 -p 4321`",
+        "`renice -n -10 -p 4321`",
+        "`nice -n 10 4321`",
+        "`kill -STOP 4321`"
+      ],
+      "answer": [0],
+      "explanation": "La valeur nice (colonne NI de `top`) va de -20, le plus prioritaire, à 19 : l'augmenter baisse la priorité, et seul root peut la diminuer. `nice` lance une nouvelle commande, alors que `renice` agit sur un processus existant ; `kill -STOP` le suspend.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q043",
+      "type": "single",
+      "prompt": "Quelle est la différence entre SIGTERM et SIGKILL ?",
+      "choices": [
+        "SIGTERM (9) tue sans délai ; SIGKILL (15) demande poliment au processus de s'arrêter",
+        "SIGKILL (9) peut être intercepté pour nettoyer ; SIGTERM (15) ne peut pas l'être",
+        "SIGTERM (15) et SIGKILL (9) sont équivalents, seul leur numéro diffère",
+        "SIGTERM (15) demande l'arrêt et peut être intercepté ; SIGKILL (9) ne peut pas l'être"
+      ],
+      "answer": [3],
+      "explanation": "SIGTERM, envoyé par défaut par `kill`, est une demande polie : le processus peut la traiter pour se terminer proprement, ou l'ignorer. SIGKILL est appliqué par le noyau sans que le processus puisse réagir, au risque de laisser un travail inachevé.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-b-q044",
+      "type": "multi",
+      "prompt": "Pour l'état des lieux de la machine, quelles associations entre information et commande sont correctes ? (plusieurs réponses)",
+      "choices": [
+        "`uname -r` pour la version du noyau",
+        "`df -i` pour la mémoire libre",
+        "`systemctl --failed` pour les services en échec",
+        "`last -x` pour les adresses IP des interfaces",
+        "`ss -ltn` pour les ports TCP en écoute"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "`uname -r` donne la version du noyau, `systemctl --failed` les unités en échec et `ss -ltn` les sockets TCP en écoute, en numérique. La mémoire se lit avec `free -h` ou `top`, les adresses IP avec `ip addr` ; `df -i` compte les inodes et `last -x` les connexions et arrêts.",
+      "difficulty": 2
+    }
+  ]
+}

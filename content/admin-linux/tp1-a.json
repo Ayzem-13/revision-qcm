@@ -1,0 +1,608 @@
+{
+  "id": "tp1-a",
+  "title": "TP 1 : logiciels, démarrage, sécurité, initialisation",
+  "group": "Travaux pratiques",
+  "order": 21,
+  "source": "AdminLinux-1-TP.pdf, chapitres 2 à 6",
+  "questions": [
+    {
+      "id": "tp1-a-q001",
+      "type": "single",
+      "prompt": "La machine virtuelle du TP a deux cartes réseau. Laquelle sert à s'y connecter en SSH depuis la machine hôte ?",
+      "choices": [
+        "La carte en « réseau privé hôte »",
+        "La carte en « NAT »",
+        "Une troisième carte en « accès par pont »",
+        "L'interface de boucle locale `lo` de la machine virtuelle"
+      ],
+      "answer": [0],
+      "explanation": "La carte en réseau privé hôte reçoit une adresse joignable depuis l'hôte : c'est l'adresse à noter pour SSH. La carte NAT sert à la machine virtuelle pour sortir sur Internet, mais l'hôte ne peut pas la joindre directement.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-a-q002",
+      "type": "single",
+      "prompt": "Une fois connecté, quelle commande permet de vérifier que le démarrage en cours s'est correctement déroulé ?",
+      "choices": [
+        "`journalctl -u boot`",
+        "`dmesg -u`",
+        "`journalctl -b`",
+        "`systemctl get-default`"
+      ],
+      "answer": [2],
+      "explanation": "`journalctl -b` limite le journal aux messages du démarrage courant. `systemctl get-default` donne seulement la cible par défaut, et il n'existe pas d'unité nommée `boot` à filtrer avec `-u`.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-a-q003",
+      "type": "single",
+      "prompt": "Dans `/var/log/installer`, quel fichier contient les messages du logiciel de partitionnement ?",
+      "choices": [
+        "`syslog`",
+        "`status`",
+        "`hardware-summary`",
+        "`partman`"
+      ],
+      "answer": [3],
+      "explanation": "`partman` regroupe les messages de parted, l'outil de partitionnement de l'installateur. `syslog` contient les messages du noyau et des pilotes, `status` les logiciels installés et `hardware-summary` la détection des périphériques.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q004",
+      "type": "single",
+      "prompt": "Voici le début de `dpkg -l`. Quelle commande compte correctement les paquets installés ?",
+      "code": "$ dpkg -l | head -n 7\nDesired=Unknown/Install/Remove/Purge/Hold\n| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend\n|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)\n||/ Name           Version         Architecture Description\n+++-==============-===============-============-===========================\nii  adduser        3.137ubuntu2    all          add and remove users and groups\nii  apt            3.1.6           amd64        commandline package manager",
+      "choices": [
+        "`dpkg -l | wc -l`",
+        "`dpkg -l | grep '^ii' | wc -l`",
+        "`dpkg -S '*' | wc -l`",
+        "`apt list | wc -l`"
+      ],
+      "answer": [1],
+      "explanation": "Seules les lignes qui commencent par `ii` (installation souhaitée, paquet installé) sont des paquets installés. `dpkg -l | wc -l` compte aussi les cinq lignes d'en-tête et les paquets retirés dont il reste la configuration (`rc`).",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q005",
+      "type": "single",
+      "prompt": "Dans cette sortie de `dpkg-query -l \"*vim*\"`, que signifient les lettres `un` devant `vim-doc` ?",
+      "code": "ii vim        2:8.2.3995-1ubuntu2.13 amd64   Vi IMproved - enhanced vi editor\nun vim-doc    <none>                 <none>  (no description available)",
+      "choices": [
+        "Paquet installé mais pas encore configuré",
+        "Paquet en cours de désinstallation",
+        "Paquet connu de dpkg mais non installé",
+        "Paquet installé pour lequel une mise à jour existe"
+      ],
+      "answer": [2],
+      "explanation": "La première lettre est l'état souhaité (`u` pour Unknown), la seconde l'état réel (`n` pour Not installed). `ii` signifie au contraire installation souhaitée et paquet installé, comme pour `vim`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q006",
+      "type": "single",
+      "prompt": "Pour savoir si `wfrench` est installé, vous lancez `dpkg -s wfrench`. Quelle ligne de la sortie le prouve ?",
+      "choices": [
+        "`Priority: optional`",
+        "`Section: text`",
+        "`Version: 1.2.7-2`",
+        "`Status: install ok installed`"
+      ],
+      "answer": [3],
+      "explanation": "Le champ `Status` donne l'état du paquet dans la base de dpkg ; `install ok installed` signifie installé. Les autres champs décrivent le paquet. Si le paquet n'est pas installé, `dpkg -s` répond qu'aucune information n'est disponible.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q007",
+      "type": "multi",
+      "prompt": "Le paquet `cron` est installé. Quelles commandes listent les fichiers qu'il a installés ? (plusieurs réponses)",
+      "choices": [
+        "`dpkg -S cron`",
+        "`dpkg -L cron`",
+        "`dpkg-query -s cron`",
+        "`dpkg-query -L cron`",
+        "`apt-cache depends cron`"
+      ],
+      "answer": [1, 3],
+      "explanation": "L'action `-L` de `dpkg-query`, aussi accessible par `dpkg -L`, liste les fichiers installés par un paquet. `-S` fait l'inverse (chercher le paquet qui possède un fichier) et `-s` affiche l'état et la description.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q008",
+      "type": "multi",
+      "prompt": "Quelles commandes affichent les dépendances du paquet `cron` ? (plusieurs réponses)",
+      "choices": [
+        "`dpkg -s cron`",
+        "`dpkg -L cron`",
+        "`apt-cache depends cron`",
+        "`apt show cron`",
+        "`apt-cache pkgnames cron`"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "`dpkg -s` affiche le champ `Depends` (avec `Pre-Depends` et `Suggests`), `apt-cache depends` liste les dépendances une par une et `apt show` donne aussi le champ `Depends`. `dpkg -L` liste les fichiers et `apt-cache pkgnames` les noms de paquets qui commencent par `cron`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q009",
+      "type": "single",
+      "prompt": "Avec APT, comment trouver les paquets disponibles qui ont un rapport avec le JDK de Java ?",
+      "choices": [
+        "`apt show jdk`",
+        "`apt search jdk`",
+        "`apt list --installed jdk`",
+        "`dpkg -l \"*jdk*\"`"
+      ],
+      "answer": [1],
+      "explanation": "`apt search` cherche le motif dans les noms et les descriptions de tout le catalogue. `apt show` attend un nom de paquet exact, et `dpkg -l` ne connaît que les paquets de sa base locale, pas ceux des dépôts.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-a-q010",
+      "type": "single",
+      "prompt": "Quelle commande installe le paquet `wfrench` depuis les dépôts, avec ses éventuelles dépendances ?",
+      "choices": [
+        "`sudo dpkg -i wfrench`",
+        "`sudo apt update wfrench`",
+        "`sudo apt install wfrench`",
+        "`sudo apt-cache install wfrench`"
+      ],
+      "answer": [2],
+      "explanation": "`apt install` télécharge le paquet et installe ses dépendances. `dpkg -i` attend un fichier `.deb` déjà présent et ne résout pas les dépendances ; `apt update` ne fait que rafraîchir le catalogue.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-a-q011",
+      "type": "single",
+      "prompt": "Pour mettre à jour le catalogue des paquets puis le système, quelle séquence faut-il taper ?",
+      "choices": [
+        "`sudo apt upgrade` puis `sudo apt update`",
+        "`sudo apt list --upgradable` puis `sudo apt upgrade`",
+        "`sudo apt update` seul, qui installe aussi les nouvelles versions",
+        "`sudo apt update` puis `sudo apt upgrade`"
+      ],
+      "answer": [3],
+      "explanation": "`update` met à jour les informations des paquets depuis les dépôts ; `upgrade`, sans nom de paquet, installe ensuite les nouvelles versions de tous les paquets. Dans l'ordre inverse, `upgrade` travaillerait sur un catalogue périmé.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-a-q012",
+      "type": "single",
+      "prompt": "Le paquet cron est installé. Quelle séquence démarre le service puis affiche son statut ?",
+      "choices": [
+        "`systemctl enable cron` puis `systemctl list-units cron`",
+        "`systemctl start cron` puis `systemctl status cron`",
+        "`systemctl reload cron` puis `systemctl get-default`",
+        "`systemctl isolate cron` puis `journalctl -b cron`"
+      ],
+      "answer": [1],
+      "explanation": "`start` démarre le service immédiatement et `status` affiche son état en cours. `enable` ne fait que l'activer pour les prochains démarrages, et `reload` demande à un service déjà lancé de relire sa configuration.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-a-q013",
+      "type": "single",
+      "prompt": "Que montre cette sortie ?",
+      "code": "$ sudo systemctl stop cron\n$ systemctl status cron\n○ cron.service\n     Loaded: loaded (/usr/lib/systemd/system/cron.service; enabled; preset: enabled)\n     Active: inactive (dead) since Tue 2026-11-17 10:02:11 CET; 3s ago",
+      "choices": [
+        "Le service est arrêté mais reste activé pour le prochain démarrage",
+        "Le service est arrêté et désactivé définitivement",
+        "Le service a planté et systemd va le relancer",
+        "Le service tourne mais ne relit plus sa configuration"
+      ],
+      "answer": [0],
+      "explanation": "`Active: inactive (dead)` indique que le service est arrêté ; `enabled` sur la ligne `Loaded` indique qu'il sera relancé au démarrage. `stop` n'agit que sur l'état courant, c'est `disable` qui retire l'activation.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q014",
+      "type": "single",
+      "prompt": "Où placer le fichier de l'unité systemd que vous écrivez vous-même pour le TP ?",
+      "choices": [
+        "`/usr/lib/systemd/system/`",
+        "`/etc/init.d/`",
+        "`/etc/systemd/system/`",
+        "`/var/lib/systemd/`"
+      ],
+      "answer": [2],
+      "explanation": "Les unités locales et les personnalisations se placent dans `/etc/systemd/system/`. `/usr/lib/systemd/system/` est réservé aux unités fournies par les paquets, qu'une mise à jour peut écraser.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-a-q015",
+      "type": "single",
+      "prompt": "Dans cette unité qui affiche un message au démarrage et à l'arrêt, à quoi sert `RemainAfterExit=yes` ?",
+      "code": "[Unit]\nDescription=Exemple de service\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/echo Bonjour !\nExecStop=/usr/bin/echo Au revoir !\n[Install]\nWantedBy=multi-user.target",
+      "choices": [
+        "À relancer `ExecStart` si la commande échoue",
+        "À démarrer le service après `multi-user.target`",
+        "À enregistrer la sortie de `echo` dans un fichier",
+        "À garder le service actif après la fin d'`ExecStart`, pour que `ExecStop` s'exécute à l'arrêt"
+      ],
+      "answer": [3],
+      "explanation": "Un service `oneshot` se termine dès que sa commande est finie. Avec `RemainAfterExit=yes`, systemd le considère toujours actif, si bien que `systemctl stop` exécute bien `ExecStop` et affiche « Au revoir ! ». La relance en cas d'échec relève de `Restart=`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-a-q016",
+      "type": "single",
+      "prompt": "Dans cette même unité, quelle ligne permet à `systemctl enable` de lancer le service à chaque démarrage ?",
+      "choices": [
+        "`WantedBy=multi-user.target`",
+        "`Type=oneshot`",
+        "`Description=Exemple de service`",
+        "`ExecStart=/usr/bin/echo Bonjour !`"
+      ],
+      "answer": [0],
+      "explanation": "La section `[Install]` et sa ligne `WantedBy=multi-user.target` indiquent à `systemctl enable` de rattacher le service à la cible multi-utilisateur, atteinte à chaque démarrage normal. Sans section `[Install]`, l'unité ne peut pas être activée.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q017",
+      "type": "single",
+      "prompt": "Vous modifiez le fichier `/etc/systemd/system/monservice.service` d'un service déjà chargé. Que faut-il lancer pour que systemd prenne en compte la nouvelle version ?",
+      "choices": [
+        "`systemctl reload monservice`",
+        "`systemctl daemon-reload`",
+        "`systemctl restart systemd`",
+        "`sudo update-grub`"
+      ],
+      "answer": [1],
+      "explanation": "`systemctl daemon-reload` fait relire à systemd tous les fichiers d'unités. `systemctl reload monservice` demande au service lui-même de relire sa propre configuration, ce qui ne recharge pas le fichier d'unité.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q018",
+      "type": "multi",
+      "prompt": "Le service est activé et démarré. Où retrouver les messages « Bonjour ! » et « Au revoir ! » écrits par `echo` ? (plusieurs réponses)",
+      "choices": [
+        "Dans `/var/log/installer/syslog`",
+        "Dans la sortie de `systemctl status monservice`",
+        "Sur la console de tous les utilisateurs connectés",
+        "Dans la sortie de `journalctl -u monservice`"
+      ],
+      "answer": [1, 3],
+      "explanation": "La sortie standard d'un service est capturée par le journal : `journalctl -u monservice` affiche tous ses messages et `systemctl status` en reprend les dernières lignes. `/var/log/installer` ne concerne que l'installation.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q019",
+      "type": "single",
+      "prompt": "Quelle commande arrête le système dans 2 minutes en prévenant les utilisateurs connectés ?",
+      "choices": [
+        "`shutdown -r +2 \"Arrêt pour maintenance\"`",
+        "`shutdown -h 02:00 \"Arrêt pour maintenance\"`",
+        "`shutdown -c +2 \"Arrêt pour maintenance\"`",
+        "`shutdown -h +2 \"Arrêt pour maintenance\"`"
+      ],
+      "answer": [3],
+      "explanation": "`-h` arrête la machine, `+2` signifie dans 2 minutes et le message est envoyé à tous les utilisateurs connectés. `02:00` est une heure absolue (2 h du matin), `-r` redémarre et `-c` annule un arrêt programmé.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q020",
+      "type": "single",
+      "prompt": "Quelle commande fait passer le système en cours d'exécution en mode de secours (maintenance) ?",
+      "choices": [
+        "`systemctl set-default rescue.target`",
+        "`systemctl get-default rescue.target`",
+        "`systemctl isolate rescue.target`",
+        "`systemctl reboot rescue.target`"
+      ],
+      "answer": [2],
+      "explanation": "`isolate` bascule immédiatement le système sur la cible indiquée. `set-default` change seulement la cible des prochains démarrages, sans quitter le mode courant.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q021",
+      "type": "single",
+      "prompt": "Quel est le rôle de `emergency.target` par rapport à `rescue.target` ?",
+      "choices": [
+        "Un mode multi-utilisateur sans interface graphique",
+        "La cible utilisée pour redémarrer la machine",
+        "Le mode normal choisi après une mise à jour du noyau",
+        "Un environnement de maintenance minimal, encore plus restreint que le mode de secours"
+      ],
+      "answer": [3],
+      "explanation": "`emergency.target` est un mode mono-utilisateur restreint, prévu pour réparer quand même le mode de secours ne démarre plus. `rescue.target` est le mode mono-utilisateur où les partitions sont montées normalement ; le multi-utilisateur correspond à `multi-user.target`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q022",
+      "type": "single",
+      "prompt": "Vous êtes en `rescue.target`. Comment revenir au mode normal d'un serveur sans redémarrer ?",
+      "choices": [
+        "`systemctl isolate multi-user.target`",
+        "`systemctl set-default multi-user.target`",
+        "`systemctl get-default`",
+        "`shutdown -c`"
+      ],
+      "answer": [0],
+      "explanation": "`isolate multi-user.target` rebascule le système sur la cible multi-utilisateur. `set-default` ne change que la cible des prochains démarrages et `get-default` se contente de l'afficher.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q023",
+      "type": "single",
+      "prompt": "Que montre cette sortie sur la machine du TP ?",
+      "code": "$ findmnt /tmp\nTARGET SOURCE FSTYPE OPTIONS\n/tmp   tmpfs  tmpfs  rw,nosuid,nodev,size=1004288k,nr_inodes=1048576",
+      "choices": [
+        "`/tmp` est une partition du disque formatée en ext4",
+        "`/tmp` est un système de fichiers en mémoire, vidé à chaque redémarrage",
+        "`/tmp` n'est pas monté et reste un simple répertoire de la racine",
+        "`/tmp` est monté depuis un partage réseau"
+      ],
+      "answer": [1],
+      "explanation": "Sur Ubuntu, `/tmp` est monté par défaut en tmpfs par systemd : un système de fichiers en mémoire, dont le contenu disparaît à l'arrêt. `df -h /tmp` le confirme en affichant `tmpfs` comme système de fichiers.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q024",
+      "type": "single",
+      "prompt": "Quelle commande crée le groupe `mesusers` ?",
+      "choices": [
+        "`groupmod -n mesusers`",
+        "`useradd -G mesusers`",
+        "`groupadd mesusers`",
+        "`newgrp mesusers`"
+      ],
+      "answer": [2],
+      "explanation": "`groupadd` ajoute une entrée dans `/etc/group`, avec un GID calculé automatiquement si `-g` n'est pas donné. `groupmod -n` renomme un groupe existant et `newgrp` change le groupe courant de la session.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-a-q025",
+      "type": "single",
+      "prompt": "Quelle commande crée `user1`, membre du groupe `mesusers`, avec un répertoire personnel et bash comme shell ?",
+      "choices": [
+        "`useradd -m -G mesusers -c /bin/bash user1`",
+        "`useradd -m -G mesusers -s /bin/bash user1`",
+        "`useradd -d -G mesusers -s /bin/bash user1`",
+        "`usermod -m -G mesusers -s /bin/bash user1`"
+      ],
+      "answer": [1],
+      "explanation": "`-m` crée le répertoire personnel et y copie `/etc/skel`, `-G` donne les groupes secondaires et `-s` le shell. `-c` est le commentaire, `-d` attend un chemin, et `usermod` ne modifie qu'un compte existant.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q026",
+      "type": "single",
+      "prompt": "Le paquet csh est installé. Quelle commande fait de csh le shell de `user2`, déjà créé ?",
+      "choices": [
+        "`usermod -l /bin/csh user2`",
+        "`usermod -G csh user2`",
+        "`useradd -s /bin/csh user2`",
+        "`usermod -s /bin/csh user2`"
+      ],
+      "answer": [3],
+      "explanation": "`usermod -s` change le shell d'un compte existant. `-l` renomme le compte, `-G` remplace ses groupes secondaires, et `useradd` échoue puisque `user2` existe déjà.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q027",
+      "type": "single",
+      "prompt": "Après l'installation du paquet csh, dans quel fichier csh apparaît-il comme shell valide du système ?",
+      "choices": [
+        "`/etc/shells`",
+        "`/etc/default/useradd`",
+        "`/etc/login.defs`",
+        "`/etc/passwd`"
+      ],
+      "answer": [0],
+      "explanation": "`/etc/shells` liste les shells valides et il est mis à jour par la gestion de paquets lors des installations et désinstallations. `/etc/passwd` indique seulement le shell choisi pour chaque compte.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q028",
+      "type": "single",
+      "prompt": "Deux comptes reçoivent exactement le même mot de passe. Leurs empreintes dans `/etc/shadow` sont-elles identiques ?",
+      "choices": [
+        "Oui, car le hachage d'un même mot de passe donne toujours le même résultat",
+        "Oui, sauf si ces comptes n'utilisent pas le même shell",
+        "Non, car un sel aléatoire différent est mêlé à chaque mot de passe avant le hachage",
+        "Non, car le mot de passe est chiffré avec l'UID de chaque utilisateur"
+      ],
+      "answer": [2],
+      "explanation": "Chaque empreinte (yescrypt sur Ubuntu) est calculée avec un sel tiré au hasard et stocké dans le champ : deux mots de passe identiques donnent donc des empreintes différentes. Ce n'est pas un chiffrement réversible, et l'UID n'intervient pas.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-a-q029",
+      "type": "multi",
+      "prompt": "Quelles commandes bloquent le compte de `user2` ? (plusieurs réponses)",
+      "choices": [
+        "`passwd -d user2`",
+        "`passwd -l user2`",
+        "`usermod -U user2`",
+        "`usermod -L user2`",
+        "`chage -d 0 user2`"
+      ],
+      "answer": [1, 3],
+      "explanation": "`passwd -l` et `usermod -L` bloquent le compte ; `passwd -u` et `usermod -U` le débloquent. `passwd -d` supprime le mot de passe (mot de passe blanc) et `chage -d 0` force seulement un changement à la prochaine connexion.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q030",
+      "type": "single",
+      "prompt": "Voici la ligne de `user2` dans `/etc/shadow` avant et après le blocage. Qu'est-ce qui a changé ?",
+      "code": "avant : user2:$y$j9T$G7x0rQ...$Lw2cE...:20409:0:99999:7:::\naprès : user2:!$y$j9T$G7x0rQ...$Lw2cE...:20409:0:99999:7:::",
+      "choices": [
+        "Le hachage a été effacé et remplacé par `*`",
+        "Un `!` a été ajouté devant le hachage, qui ne peut plus correspondre à aucun mot de passe",
+        "Le champ max est passé à 0",
+        "Le champ expire a reçu la date du jour"
+      ],
+      "answer": [1],
+      "explanation": "Le blocage préfixe le hachage d'un `!` : aucun mot de passe saisi ne peut plus lui correspondre, mais le hachage d'origine est conservé. Le déblocage retire simplement ce `!`, ce qui rend l'ancien mot de passe de nouveau valable.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-a-q031",
+      "type": "single",
+      "prompt": "Comment forcer `user1` à changer son mot de passe à la prochaine ouverture de session ?",
+      "choices": [
+        "`chage -W 0 user1`",
+        "`passwd -u user1`",
+        "`chage -E 0 user1`",
+        "`chage -d 0 user1`"
+      ],
+      "answer": [3],
+      "explanation": "`chage -d 0` fixe la date du dernier changement au 1er janvier 1970 : le mot de passe est considéré comme expiré et doit être changé à la connexion. `chage -E 0` fait expirer le compte lui-même, ce qui empêche toute connexion.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q032",
+      "type": "single",
+      "prompt": "Quelle commande supprime `user2` ainsi que son répertoire personnel ?",
+      "choices": [
+        "`userdel -r user2`",
+        "`userdel user2`",
+        "`usermod -L user2`",
+        "`groupdel user2`"
+      ],
+      "answer": [0],
+      "explanation": "`userdel -r` supprime le compte et son répertoire personnel. Sans `-r`, le répertoire reste sur le disque ; dans les deux cas, les fichiers de l'utilisateur situés ailleurs ne sont pas supprimés.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp1-a-q033",
+      "type": "single",
+      "prompt": "Sans avoir défini de mot de passe pour root, vous obtenez cette sortie. Que signifie le `L` ?",
+      "code": "$ sudo passwd -S root\nroot L 2026-04-23 0 99999 7 -1",
+      "choices": [
+        "root est connecté localement sur la console",
+        "Le compte root est verrouillé : on ne peut pas s'y connecter par mot de passe",
+        "Le mot de passe de root est vide",
+        "root utilise un shell de login"
+      ],
+      "answer": [1],
+      "explanation": "`L` (locked) indique un compte verrouillé ; `P` indiquerait un mot de passe utilisable et `NP` l'absence de mot de passe. Sur Ubuntu, root est verrouillé pour l'ouverture de session directe et l'administration passe par `sudo`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q034",
+      "type": "single",
+      "prompt": "Sur l'Ubuntu du TP, root n'a pas de mot de passe défini. Quelle différence observez-vous entre `su -` et `sudo -i` ?",
+      "choices": [
+        "`su -` attend votre mot de passe ; `sudo -i` attend celui de root, verrouillé, et échoue",
+        "`su -` et `sudo -i` attendent le mot de passe de root et échouent tant qu'il n'est pas défini",
+        "`su -` attend le mot de passe de root, verrouillé, et échoue ; `sudo -i` attend le vôtre",
+        "`su -` et `sudo -i` attendent votre mot de passe et ouvrent le même shell root"
+      ],
+      "answer": [2],
+      "explanation": "`su` demande le mot de passe du compte cible, ici root qui est verrouillé. `sudo` authentifie l'utilisateur qui l'appelle avec son propre mot de passe, puis vérifie qu'il est autorisé à administrer : c'est le mode d'administration prévu sur Ubuntu.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-a-q035",
+      "type": "single",
+      "prompt": "Dans le shell ouvert par `sudo -i`, que renvoie la commande `id` ?",
+      "choices": [
+        "`uid=1000(tp) gid=1000(tp) groups=1000(tp),27(sudo)`",
+        "`uid=1000(tp) gid=0(root) groups=0(root)`",
+        "`uid=0(root) gid=1000(tp) groups=27(sudo)`",
+        "`uid=0(root) gid=0(root) groups=0(root)`"
+      ],
+      "answer": [3],
+      "explanation": "`sudo -i` ouvre un shell de login sous l'identité de root : UID 0, GID 0 et le seul groupe root. Les groupes de votre compte, comme `sudo`, n'apparaissent plus.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q036",
+      "type": "multi",
+      "prompt": "Vous êtes connecté avec le compte `tp`, puis vous lancez `sudo -i`. Dans ce shell, quelles commandes affichent root ? (plusieurs réponses)",
+      "choices": [
+        "`id`",
+        "`who am i`",
+        "`whoami`",
+        "`logname`"
+      ],
+      "answer": [0, 2],
+      "explanation": "`id` et `whoami` donnent l'identité effective, donc root. `who am i` donne l'identité réelle, celle qui a ouvert la session sur le terminal, donc `tp` ; `logname` renvoie de même le nom de connexion `tp`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-a-q037",
+      "type": "single",
+      "prompt": "Sur Ubuntu, `user1` n'a ni `.bash_profile` ni `.bash_login`. Dans quel fichier placer `echo login` pour qu'il s'affiche à chaque connexion ?",
+      "choices": [
+        "`~/.profile`",
+        "`~/.bashrc`",
+        "`/etc/skel/.bashrc`",
+        "`~/.bash_logout`"
+      ],
+      "answer": [0],
+      "explanation": "Un shell de login bash lit `/etc/profile` puis le premier fichier trouvé parmi `~/.bash_profile`, `~/.bash_login` et `~/.profile` : ici `~/.profile`. `~/.bashrc` est le fichier du type lancement, lu par chaque shell interactif.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q038",
+      "type": "multi",
+      "prompt": "Lors d'une connexion SSH de `user1` (shell bash, fichiers par défaut d'Ubuntu), quels fichiers sont exécutés ? (plusieurs réponses)",
+      "choices": [
+        "`/etc/profile`",
+        "`/etc/skel/.profile`",
+        "`~/.profile`",
+        "`~/.bash_logout`",
+        "`~/.bashrc`"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "Les fichiers système passent d'abord (`/etc/profile`), puis `~/.profile`, qui sur Ubuntu exécute `~/.bashrc` quand le shell est bash. `/etc/skel` n'est qu'un modèle copié à la création du compte, et `.bash_logout` n'est lu qu'à la déconnexion.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-a-q039",
+      "type": "single",
+      "prompt": "`echo login` est dans `~/.profile` et `echo lancement` dans `~/.bashrc`. Que constatez-vous en vous connectant en SSH, puis en tapant `bash` ?",
+      "choices": [
+        "Connexion : seulement « login » ; `bash` : seulement « lancement »",
+        "Connexion : seulement « lancement » ; `bash` : « login » et « lancement »",
+        "Connexion : « login » et « lancement » ; `bash` : seulement « lancement »",
+        "Connexion et `bash` : « login » et « lancement » à chaque fois"
+      ],
+      "answer": [2],
+      "explanation": "La connexion ouvre un shell de login qui lit `~/.profile`, lequel exécute aussi `~/.bashrc` sur Ubuntu : « login » et « lancement » s'affichent. Un `bash` lancé à la main n'est pas un shell de login et ne lit que `~/.bashrc`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-a-q040",
+      "type": "single",
+      "prompt": "Sans ouvrir de nouvelle connexion SSH, quelle commande démarre un shell de login de `user1`, qui lit donc `~/.profile` ?",
+      "choices": [
+        "`su user1`",
+        "`su - user1`",
+        "`sudo -u user1 bash`",
+        "`bash --rcfile user1`"
+      ],
+      "answer": [1],
+      "explanation": "L'option `-` (ou `-l`) de `su` simule un shell de login et exécute donc les fichiers d'initialisation de login. `su user1` sans tiret ouvre un shell interactif ordinaire, qui ne lit que `~/.bashrc`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q041",
+      "type": "single",
+      "prompt": "Vous reportez vos modifications dans `/etc/skel/.profile` et `/etc/skel/.bashrc`. Quels comptes en profitent ?",
+      "choices": [
+        "Seulement les comptes créés ensuite avec `useradd -m`",
+        "Tous les comptes existants, dès leur prochaine connexion",
+        "Uniquement root",
+        "Seulement les membres du groupe `mesusers`"
+      ],
+      "answer": [0],
+      "explanation": "Le contenu de `/etc/skel` est copié dans le répertoire personnel au moment de la création du compte, avec l'option `-m` de `useradd`. Les comptes existants gardent leurs propres fichiers ; c'est pourquoi le TP fait créer `user3` pour valider.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-a-q042",
+      "type": "single",
+      "prompt": "Quelle commande crée `user3` dans le groupe `mesusers`, avec bash, en copiant le contenu de `/etc/skel` ?",
+      "choices": [
+        "`useradd -G mesusers -s /bin/bash user3`",
+        "`useradd -k -G mesusers -s /bin/bash user3`",
+        "`usermod -m -G mesusers -s /bin/bash user3`",
+        "`useradd -m -G mesusers -s /bin/bash user3`"
+      ],
+      "answer": [3],
+      "explanation": "Sans `-m`, `useradd` ne crée pas le répertoire personnel et ne copie donc pas `/etc/skel`. `-k` sert à indiquer un autre répertoire modèle que `/etc/skel` (il attend un chemin) et `usermod` ne crée pas de compte.",
+      "difficulty": 2
+    }
+  ]
+}

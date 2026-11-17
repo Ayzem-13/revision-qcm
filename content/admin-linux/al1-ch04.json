@@ -1,0 +1,666 @@
+{
+  "id": "al1-ch04",
+  "title": "Démarrage du système",
+  "group": "Cours, partie 1",
+  "order": 4,
+  "source": "AdminLinux-1.pdf, chapitre 4",
+  "questions": [
+    {
+      "id": "al1-ch04-q001",
+      "type": "single",
+      "prompt": "Dans quel ordre se déroulent les grandes étapes du démarrage d'Ubuntu sur un PC moderne ?",
+      "choices": [
+        "UEFI, GRUB 2, noyau, systemd",
+        "GRUB 2, UEFI, noyau, systemd",
+        "UEFI, noyau, GRUB 2, systemd",
+        "UEFI, GRUB 2, systemd, noyau"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le firmware UEFI lance le chargeur d'amorçage GRUB 2, qui charge le noyau ; le noyau démarre ensuite systemd. Le noyau ne peut pas venir après systemd, puisque c'est lui qui le lance.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q002",
+      "type": "single",
+      "prompt": "Que signifie le sigle POST, première étape exécutée par le firmware au démarrage ?",
+      "choices": [
+        "Pre-Operating System Transfer",
+        "Primary OS Startup Table",
+        "Power-On Self-Test",
+        "Power-On System Trigger"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "POST signifie Power-On Self-Test : l'initialisation du matériel et l'exécution des diagnostics de démarrage, avant toute recherche d'un système à amorcer.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q003",
+      "type": "single",
+      "prompt": "Où l'UEFI cherche-t-il l'entrée de démarrage à utiliser ?",
+      "choices": [
+        "Dans le MBR du premier disque",
+        "Dans le fichier `/boot/grub/grub.cfg`",
+        "Dans le fichier `/etc/default/grub`",
+        "Dans sa configuration stockée en mémoire non volatile (NVRAM)"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "L'UEFI recherche une entrée de démarrage dans sa configuration stockée en NVRAM. Contrairement au BIOS historique, il ne dépend pas d'un programme placé dans le MBR.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q004",
+      "type": "single",
+      "prompt": "Qu'est-ce que l'ESP sur une machine UEFI ?",
+      "choices": [
+        "La partition système EFI, une petite partition généralement en FAT32",
+        "La partition racine `/`, généralement formatée en ext4",
+        "La zone de 512 octets au début du disque qui contient le chargeur",
+        "La partition d'échange utilisée pendant le démarrage"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "ESP signifie EFI System Partition : une petite partition, généralement en FAT32, d'où l'UEFI charge une application `.efi`. La zone de 512 octets en début de disque est le MBR de l'ancienne architecture BIOS.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q005",
+      "type": "multi",
+      "prompt": "Quelles affirmations sur l'UEFI sont conformes au cours ? (plusieurs réponses)",
+      "choices": [
+        "Il a remplacé le BIOS traditionnel sur les PC modernes",
+        "Il charge et exécute une application `.efi` depuis la partition système EFI",
+        "Il dépend d'un programme placé dans le MBR du disque",
+        "Il monte lui-même le système de fichiers racine `/`",
+        "Avec Secure Boot, il vérifie les signatures des composants de la chaîne de démarrage"
+      ],
+      "answer": [
+        0,
+        1,
+        4
+      ],
+      "explanation": "L'UEFI a remplacé le BIOS, exécute une application `.efi` lue sur l'ESP et, avec Secure Boot, vérifie les signatures. Il ne dépend pas du MBR, et c'est le noyau, pas l'UEFI, qui monte la racine `/`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q006",
+      "type": "single",
+      "prompt": "À quoi sert Secure Boot ?",
+      "choices": [
+        "À chiffrer le contenu de la partition système EFI",
+        "À vérifier les signatures des composants de la chaîne de démarrage",
+        "À protéger le menu de GRUB 2 par un mot de passe",
+        "À accélérer le POST en sautant les diagnostics"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Avec Secure Boot, l'UEFI vérifie les signatures cryptographiques des composants de la chaîne de démarrage pour empêcher l'exécution de code d'amorçage non autorisé. Il vérifie, il ne chiffre rien.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q007",
+      "type": "single",
+      "prompt": "Quel est le rôle de l'initramfs chargé par GRUB avec le noyau ?",
+      "choices": [
+        "Stocker les entrées de démarrage de l'UEFI",
+        "Contenir la configuration permanente de GRUB 2",
+        "Fournir les composants nécessaires pour accéder au système de fichiers racine",
+        "Remplacer systemd comme processus de PID 1"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le noyau utilise l'initramfs pour charger les composants nécessaires à l'accès au système de fichiers racine, puis monte `/`. La configuration permanente de GRUB est dans `/etc/default/grub`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q008",
+      "type": "single",
+      "prompt": "Sous Ubuntu, quel est le premier processus de l'espace utilisateur démarré par le noyau ?",
+      "choices": [
+        "`init` de System V, avec le PID 0",
+        "`upstart`, avec le PID 1",
+        "`kthreadd`, avec le PID 2",
+        "`systemd`, avec le PID 1"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Une fois la racine montée, le noyau démarre le premier processus de l'espace utilisateur : sous Ubuntu c'est systemd, qui reçoit le PID 1. Upstart est l'ancien système remplacé par systemd.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q009",
+      "type": "single",
+      "prompt": "Sur un Ubuntu actuel, que représente `/sbin/init` ?",
+      "choices": [
+        "L'ancien exécutable, conservé pour compatibilité, qui pointe vers systemd",
+        "Le script System V qui lance les services au démarrage",
+        "Le binaire d'Upstart, toujours utilisé au démarrage",
+        "Le second étage du chargeur GRUB 2"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le cours précise que l'ancien exécutable `/sbin/init` est conservé pour des raisons de compatibilité et pointe vers systemd. Ni System V ni Upstart ne sont plus utilisés.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q010",
+      "type": "multi",
+      "prompt": "Parmi ces éléments, lesquels font partie des ressources que systemd prend en charge selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "Les entrées de démarrage stockées en NVRAM",
+        "Les sockets",
+        "Les timers",
+        "Le chargement du noyau et de l'initramfs",
+        "Les cibles (targets)"
+      ],
+      "answer": [
+        1,
+        2,
+        4
+      ],
+      "explanation": "systemd gère les services, sockets, montages, périphériques, timers et cibles. Les entrées NVRAM relèvent de l'UEFI, et c'est GRUB qui charge le noyau et l'initramfs, avant que systemd n'existe.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q011",
+      "type": "single",
+      "prompt": "Quelle commande affiche les paramètres actuellement utilisés par le noyau ?",
+      "choices": [
+        "`cat /etc/default/grub`",
+        "`cat /proc/cmdline`",
+        "`cat /proc/version`",
+        "`cat /boot/grub/grub.cfg`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`/proc/cmdline` contient la ligne de commande réellement transmise au noyau au dernier démarrage. `/etc/default/grub` contient la configuration permanente, qui ne reflète pas une modification ponctuelle faite dans le menu GRUB.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q012",
+      "type": "single",
+      "prompt": "Comment se présente la ligne de commande du noyau ?",
+      "choices": [
+        "Une liste de paramètres séparés par des points-virgules",
+        "Un paramètre par ligne, sous la forme `clé: valeur`",
+        "Une suite de paramètres séparés par des espaces, comme `nom` ou `nom=valeur`",
+        "Des sections `[Nom]` suivies de lignes `clé=valeur`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Les paramètres sont séparés par des espaces et prennent la forme `nom`, `nom=valeur` ou `nom=valeur1,valeur2`. Les sections entre crochets sont le format des fichiers d'unités systemd.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q013",
+      "type": "single",
+      "prompt": "Pourquoi le cours conseille-t-il `root=UUID=...` plutôt que `root=/dev/sda3` ?",
+      "choices": [
+        "Parce que le noyau ne sait pas lire les noms de la forme `/dev/sdX`",
+        "Parce que l'UUID fait monter la racine en lecture seule",
+        "Parce que Secure Boot refuse les noms de périphériques",
+        "Parce qu'un nom de périphérique comme `/dev/sda3` peut changer, pas l'UUID"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Un nom de périphérique est susceptible de changer (ordre de détection des disques), alors que l'UUID identifie le système de fichiers. `root=/dev/sda3` reste une syntaxe valide, simplement moins sûre.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q014",
+      "type": "single",
+      "prompt": "Que fait le paramètre `ro` dans cette ligne de commande du noyau ?",
+      "code": "root=UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx ro quiet",
+      "choices": [
+        "Il monte d'abord la racine en lecture seule, elle sera remontée ensuite",
+        "Il démarre en mode de secours, réservé au compte root",
+        "Il réduit les messages affichés sur la console",
+        "Il interdit tout montage de la racine pendant le démarrage"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`ro` demande de monter initialement le système de fichiers racine en lecture seule ; il pourra être remonté avec les options appropriées pendant le démarrage. Réduire les messages est le rôle de `quiet`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q015",
+      "type": "single",
+      "prompt": "Quel paramètre du noyau réduit la quantité de messages affichés sur la console pendant le démarrage ?",
+      "choices": [
+        "`ro`",
+        "`debug`",
+        "`quiet`",
+        "`root=`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`quiet` réduit les messages affichés au démarrage. `debug` fait l'inverse, et `ro` concerne le montage de la racine en lecture seule.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q016",
+      "type": "single",
+      "prompt": "Quel paramètre faut-il ajouter à la ligne du noyau pour démarrer en mode de secours ?",
+      "choices": [
+        "`systemd.target=rescue`",
+        "`init=rescue.target`",
+        "`runlevel=rescue`",
+        "`systemd.unit=rescue.target`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`systemd.unit=` demande à systemd de démarrer sur une cible particulière ; `systemd.unit=rescue.target` donne le mode de secours. Le nom du paramètre est `systemd.unit`, pas `systemd.target`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q017",
+      "type": "single",
+      "prompt": "Un serveur ne démarre plus correctement et vous voulez l'environnement de maintenance le plus minimal possible. Quel paramètre ajoutez-vous à l'entrée GRUB ?",
+      "choices": [
+        "`systemd.unit=emergency.target`",
+        "`systemd.unit=rescue.target`",
+        "`systemd.unit=multi-user.target`",
+        "`systemd.unit=poweroff.target`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le cours présente `emergency.target` comme un environnement de maintenance minimal (mode mono utilisateur restreint). `rescue.target` est le mode de secours, plus complet.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch04-q018",
+      "type": "single",
+      "prompt": "Vous voulez rendre permanente une modification des paramètres du noyau sous Ubuntu. Que faites-vous ?",
+      "choices": [
+        "Modifier `/proc/cmdline` puis redémarrer",
+        "Modifier `/etc/default/grub` puis lancer `sudo update-grub`",
+        "Modifier l'entrée de démarrage dans le menu GRUB",
+        "Modifier `/etc/default/grub` puis lancer `systemctl daemon-reload`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Les paramètres permanents se configurent dans `/etc/default/grub`, puis la configuration de GRUB doit être régénérée avec `sudo update-grub`. Modifier l'entrée dans le menu GRUB ne vaut que pour un test ponctuel.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q019",
+      "type": "single",
+      "prompt": "Quel système Ubuntu utilise-t-il pour gérer les services ?",
+      "choices": [
+        "Upstart, qui a remplacé systemd et System V",
+        "System V, qui a remplacé Upstart",
+        "systemd, qui a remplacé Upstart et son ancêtre System V",
+        "systemd, qui a remplacé GRUB et Upstart"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Ubuntu utilise systemd, qui remplace Upstart et son ancêtre System V. GRUB est un chargeur d'amorçage, pas un gestionnaire de services.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q020",
+      "type": "multi",
+      "prompt": "Où se trouvent les fichiers d'unités systemd sous Ubuntu ? (plusieurs réponses)",
+      "choices": [
+        "Sous `/usr/lib/systemd/system` pour les unités fournies par les paquets",
+        "Sous `/etc/systemd/system` pour les personnalisations et unités locales",
+        "Sous `/etc/init.d` pour les unités fournies par les paquets",
+        "Sous `/proc/systemd` pour les unités actives"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explanation": "Les unités des paquets sont principalement sous `/usr/lib/systemd/system`, les personnalisations et unités locales sous `/etc/systemd/system`. `/etc/init.d` est l'emplacement des anciens scripts System V.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q021",
+      "type": "single",
+      "prompt": "Quelle est la différence entre `systemctl restart nginx` et `systemctl reload nginx` ?",
+      "choices": [
+        "`restart` relit la configuration, `reload` arrête puis redémarre le service",
+        "`restart` redémarre la machine, `reload` redémarre le service",
+        "`restart` active le service au démarrage, `reload` le lance tout de suite",
+        "`restart` arrête puis redémarre le service, `reload` lui demande de relire sa configuration"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`restart` arrête puis redémarre le service ; `reload` indique au service de relire sa configuration sans l'arrêter. L'inversion des deux est le piège classique.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q022",
+      "type": "single",
+      "prompt": "Un ancien tutoriel propose la commande `initctl` pour gérer un service. Que dit le cours ?",
+      "choices": [
+        "Elle appartenait à Upstart et ne doit plus être utilisée",
+        "C'est l'alias moderne de `systemctl`",
+        "Elle appartient à System V et sert encore aux niveaux d'exécution",
+        "Elle sert à modifier les paramètres transmis au noyau"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`initctl` appartenait à Upstart et ne doit plus être utilisée. `systemctl` communique avec systemd, le gestionnaire de services de PID 1.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q023",
+      "type": "single",
+      "prompt": "Quelle commande liste tous les services disponibles avec leur statut ?",
+      "choices": [
+        "`systemctl list-units --type=service`",
+        "`systemctl list-unit-files --type=service`",
+        "`systemctl list-dependencies`",
+        "`systemctl get-default`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`systemctl list-unit-files --type=service` liste tous les services disponibles et leur statut. `systemctl list-units --type=service` ne montre que les services actifs, avec leur description.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q024",
+      "type": "single",
+      "prompt": "Quelle commande active le service nginx au démarrage et le démarre immédiatement ?",
+      "choices": [
+        "`systemctl start nginx`",
+        "`systemctl enable nginx`",
+        "`systemctl enable --now nginx`",
+        "`systemctl isolate nginx`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`enable --now` active le service et le démarre tout de suite. `enable` seul l'active pour les prochains démarrages sans le lancer, et `start` le lance sans l'activer.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q025",
+      "type": "single",
+      "prompt": "Quelle commande affiche les messages du service nginx ?",
+      "choices": [
+        "`systemctl log nginx`",
+        "`dmesg -u nginx`",
+        "`systemctl status --log nginx`",
+        "`journalctl -u nginx`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Le cours indique `journalctl` pour voir les messages des services, avec `-u` pour choisir l'unité : `journalctl -u nginx`. `dmesg` affiche les messages du noyau.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q026",
+      "type": "single",
+      "prompt": "Quelle cible systemd correspond à l'ancien niveau d'exécution 1 de System V (mode mono utilisateur) ?",
+      "choices": [
+        "`rescue.target`",
+        "`emergency.target`",
+        "`multi-user.target`",
+        "`poweroff.target`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le niveau 1 correspond à `rescue.target`. `emergency.target` correspond aux niveaux s, S ou emergency, un mode mono utilisateur restreint.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q027",
+      "type": "single",
+      "prompt": "À quels anciens niveaux System V correspondent `multi-user.target` et `graphical.target` ?",
+      "choices": [
+        "Aux niveaux 0 et 6",
+        "Au niveau 1",
+        "Aux niveaux 2 à 5",
+        "Aux niveaux s et S"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Les modes multi utilisateurs (niveaux 2 à 5) correspondent à `multi-user.target` et `graphical.target`. Les niveaux 0 et 6 sont l'arrêt et le redémarrage.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q028",
+      "type": "single",
+      "prompt": "En mode mono utilisateur, qui peut se connecter ?",
+      "choices": [
+        "Tous les utilisateurs, mais seulement en local",
+        "Seul root, à distance par le réseau",
+        "Seul root, sur la console, en saisissant son mot de passe",
+        "Les membres du groupe sudo"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "En mode mono utilisateur, seul root peut se connecter, sur la console avec son mot de passe : il doit donc être physiquement devant la machine. Les connexions réseau sont le propre du mode multi utilisateur.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q029",
+      "type": "single",
+      "prompt": "Quelle commande affiche la cible sur laquelle le système démarre par défaut ?",
+      "choices": [
+        "`systemctl isolate`",
+        "`cat /proc/cmdline`",
+        "`systemctl set-default`",
+        "`systemctl get-default`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`systemctl get-default` affiche la cible par défaut, par exemple `multi-user.target`. `set-default` sert à la changer, pas à l'afficher.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q030",
+      "type": "single",
+      "prompt": "Quelle est la différence entre `systemctl isolate multi-user.target` et `systemctl set-default -f multi-user.target` ?",
+      "choices": [
+        "`isolate` bascule sur la cible maintenant, `set-default` la fixe pour les démarrages suivants",
+        "`isolate` fixe la cible pour les démarrages suivants, `set-default` bascule maintenant",
+        "`isolate` teste la cible sans rien changer, `set-default` bascule maintenant",
+        "`isolate` redémarre la machine, `set-default` bascule sans redémarrer"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le cours utilise `isolate` pour changer de cible et `set-default` pour la changer définitivement, c'est-à-dire pour les prochains démarrages.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q031",
+      "type": "single",
+      "prompt": "Dans ce fichier d'unité, quelle directive indique la commande lancée au démarrage du service ?",
+      "code": "[Unit]\nDescription=Exemple de service\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/echo Bonjour !\nExecStop=/usr/bin/echo Au revoir !\n[Install]\nWantedBy=multi-user.target",
+      "choices": [
+        "`ExecStop`",
+        "`ExecStart`",
+        "`WantedBy`",
+        "`Description`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`ExecStart` donne la commande exécutée au démarrage du service, `ExecStop` celle exécutée à son arrêt. `WantedBy`, dans la section `[Install]`, rattache le service à une cible.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q032",
+      "type": "single",
+      "prompt": "Selon le cours, qu'est-ce qu'un arrêt propre ?",
+      "choices": [
+        "Une coupure de l'alimentation après la fermeture des sessions utilisateurs",
+        "L'envoi de `SIGKILL` à tous les processus puis le redémarrage",
+        "Un arrêt ordonné des processus, avec données écrites et systèmes de fichiers démontés",
+        "L'arrêt du noyau avant celui des services pour libérer la mémoire"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Un arrêt propre arrête les processus dans un ordre particulier, sauvegarde les données sur les disques, puis synchronise et démonte les systèmes de fichiers. `SIGKILL` tue les processus sans leur laisser le temps de s'arrêter.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q033",
+      "type": "multi",
+      "prompt": "Quelles commandes `systemctl` le cours cite-t-il comme raccourcis vers des cibles d'arrêt ou de mise en veille ? (plusieurs réponses)",
+      "choices": [
+        "`systemctl reboot`",
+        "`systemctl shutdown`",
+        "`systemctl hibernate`",
+        "`systemctl poweroff`",
+        "`systemctl logout`"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Le cours cite `systemctl reboot`, `poweroff`, `suspend` et `hibernate`. `shutdown` est une commande à part entière, pas une sous-commande de `systemctl`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q034",
+      "type": "multi",
+      "prompt": "Que se passe-t-il quand un administrateur lance un arrêt avec `shutdown` ? (plusieurs réponses)",
+      "choices": [
+        "Les utilisateurs connectés sont informés de l'arrêt",
+        "Plus personne ne peut ouvrir de session",
+        "Les processus reçoivent immédiatement `SIGKILL`",
+        "La cible par défaut devient `poweroff.target`"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explanation": "`shutdown` prévient les utilisateurs connectés et empêche toute nouvelle session ; les processus sont d'abord informés par `SIGTERM`, pas tués par `SIGKILL`. La cible par défaut n'est pas modifiée.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q035",
+      "type": "single",
+      "prompt": "Quel signal `shutdown` envoie-t-il en premier lieu à tous les processus ?",
+      "choices": [
+        "`SIGKILL`",
+        "`SIGHUP`",
+        "`SIGINT`",
+        "`SIGTERM`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "En premier lieu, tous les processus sont informés de l'arrêt par le signal `SIGTERM`, qui leur laisse le temps de se terminer proprement, contrairement à `SIGKILL`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q036",
+      "type": "single",
+      "prompt": "Que fait cette commande ?",
+      "code": "# /sbin/shutdown -h +5 \"Le serveur va être arrêté pour déménagement\"",
+      "choices": [
+        "Elle redémarre la machine dans 5 minutes en prévenant les utilisateurs",
+        "Elle arrête la machine à 5 h en prévenant les utilisateurs",
+        "Elle arrête la machine tout de suite et envoie le message 5 minutes plus tard",
+        "Elle arrête la machine dans 5 minutes en prévenant les utilisateurs"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`-h` arrête la machine, `+5` signifie dans 5 minutes, et le message est envoyé à tous les utilisateurs connectés. Pour une heure fixe, il faudrait le format `hh:mm`, et le redémarrage serait `-r`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q037",
+      "type": "single",
+      "prompt": "Quelle option de `shutdown` annule un arrêt en cours ?",
+      "choices": [
+        "`-c`",
+        "`-r`",
+        "`-h`",
+        "`-t`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`shutdown -c` annule un shutdown en cours. `-t` règle le délai entre l'avertissement et le changement de niveau.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch04-q038",
+      "type": "multi",
+      "prompt": "Quelles valeurs l'argument heure de `shutdown` accepte-t-il selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "`14:30`",
+        "`now`",
+        "`2026-11-18`",
+        "`+10`",
+        "`-10`"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "L'heure peut s'écrire `hh:mm`, `now` ou `+m` (dans m minutes). Une date complète ou un nombre négatif ne sont pas des formats acceptés.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q039",
+      "type": "single",
+      "prompt": "Selon le cours, que font les commandes `halt` et `reboot` ?",
+      "choices": [
+        "Elles coupent l'alimentation sans passer par `shutdown`",
+        "Elles appellent `shutdown` avec respectivement `-h` et `-r`",
+        "Elles appellent `shutdown` avec respectivement `-r` et `-h`",
+        "Elles changent la cible par défaut du système"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Selon le cours, `halt` appelle `shutdown -h` et `reboot` appelle `shutdown -r` : h pour halt (arrêt), r pour reboot (redémarrage). En pratique, sur un Ubuntu actuel, ces commandes sont des liens vers `systemctl`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch04-q040",
+      "type": "single",
+      "prompt": "Avec `halt` ou `reboot`, quelle option force l'arrêt ou la réinitialisation, ce que le cours qualifie de dangereux ?",
+      "choices": [
+        "`-p`",
+        "`-c`",
+        "`-f`",
+        "`-h`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`-f` force la réinitialisation ou l'arrêt, sans arrêt propre, d'où le danger. `-p` stoppe électriquement la machine.",
+      "difficulty": 3
+    }
+  ]
+}

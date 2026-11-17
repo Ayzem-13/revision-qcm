@@ -1,0 +1,498 @@
+{
+  "id": "al2-ch08",
+  "title": "Services web",
+  "group": "Cours, partie 2",
+  "order": 18,
+  "source": "AdminLinux-2.pdf, chapitre 8",
+  "questions": [
+    {
+      "id": "al2-ch08-q001",
+      "type": "multi",
+      "prompt": "Pour quelles raisons le cours répartit-il l'application web sur plusieurs serveurs ? (plusieurs réponses)",
+      "choices": [
+        "Séparer les rôles",
+        "Réduire le nombre d'adresses IP nécessaires",
+        "Limiter les accès réseau",
+        "Administrer chaque composant indépendamment",
+        "Se passer de pare-feu sur le réseau privé"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "Le cours répartit l'application pour séparer les rôles, limiter les accès réseau et administrer chaque composant indépendamment. Chaque serveur garde au contraire son propre pare-feu UFW.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q002",
+      "type": "single",
+      "prompt": "Dans l'architecture du cours, quel rôle joue `frontend01` (10.20.0.30) ?",
+      "choices": [
+        "Serveur Node.js qui héberge l'API REST",
+        "Serveur Nginx, point d'entrée HTTP/HTTPS",
+        "Serveur PostgreSQL de la base `apidb`",
+        "Routeur qui sert de passerelle au réseau privé"
+      ],
+      "answer": [1],
+      "explanation": "`frontend01` porte Nginx, seul point d'entrée HTTP/HTTPS, qui transmet les requêtes à `backend01`. L'API Node.js tourne sur `backend01` (10.20.0.20) et la passerelle est le routeur 10.20.0.1.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q003",
+      "type": "single",
+      "prompt": "Depuis quel réseau l'administration SSH des trois serveurs est-elle autorisée ?",
+      "choices": ["10.20.0.0/24", "10.20.0.1/32", "192.168.50.0/24", "192.168.0.0/16"],
+      "answer": [2],
+      "explanation": "L'administration SSH (TCP 22) n'est autorisée que depuis le réseau d'administration 192.168.50.0/24. 10.20.0.0/24 est le réseau des serveurs eux-mêmes.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q004",
+      "type": "multi",
+      "prompt": "Quels flux applicatifs sont autorisés dans l'architecture du cours ? (plusieurs réponses)",
+      "choices": [
+        "Clients vers `frontend01` sur les ports 80 et 443",
+        "Clients vers `backend01` sur le port 3000",
+        "`frontend01` vers `backend01` sur le port 3000",
+        "`frontend01` vers `db01` sur le port 5432",
+        "`backend01` vers `db01` sur le port 5432"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "Les flux autorisés sont : clients vers `frontend01` (80/443), `frontend01` vers `backend01` (3000) et `backend01` vers `db01` (5432), plus SSH depuis le réseau d'administration. `frontend01` ne peut pas joindre directement PostgreSQL.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q005",
+      "type": "single",
+      "prompt": "Avant d'écrire la configuration Netplan, quelle commande permet de vérifier le nom réel de l'interface réseau ?",
+      "choices": ["`ip route`", "`hostnamectl`", "`netplan apply`", "`ip link`"],
+      "answer": [3],
+      "explanation": "Le cours vérifie le nom réel de l'interface (ici `enp0s3`) avec `ip link`. `ip route` affiche la table de routage, utile ensuite pour contrôler la connectivité.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q006",
+      "type": "single",
+      "prompt": "Ce fichier `/etc/netplan/50-static.yaml` configure `db01`. Que faut-il modifier pour l'utiliser sur `backend01` ?",
+      "code": "network:\n  version: 2\n  ethernets:\n    enp0s3:\n      dhcp4: false\n      addresses: [10.20.0.10/24]\n      routes:\n        - to: default\n          via: 10.20.0.1\n      nameservers:\n        addresses: [10.20.0.1]",
+      "choices": [
+        "L'adresse `10.20.0.10/24`, à remplacer par `10.20.0.20/24`",
+        "La passerelle `10.20.0.1`, à remplacer par `10.20.0.20`",
+        "Le serveur DNS, à remplacer par `10.20.0.20`",
+        "La ligne `dhcp4: false`, à passer à `true`"
+      ],
+      "answer": [0],
+      "explanation": "Le cours réutilise la même configuration sur les trois serveurs en remplaçant seulement l'adresse : `10.20.0.20/24` pour `backend01` et `10.20.0.30/24` pour `frontend01`. La passerelle et le DNS restent le routeur 10.20.0.1.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q007",
+      "type": "single",
+      "prompt": "Quelle commande le cours utilise-t-il pour donner le nom `db01` au serveur de base de données ?",
+      "choices": [
+        "`sudo ip link set enp0s3 alias db01`",
+        "`sudo hostnamectl status db01`",
+        "`sudo hostnamectl hostname db01`",
+        "`sudo netplan set hostname=db01`"
+      ],
+      "answer": [2],
+      "explanation": "`sudo hostnamectl hostname db01` fixe le nom d'hôte ; on fait de même avec `backend01` et `frontend01`. `hostnamectl status` ne fait qu'afficher l'état, et l'alias d'une interface n'est pas le nom de la machine.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q008",
+      "type": "multi",
+      "prompt": "Quelles commandes le cours propose-t-il pour vérifier la connectivité entre les trois serveurs une fois configurés ? (plusieurs réponses)",
+      "choices": ["`netplan try`", "`ping`", "`hostnamectl`", "`ip route`"],
+      "answer": [1, 3],
+      "explanation": "Le cours vérifie la connectivité avec `ping` et `ip route`. `netplan try` et `hostnamectl` interviennent avant, pour appliquer la configuration réseau et nommer la machine.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q009",
+      "type": "single",
+      "prompt": "Quel principe guide la configuration UFW de chaque serveur ?",
+      "choices": [
+        "Bloquer par défaut les connexions entrantes et sortantes",
+        "Tout ouvrir sur le réseau privé et filtrer seulement Internet",
+        "N'ouvrir que le port 22 sur chaque serveur",
+        "N'ouvrir en entrée que les ports nécessaires au rôle du serveur"
+      ],
+      "answer": [3],
+      "explanation": "Chaque serveur n'ouvre en entrée que les ports nécessaires à son rôle (`default deny incoming`), et les connexions sortantes restent autorisées (`default allow outgoing`). Bloquer les sorties empêcherait par exemple `backend01` de joindre PostgreSQL.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q010",
+      "type": "single",
+      "prompt": "Sur un serveur administré à distance, que faut-il faire avant `sudo ufw enable` pour ne pas perdre l'accès ?",
+      "choices": [
+        "Autoriser SSH depuis le réseau d'administration",
+        "Passer la politique entrante en `default allow incoming`",
+        "Redémarrer le service `ssh`",
+        "Ouvrir les ports 80 et 443"
+      ],
+      "answer": [0],
+      "explanation": "Avant d'activer le pare-feu, le cours autorise d'abord SSH depuis le réseau d'administration (`ufw allow from 192.168.50.0/24 to any port 22 proto tcp`). Sans cette règle, `default deny incoming` couperait la session distante.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch08-q011",
+      "type": "single",
+      "prompt": "Sur `db01`, quel est l'effet de ces règles sur l'accès à PostgreSQL ?",
+      "code": "# sudo ufw default deny incoming\n# sudo ufw default allow outgoing\n# sudo ufw allow from 192.168.50.0/24 to any port 22 proto tcp\n# sudo ufw allow from 10.20.0.20 to any port 5432 proto tcp\n# sudo ufw enable",
+      "choices": [
+        "Tout le réseau 10.20.0.0/24 peut joindre le port 5432",
+        "Seul `backend01` peut joindre le port 5432",
+        "`db01` peut joindre le port 5432 de `backend01`",
+        "`frontend01` et `backend01` peuvent joindre le port 5432"
+      ],
+      "answer": [1],
+      "explanation": "La règle n'autorise que la source 10.20.0.20 (`backend01`) vers le port 5432 ; le reste est refusé par `default deny incoming`. Ni les clients Internet ni `frontend01` ne peuvent se connecter directement à PostgreSQL.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q012",
+      "type": "single",
+      "prompt": "Sur `backend01`, quelle règle ouvre l'API Node.js à `frontend01` seulement ?",
+      "choices": [
+        "`sudo ufw allow 3000/tcp`",
+        "`sudo ufw allow from 10.20.0.20 to any port 3000 proto tcp`",
+        "`sudo ufw allow from 10.20.0.30 to any port 5432 proto tcp`",
+        "`sudo ufw allow from 10.20.0.30 to any port 3000 proto tcp`"
+      ],
+      "answer": [3],
+      "explanation": "La source doit être `frontend01` (10.20.0.30) et le port celui de l'API (3000). `ufw allow 3000/tcp` ouvrirait l'API à tout le monde, et 10.20.0.20 est l'adresse de `backend01` lui-même.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q013",
+      "type": "multi",
+      "prompt": "Sur `frontend01`, quelles règles ouvrent le service aux clients HTTP et HTTPS ? (plusieurs réponses)",
+      "choices": ["`sudo ufw allow 80/tcp`", "`sudo ufw allow 3000/tcp`", "`sudo ufw allow 443/tcp`", "`sudo ufw allow 22/tcp`"],
+      "answer": [0, 2],
+      "explanation": "`frontend01` ouvre 80/tcp et 443/tcp à tous, car c'est le seul serveur exposé aux clients. SSH n'y est ouvert que depuis 192.168.50.0/24, et le port 3000 concerne `backend01`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q014",
+      "type": "single",
+      "prompt": "Sur `db01`, comment le cours ouvre-t-il une console PostgreSQL avec le compte d'administration ?",
+      "choices": ["`sudo -u postgres psql`", "`psql -U root`", "`sudo psql -d apidb`", "`su postgres -c pg_ctl`"],
+      "answer": [0],
+      "explanation": "`sudo -u postgres psql` lance `psql` sous l'identité du compte système `postgres`, administrateur de PostgreSQL. Il n'existe pas de rôle `root` dans une installation PostgreSQL par défaut.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q015",
+      "type": "single",
+      "prompt": "Que fait cette séquence exécutée dans `psql` sur `db01` ?",
+      "code": "postgres=# CREATE ROLE apiuser WITH LOGIN PASSWORD 'mot_de_passe_a_changer';\npostgres=# CREATE DATABASE apidb OWNER apiuser;",
+      "choices": [
+        "Crée un utilisateur Linux `apiuser` et sa base personnelle",
+        "Crée une base `apidb` en lecture seule pour `apiuser`",
+        "Crée un rôle `apiuser` qui peut se connecter, et une base `apidb` qui lui appartient",
+        "Donne à `apiuser` les droits de superutilisateur sur le serveur"
+      ],
+      "answer": [2],
+      "explanation": "`CREATE ROLE ... WITH LOGIN PASSWORD` crée un rôle PostgreSQL autorisé à se connecter, et `CREATE DATABASE apidb OWNER apiuser` lui attribue la base. Aucun compte Linux n'est créé : le rôle n'existe que dans PostgreSQL.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q016",
+      "type": "single",
+      "prompt": "Que recommande le cours pour le mot de passe de `apiuser` dans un environnement réel ?",
+      "choices": [
+        "Le même mot de passe que le compte `postgres`",
+        "Un mot de passe aléatoire, jamais placé dans le code source",
+        "Un mot de passe écrit dans `app.js`, protégé par `chmod 600`",
+        "Aucun mot de passe, puisque UFW filtre déjà l'accès"
+      ],
+      "answer": [1],
+      "explanation": "Le cours demande un mot de passe aléatoire, qui ne doit pas figurer dans le code source de l'application. Il est fourni à l'API par le fichier d'environnement `/etc/products-api.env`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q017",
+      "type": "single",
+      "prompt": "Où se trouvent les principaux fichiers de configuration de PostgreSQL sur `db01` ?",
+      "choices": [
+        "`/var/lib/postgresql/<version>/main/`",
+        "`/etc/postgresql/<version>/main/`",
+        "`/etc/postgres/main/`",
+        "`/usr/share/postgresql/<version>/`"
+      ],
+      "answer": [1],
+      "explanation": "Le cours place `postgresql.conf` et `pg_hba.conf` sous `/etc/postgresql/<version>/main/`. `/var/lib/postgresql/<version>/main/` contient les données, pas la configuration.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q018",
+      "type": "single",
+      "prompt": "Quelle ligne de `postgresql.conf` fait écouter PostgreSQL sur l'adresse privée de `db01` ?",
+      "choices": [
+        "`listen_addresses = '10.20.0.20'`",
+        "`bind_address = '10.20.0.10'`",
+        "`listen_addresses = '10.20.0.10'`",
+        "`listen_addresses = 'localhost'`"
+      ],
+      "answer": [2],
+      "explanation": "`listen_addresses` reçoit l'adresse de `db01` lui-même, 10.20.0.10, et non celle du client `backend01`. `bind_address` est la directive équivalente de MySQL, inconnue de PostgreSQL.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q019",
+      "type": "single",
+      "prompt": "Que permet cette ligne de `pg_hba.conf` ?",
+      "code": "host apidb apiuser 10.20.0.20/32 scram-sha-256",
+      "choices": [
+        "Tout rôle peut se connecter à `apidb` depuis 10.20.0.0/24",
+        "`apiuser` peut accéder à toutes les bases depuis `backend01`",
+        "`apiuser` peut se connecter depuis `db01` sans mot de passe",
+        "`apiuser` peut se connecter à `apidb` depuis `backend01`, avec mot de passe"
+      ],
+      "answer": [3],
+      "explanation": "Les champs se lisent : type `host`, base `apidb`, rôle `apiuser`, adresse 10.20.0.20/32 (`backend01` seul), méthode `scram-sha-256` (mot de passe). Le masque /32 désigne une seule machine, pas tout le réseau.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q020",
+      "type": "single",
+      "prompt": "Quel fichier de PostgreSQL définit quels rôles peuvent se connecter à quelle base, et depuis quelle adresse ?",
+      "choices": ["`pg_hba.conf`", "`postgresql.conf`", "`pg_ident.conf`", "`/etc/products-api.env`"],
+      "answer": [0],
+      "explanation": "`pg_hba.conf` contient les règles d'accès et d'authentification. `postgresql.conf` règle le fonctionnement du serveur, dont l'adresse d'écoute (`listen_addresses`).",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q021",
+      "type": "single",
+      "prompt": "Après `sudo systemctl restart postgresql`, quelle commande vérifie que PostgreSQL écoute bien sur le port 5432 ?",
+      "choices": ["`sudo ufw status | grep 5432`", "`ss -ltn | grep 5432`", "`ip route | grep 5432`", "`psql -l | grep 5432`"],
+      "answer": [1],
+      "explanation": "`ss -ltn` liste les sockets TCP en écoute, ports en numérique, filtrés ici sur 5432. `ufw status` montre une règle de pare-feu, ce qui ne prouve pas que le service écoute.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q022",
+      "type": "single",
+      "prompt": "Sur `backend01`, quel paquet le cours installe-t-il pour tester la connexion à la base de `db01` ?",
+      "choices": ["`postgresql`", "`postgresql-contrib`", "`libpq-dev`", "`postgresql-client`"],
+      "answer": [3],
+      "explanation": "`postgresql-client` fournit `psql`, utilisé ensuite avec `psql -h 10.20.0.10 -U apiuser -d apidb`. Le paquet `postgresql` installerait un serveur complet, inutile sur `backend01`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q023",
+      "type": "multi",
+      "prompt": "Quels paquets le cours installe-t-il sur `backend01` pour faire tourner l'API ? (plusieurs réponses)",
+      "choices": ["`nginx`", "`nodejs`", "`postgresql`", "`npm`"],
+      "answer": [1, 3],
+      "explanation": "`backend01` reçoit `nodejs` et `npm` (`sudo apt install nodejs npm`). Nginx est installé sur `frontend01` et le serveur PostgreSQL sur `db01`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q024",
+      "type": "single",
+      "prompt": "Comment l'application Node.js obtient-elle le mot de passe de la base ?",
+      "choices": [
+        "Par la variable `DB_PASSWORD`, chargée depuis `/etc/products-api.env`",
+        "Par une constante écrite dans `app.js`",
+        "Par le fichier `pg_hba.conf` de `db01`",
+        "Par un argument ajouté à la ligne `ExecStart`"
+      ],
+      "answer": [0],
+      "explanation": "Le code lit `process.env.DB_PASSWORD`, et l'unité systemd charge cette variable avec `EnvironmentFile=/etc/products-api.env`. Le mot de passe n'est ainsi jamais placé dans le programme.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q025",
+      "type": "single",
+      "prompt": "Quels propriétaire et droits le cours donne-t-il au fichier `/etc/products-api.env` ?",
+      "choices": [
+        "Propriétaire `products-api`, mode `644`",
+        "Propriétaire `root`, groupe `root`, mode `600`",
+        "Propriétaire `products-api`, groupe `products-api`, mode `777`",
+        "Propriétaire `root`, groupe `products-api`, mode `640`"
+      ],
+      "answer": [3],
+      "explanation": "Le cours fait `chown root:products-api` puis `chmod 640` : root peut écrire, le groupe `products-api` peut lire, les autres utilisateurs n'ont aucun accès. Un mode `644` ou `777` exposerait le mot de passe à tous les comptes du serveur.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q026",
+      "type": "single",
+      "prompt": "Sur quelle adresse et quel port l'API Node.js écoute-t-elle ?",
+      "choices": ["`0.0.0.0:3000`", "`10.20.0.20:3000`", "`127.0.0.1:3000`", "`10.20.0.30:80`"],
+      "answer": [1],
+      "explanation": "`app.listen(3000, '10.20.0.20')` fait écouter l'API sur l'adresse privée de `backend01`, port 3000. Si elle n'écoutait que sur 127.0.0.1, Nginx sur `frontend01` ne pourrait pas la joindre.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q027",
+      "type": "single",
+      "prompt": "Dans cette unité systemd, quelle directive relance l'API si elle se termine en erreur ?",
+      "code": "[Unit]\nDescription=Products Node.js API\nWants=network-online.target\nAfter=network-online.target\n\n[Service]\nType=simple\nUser=products-api\nGroup=products-api\nWorkingDirectory=/opt/products-api\nEnvironmentFile=/etc/products-api.env\nExecStart=/usr/bin/node /opt/products-api/app.js\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target",
+      "choices": ["`Type=simple`", "`WantedBy=multi-user.target`", "`Restart=on-failure`", "`After=network-online.target`"],
+      "answer": [2],
+      "explanation": "`Restart=on-failure` relance le service quand il s'arrête en échec. `WantedBy=multi-user.target` sert seulement au démarrage automatique au boot, une fois le service activé.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q028",
+      "type": "multi",
+      "prompt": "Après avoir créé `/etc/systemd/system/products-api.service`, quelles commandes le cours exécute-t-il pour lancer l'API ? (plusieurs réponses)",
+      "choices": [
+        "`sudo systemctl reload nginx`",
+        "`sudo systemctl daemon-reload`",
+        "`sudo systemctl mask products-api`",
+        "`sudo systemctl enable --now products-api`"
+      ],
+      "answer": [1, 3],
+      "explanation": "`daemon-reload` fait relire à systemd ses fichiers d'unité, puis `enable --now` active le service au démarrage et le lance immédiatement. `mask` empêcherait au contraire tout démarrage.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q029",
+      "type": "single",
+      "prompt": "Dans l'unité `products-api.service`, quelle directive charge le mot de passe de la base ?",
+      "choices": [
+        "`EnvironmentFile=/etc/products-api.env`",
+        "`WorkingDirectory=/etc/products-api.env`",
+        "`Environment=/etc/products-api.env`",
+        "`ExecStartPre=/etc/products-api.env`"
+      ],
+      "answer": [0],
+      "explanation": "`EnvironmentFile=` lit les variables, dont `DB_PASSWORD`, dans le fichier indiqué. `Environment=` attend des affectations `VARIABLE=valeur`, pas un chemin de fichier.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q030",
+      "type": "single",
+      "prompt": "Comment le cours crée-t-il puis active-t-il la configuration du reverse proxy Nginx ?",
+      "choices": [
+        "Fichier dans `sites-enabled`, puis lien symbolique dans `sites-available`",
+        "Bloc ajouté à `/etc/nginx/nginx.conf`, puis `nginx -s reopen`",
+        "Fichier dans `sites-available`, puis lien symbolique dans `sites-enabled`",
+        "Fichier dans `conf.d`, puis `a2ensite products-api`"
+      ],
+      "answer": [2],
+      "explanation": "Le site est écrit dans `/etc/nginx/sites-available/products-api`, puis activé par un lien `ln -s` dans `/etc/nginx/sites-enabled/`. `a2ensite` est un outil d'Apache, pas de Nginx.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q031",
+      "type": "single",
+      "prompt": "Quelle commande vérifie la configuration de Nginx avant de la recharger ?",
+      "choices": ["`sudo nginx -v`", "`sudo systemctl status nginx`", "`sudo nginx -s reload`", "`sudo nginx -t`"],
+      "answer": [3],
+      "explanation": "`nginx -t` teste la configuration ; le cours enchaîne ensuite avec `sudo systemctl reload nginx`. `nginx -v` n'affiche que la version.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q032",
+      "type": "single",
+      "prompt": "Avec ce bloc, vers quelle adresse Nginx transmet-il les requêtes `/api/` ?",
+      "code": "server {\n    listen 80;\n    listen [::]:80;\n    server_name api.example.com;\n\n    location /api/ {\n        proxy_pass http://10.20.0.20:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n}",
+      "choices": ["`http://10.20.0.20:3000`", "`http://api.example.com:3000`", "`http://10.20.0.10:5432`", "`http://10.20.0.30:80`"],
+      "answer": [0],
+      "explanation": "`proxy_pass http://10.20.0.20:3000` envoie les requêtes vers l'API Node.js de `backend01`. `api.example.com` est le nom public de `frontend01`, sur lequel Nginx lui-même écoute.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q033",
+      "type": "single",
+      "prompt": "Dans la configuration du reverse proxy, quelle variable Nginx est transmise dans l'en-tête `X-Real-IP` ?",
+      "choices": ["`$host`", "`$remote_addr`", "`$scheme`", "`$server_name`"],
+      "answer": [1],
+      "explanation": "`proxy_set_header X-Real-IP $remote_addr` transmet au back-end l'adresse IP du client. `$scheme` alimente `X-Forwarded-Proto` (http ou https) et `$host` l'en-tête `Host`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q034",
+      "type": "single",
+      "prompt": "Depuis `frontend01`, que vérifie le cours avant de tester l'API à travers Nginx ?",
+      "choices": [
+        "Que la base répond, avec `psql -h 10.20.0.10 -U apiuser -d apidb`",
+        "Que le back-end répond, avec `curl http://10.20.0.20:3000/api/health`",
+        "Que le nom public répond, avec `ping api.example.com`",
+        "Que le pare-feu est actif, avec `sudo ufw enable`"
+      ],
+      "answer": [1],
+      "explanation": "Le cours vérifie d'abord que le back-end est joignable directement, puis teste `curl http://api.example.com/api/health` à travers Nginx. Depuis `frontend01`, `psql` vers `db01` serait de toute façon bloqué par le pare-feu.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q035",
+      "type": "single",
+      "prompt": "Que renvoie `curl http://api.example.com/api/health` quand toute la chaîne fonctionne ?",
+      "choices": ["`{\"error\":\"database error\"}`", "`[]`", "`{\"status\":\"ok\"}`", "`HTTP/1.1 502 Bad Gateway`"],
+      "answer": [2],
+      "explanation": "La route `/api/health` répond `{\"status\":\"ok\"}`. `{\"error\":\"database error\"}` est la réponse de `/api/products`, avec un code 500, quand la requête SQL échoue.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch08-q036",
+      "type": "single",
+      "prompt": "En cas de panne, dans quel ordre le cours vérifie-t-il la chaîne de services ?",
+      "choices": [
+        "`frontend01`, puis `backend01`, puis `db01`",
+        "`backend01`, puis `db01`, puis `frontend01`",
+        "`db01`, puis `backend01`, puis `frontend01`",
+        "`frontend01`, puis `db01`, puis `backend01`"
+      ],
+      "answer": [2],
+      "explanation": "Le cours remonte la chaîne depuis le service le plus proche des données vers le client : `db01`, puis `backend01`, puis `frontend01`. Partir du client est l'ordre intuitif, mais ce n'est pas celui du cours.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q037",
+      "type": "single",
+      "prompt": "`psql -h 10.20.0.10 -U apiuser -d apidb` fonctionne depuis `backend01` mais pas depuis `frontend01`. Pourquoi ?",
+      "choices": [
+        "PostgreSQL n'écoute que sur 127.0.0.1",
+        "Le mot de passe de `apiuser` a expiré",
+        "Le pare-feu de `db01` et `pg_hba.conf` n'acceptent que `backend01`",
+        "Le service `postgresql` est arrêté sur `db01`"
+      ],
+      "answer": [2],
+      "explanation": "Sur `db01`, UFW n'ouvre le port 5432 qu'à 10.20.0.20 et `pg_hba.conf` n'autorise `apiuser` que depuis 10.20.0.20/32 : `frontend01` est refusé par conception. Un service arrêté ou une écoute sur 127.0.0.1 ferait aussi échouer la connexion depuis `backend01`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch08-q038",
+      "type": "single",
+      "prompt": "Les deux tests ci-dessous sont lancés depuis un client. Quelle partie de la chaîne faut-il examiner en priorité ?",
+      "code": "# curl http://api.example.com/api/health\n{\"status\":\"ok\"}\n# curl http://api.example.com/api/products\n{\"error\":\"database error\"}",
+      "choices": [
+        "La directive `proxy_pass` de Nginx sur `frontend01`",
+        "La résolution DNS de `api.example.com`",
+        "Les règles 80 et 443 du pare-feu de `frontend01`",
+        "La connexion de `backend01` à PostgreSQL sur `db01`"
+      ],
+      "answer": [3],
+      "explanation": "`/api/health` répond sans toucher à la base, donc DNS, Nginx et l'API fonctionnent. `/api/products` échoue sur la requête SQL : on vérifie PostgreSQL, `pg_hba.conf`, le pare-feu de `db01` et le mot de passe de `/etc/products-api.env`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch08-q039",
+      "type": "single",
+      "prompt": "Pour publier l'API en HTTPS, où la connexion TLS est-elle terminée ?",
+      "choices": ["Sur `frontend01`, par Nginx", "Sur `backend01`, par Node.js", "Sur `db01`, par PostgreSQL", "Sur le routeur 10.20.0.1"],
+      "answer": [0],
+      "explanation": "Nginx termine la connexion TLS sur `frontend01`, puis communique avec `backend01` sur le réseau privé. Node.js n'a donc pas à gérer de certificat.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch08-q040",
+      "type": "single",
+      "prompt": "Pourquoi le cours ne détaille-t-il pas la mise en place automatique des certificats HTTPS ?",
+      "choices": [
+        "Let's Encrypt ne fonctionne pas avec Nginx",
+        "Elle dépend du nom DNS et de l'environnement d'hébergement",
+        "Le TLS est déjà assuré par Node.js sur `backend01`",
+        "Les ports 80 et 443 sont fermés par UFW"
+      ],
+      "answer": [1],
+      "explanation": "Le cours cite Let's Encrypt comme autorité de certification possible, mais la mise en place automatique dépend du nom DNS et de l'environnement d'hébergement. Le TLS est terminé par Nginx sur `frontend01`, pas par Node.js.",
+      "difficulty": 2
+    }
+  ]
+}

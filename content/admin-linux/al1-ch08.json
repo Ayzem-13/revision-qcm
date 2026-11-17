@@ -1,0 +1,665 @@
+{
+  "id": "al1-ch08",
+  "title": "Contrôle des processus",
+  "group": "Cours, partie 1",
+  "order": 8,
+  "source": "AdminLinux-1.pdf, chapitre 8",
+  "questions": [
+    {
+      "id": "al1-ch08-q001",
+      "type": "single",
+      "prompt": "Sans option, quels processus la commande `ps` affiche-t-elle ?",
+      "choices": [
+        "Tous les processus du système",
+        "Les processus de tous les utilisateurs attachés à un terminal",
+        "Vos processus, s'ils sont attachés à un terminal",
+        "Les processus non attachés à un terminal"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Par défaut, `ps` n'affiche que vos processus, et seulement s'ils sont attachés à un terminal. Il faut `-a` pour les autres utilisateurs et `-x` pour les processus sans terminal.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q002",
+      "type": "single",
+      "prompt": "Quelle option de `ps` affiche aussi les processus non attachés à un terminal ?",
+      "choices": [
+        "`-a`",
+        "`-x`",
+        "`-l`",
+        "`-t`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`-x` ajoute les processus non attachés à un terminal, comme les démons. `-a` ajoute ceux des autres utilisateurs.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q003",
+      "type": "single",
+      "prompt": "Quelle option de `ps` affiche les processus de tous les utilisateurs ?",
+      "choices": [
+        "`-x`",
+        "`-l`",
+        "`-f`",
+        "`-a`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`-a` affiche les processus de tous les utilisateurs. `-x` concerne les processus sans terminal et `-l` donne l'affichage long, d'où la combinaison `ps -axl` du cours.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q004",
+      "type": "single",
+      "prompt": "Quel signal la commande `kill` envoie-t-elle si on ne précise pas de signal ?",
+      "choices": [
+        "`9` SIGKILL",
+        "`1` SIGHUP",
+        "`15` SIGTERM",
+        "`2` SIGINT"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Sans signal précisé, `kill` envoie le signal 15 SIGTERM. SIGKILL (9) doit être demandé explicitement, par exemple avec `kill -KILL` ou `kill -9`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch08-q005",
+      "type": "single",
+      "prompt": "À quoi correspond le signal 15 SIGTERM selon le cours ?",
+      "choices": [
+        "Une demande polie de fin de processus",
+        "Une mise en pause du processus",
+        "La fin de la session du terminal",
+        "Une interruption au clavier par l'utilisateur"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le cours décrit SIGTERM comme une demande polie de fin de processus. C'est le signal envoyé par défaut par `kill` et par `pkill`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q006",
+      "type": "single",
+      "prompt": "Que fait la dernière commande de cette séquence ?",
+      "code": "# xeyes &\n[1] 17436\n# kill -KILL 17436",
+      "choices": [
+        "Elle envoie SIGTERM au processus de PID 17436",
+        "Elle envoie SIGKILL au processus de PID 17436",
+        "Elle envoie SIGKILL à tous les processus `xeyes`",
+        "Elle envoie SIGKILL à tous les processus de l'utilisateur"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`kill -KILL 17436` envoie le signal SIGKILL, désigné par son nom, au processus de PID 17436. Viser tous les processus `xeyes` par leur nom serait le rôle de `pkill`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q007",
+      "type": "multi",
+      "prompt": "Comment obtenir la liste des signaux supportés par le système ? (plusieurs réponses)",
+      "choices": [
+        "`kill -l`",
+        "`ps -l`",
+        "`man 7 signal`",
+        "`pgrep -l`"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explanation": "Le cours donne `kill -l` et la page de manuel `man 7 signal`. `ps -l` est l'affichage long de `ps`, et `pgrep -l` ajoute le nom des processus au PID.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q008",
+      "type": "single",
+      "prompt": "Quelle combinaison de commandes `pgrep` et `pkill` remplacent-elles ?",
+      "choices": [
+        "`top`, `nice` et `kill`",
+        "`ps`, `grep`, `awk` et `kill`",
+        "`ps`, `find` et `kill`",
+        "`at`, `cron` et `kill`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`pgrep` et `pkill` remplacent la combinaison `ps`, `grep`, `awk` et `kill` : on trouve ou on signale les processus directement par critères, sans extraire les PID à la main.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q009",
+      "type": "single",
+      "prompt": "Que fait la commande `pgrep` ?",
+      "choices": [
+        "Elle envoie le signal SIGTERM aux processus qui correspondent aux critères",
+        "Elle affiche en temps réel l'activité des processus",
+        "Elle affiche le numéro de chaque processus qui correspond aux critères",
+        "Elle cherche un motif dans les fichiers ouverts par les processus"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`pgrep` parcourt la liste des processus et affiche le numéro (PID) de ceux qui correspondent aux critères. Envoyer SIGTERM, c'est le rôle de `pkill`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch08-q010",
+      "type": "single",
+      "prompt": "Sans option de signal, que fait `pkill firefox` ?",
+      "choices": [
+        "Elle envoie le signal 15 SIGTERM aux processus `firefox`",
+        "Elle envoie le signal 9 SIGKILL aux processus `firefox`",
+        "Elle affiche les PID des processus `firefox`",
+        "Elle demande confirmation avant de signaler chaque processus `firefox`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`pkill` envoie par défaut le signal 15 SIGTERM aux processus correspondants, comme `kill`. Afficher les PID, c'est `pgrep`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q011",
+      "type": "single",
+      "prompt": "Que fait cette commande ?",
+      "code": "# pkill -9 -U toto bash",
+      "choices": [
+        "Elle envoie SIGTERM aux processus `bash` de l'utilisateur toto",
+        "Elle envoie SIGKILL aux processus `bash` des membres du groupe toto",
+        "Elle envoie SIGKILL à tous les processus de toto sauf `bash`",
+        "Elle envoie SIGKILL aux processus `bash` de l'utilisateur toto"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`-9` choisit SIGKILL, `-U toto` restreint aux processus de l'utilisateur toto et `bash` est le motif. Le groupe se sélectionnerait avec `-G`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q012",
+      "type": "single",
+      "prompt": "Quelle commande liste les PID des processus `bash` attachés au terminal `pts/1` ?",
+      "choices": [
+        "`pgrep -U pts/1 bash`",
+        "`pgrep -G pts/1 bash`",
+        "`pgrep -t pts/1 bash`",
+        "`pgrep -l pts/1 bash`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`-t term` ne sélectionne que les processus attachés au terminal indiqué. `-U` attend un utilisateur et `-G` un groupe.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q013",
+      "type": "single",
+      "prompt": "Que fait la commande `top` ?",
+      "choices": [
+        "Elle affiche une seule fois la liste des processus, triée par PID",
+        "Elle affiche en temps réel l'activité des processus, les plus actifs en premier",
+        "Elle affiche l'arborescence des processus parents et enfants",
+        "Elle affiche uniquement la charge moyenne du système"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`top` examine et affiche en temps réel l'activité des processus, les plus actifs d'abord, et permet d'agir de façon interactive. Un affichage unique, c'est ce que fait `ps`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch08-q014",
+      "type": "single",
+      "prompt": "Quelle commande lance `top` avec un rafraîchissement toutes les 5 secondes ?",
+      "choices": [
+        "`top -i 5`",
+        "`top -p 5`",
+        "`top -n 5`",
+        "`top -d 5`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`-d sec` fixe le délai de rafraîchissement. `-p 5` surveillerait le processus de PID 5, et `-i` n'affiche que les processus actifs.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q015",
+      "type": "single",
+      "prompt": "Quelle commande n'affiche dans `top` que les processus 1234 et 5678 ?",
+      "choices": [
+        "`top -p 1234 -p 5678`",
+        "`top -i 1234 5678`",
+        "`top -d 1234 -d 5678`",
+        "`top -U 1234 -U 5678`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`-p pid` n'affiche que le processus de ce PID et peut être précisé plusieurs fois. `-i` sert à n'afficher que les processus actifs, sans argument.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch08-q016",
+      "type": "single",
+      "prompt": "Quelle ligne de l'en-tête de `top` affiche le temps depuis le démarrage, le nombre d'utilisateurs et la charge moyenne ?",
+      "choices": [
+        "La deuxième",
+        "La troisième",
+        "La sixième",
+        "La première"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "La première ligne donne le temps depuis le démarrage, le nombre d'utilisateurs et la charge moyenne. La deuxième résume les processus (nombre, actifs, zombies, en pause).",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q017",
+      "type": "single",
+      "prompt": "Que représente la colonne `NI` dans `top` ?",
+      "choices": [
+        "La valeur de nice du processus (priorité d'ordonnancement)",
+        "Le numéro du processeur qui exécute le processus",
+        "Le nombre d'instances du programme en cours",
+        "Le numéro d'interruption utilisé par le processus"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`NI` est la valeur de nice, c'est-à-dire la priorité d'ordonnancement. Le numéro du processeur est dans la colonne `CPU`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q018",
+      "type": "single",
+      "prompt": "Dans la colonne `STAT` de `top`, que signifie la lettre `Z` ?",
+      "choices": [
+        "Processus en sommeil",
+        "Processus zombie",
+        "Processus en cours d'exécution",
+        "Processus tracé ou en pause"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`Z` signale un processus zombie. Le cours donne aussi `S` pour sleep, `R` pour running et `T` pour traced ou paused.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch08-q019",
+      "type": "multi",
+      "prompt": "Quelles colonnes de `top` renseignent sur la mémoire utilisée par un processus ? (plusieurs réponses)",
+      "choices": [
+        "`RSS`",
+        "`NI`",
+        "`SHARE`",
+        "`TIME`",
+        "`%MEM`"
+      ],
+      "answer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "`RSS` est la taille totale en mémoire, `SHARE` la mémoire partagée et `%MEM` le pourcentage de mémoire. `TIME` est un temps processeur cumulé et `NI` la valeur de nice.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q020",
+      "type": "single",
+      "prompt": "Que fait la commande `at` ?",
+      "choices": [
+        "Elle exécute une commande à intervalles réguliers",
+        "Elle exécute une commande au prochain démarrage du système",
+        "Elle exécute une commande ou un script à une heure précise, une seule fois",
+        "Elle exécute une commande dès que la charge du système baisse"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`at` exécute une commande ou un script à une heure précise, une seule fois. Les intervalles réguliers relèvent de `cron`, et l'exécution à charge basse de `batch`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch08-q021",
+      "type": "single",
+      "prompt": "Quelle commande est équivalente à `at -l` ?",
+      "choices": [
+        "`atrm`",
+        "`batch`",
+        "`crontab -l`",
+        "`atq`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`at -l` affiche la liste des commandes en attente d'exécution, comme `atq`. `crontab -l` affiche la table crontab, qui n'a rien à voir avec les travaux `at`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q022",
+      "type": "single",
+      "prompt": "Quelle commande est équivalente à `at -d` ?",
+      "choices": [
+        "`atrm`",
+        "`atq`",
+        "`batch`",
+        "`at -v`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`at -d` efface des travaux en attente, comme `atrm`. `at -v` affiche simplement plus d'informations.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q023",
+      "type": "single",
+      "prompt": "Que fait cette commande ?",
+      "code": "# at -f /root/backup.sh now + 1 hour",
+      "choices": [
+        "Elle exécute le script toutes les heures à partir de maintenant",
+        "Elle exécute une fois le script `/root/backup.sh` dans une heure",
+        "Elle lit dans le fichier l'heure à laquelle exécuter les commandes",
+        "Elle exécute le script maintenant, puis une seconde fois dans une heure"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`-f fichier` lit les commandes dans le fichier au lieu de l'entrée standard, et `now + 1 hour` place l'exécution, unique, une heure plus tard. Une répétition horaire relèverait de `cron`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q024",
+      "type": "single",
+      "prompt": "Que fait l'option `-m` de `at` ?",
+      "choices": [
+        "Elle lit la commande à exécuter dans un fichier",
+        "Elle affiche plus d'informations",
+        "Elle exécute la commande quand la charge du système est basse",
+        "Elle envoie un courrier à l'utilisateur quand le travail est terminé, même sans sortie"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`-m` envoie un courrier à l'utilisateur à la fin du travail, même s'il n'a rien écrit sur ses flux de sortie. Lire la commande dans un fichier, c'est `-f`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q025",
+      "type": "single",
+      "prompt": "Pourquoi le cours conseille-t-il d'utiliser un script avec l'option `-f` de `at` ?",
+      "choices": [
+        "Parce que `at` attend les commandes sur l'entrée standard",
+        "Parce que sans `-f`, seul root peut utiliser `at`",
+        "Parce que seule l'option `-f` permet de préciser une heure",
+        "Parce que sans `-f`, la commande est exécutée immédiatement"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`at` attend les commandes à lancer depuis l'entrée standard, il vaut donc mieux les regrouper dans un script passé avec `-f`. L'heure, elle, se donne toujours en argument.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q026",
+      "type": "multi",
+      "prompt": "Quelles indications d'heure la commande `at` accepte-t-elle selon le cours ? (plusieurs réponses)",
+      "choices": [
+        "`21:00`",
+        "`every monday`",
+        "`noon`",
+        "`now + 2 days`",
+        "`21h00`"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "`at` accepte `HH:MM` (ou `HHMM`), des moments comme `noon` ou `midnight`, et `now + nombre d'unités`. `every monday` décrirait une répétition, ce que `at` ne fait pas, et `21h00` n'est pas un format accepté.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q027",
+      "type": "single",
+      "prompt": "Si le fichier `/etc/at.allow` existe, qui peut utiliser la commande `at` ?",
+      "choices": [
+        "Tous les utilisateurs sauf ceux listés dans ce fichier",
+        "Seuls les utilisateurs listés dans ce fichier",
+        "Tous les utilisateurs, ce fichier ne servant qu'aux journaux",
+        "Uniquement root, quels que soient les noms listés"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Si `/etc/at.allow` existe, seuls les utilisateurs qu'il liste peuvent utiliser `at`, et il est regardé avant `/etc/at.deny`. C'est `/etc/at.deny` qui autorise tout le monde sauf les utilisateurs listés.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q028",
+      "type": "single",
+      "prompt": "Quel démon gère l'exécution des commandes programmées par `at` ?",
+      "choices": [
+        "`crond`",
+        "`atd`",
+        "`systemd-logind`",
+        "`inetd`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "L'exécution des travaux `at` est gérée par le démon `atd`. Le démon `cron` gère, lui, les tables crontab.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch08-q029",
+      "type": "single",
+      "prompt": "Selon le cours, au-delà de quelle charge système `atd` n'exécute-t-il, par défaut, aucun travail ?",
+      "choices": [
+        "`1.0`",
+        "`0.5`",
+        "`1.5`",
+        "`0.8`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Selon le cours, aucun travail n'est exécuté par défaut si la charge dépasse 0.8, ce qui, avec l'intervalle de lancement de 60 secondes, rend la précision de `at` relative. En pratique, sur Ubuntu, la limite par défaut de `atd` est 1.5 et ne concerne que les travaux `batch`, mais c'est 0.8 que le cours attend.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch08-q030",
+      "type": "multi",
+      "prompt": "Quels fichiers contrôlent quels utilisateurs ont le droit d'utiliser `crontab` ? (plusieurs réponses)",
+      "choices": [
+        "`/etc/at.allow`",
+        "`/etc/cron.allow`",
+        "`/etc/crontab`",
+        "`/etc/cron.deny`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explanation": "`crontab` utilise `/etc/cron.allow` et `/etc/cron.deny`, qui fonctionnent comme `/etc/at.allow` et `/etc/at.deny`. Ces derniers ne concernent que `at`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q031",
+      "type": "single",
+      "prompt": "Quelle commande édite la table crontab en cours avec l'éditeur défini par `$EDITOR` ?",
+      "choices": [
+        "`crontab -l`",
+        "`crontab -r`",
+        "`crontab -e`",
+        "`crontab -u`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`crontab -e` ouvre la table dans l'éditeur `$EDITOR`. Attention à `crontab -r`, juste à côté sur le clavier : elle supprime la table.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch08-q032",
+      "type": "single",
+      "prompt": "En tant que root, quelle commande affiche la table crontab de l'utilisateur toto ?",
+      "choices": [
+        "`crontab -l toto`",
+        "`crontab -u toto -l`",
+        "`crontab -u toto -r`",
+        "`crontab -u toto -e`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`-u user` permet au super utilisateur de manipuler la table d'un utilisateur précis, et `-l` l'affiche. Avec `-r` on la supprimerait, avec `-e` on l'éditerait.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q033",
+      "type": "single",
+      "prompt": "Que fait la commande `crontab mon_fichier` ?",
+      "choices": [
+        "Elle exécute immédiatement les commandes du fichier",
+        "Elle vérifie la syntaxe du fichier sans l'installer",
+        "Elle ajoute le contenu du fichier à la fin de la table actuelle",
+        "Elle installe la table crontab stockée dans le fichier"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "La première forme de `crontab` installe une table crontab stockée dans un fichier. Elle ne complète pas la table existante, elle la remplace.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q034",
+      "type": "multi",
+      "prompt": "Dans le champ jour de la semaine d'une crontab, quelles valeurs désignent le dimanche ? (plusieurs réponses)",
+      "choices": [
+        "`0`",
+        "`1`",
+        "`7`",
+        "`6`"
+      ],
+      "answer": [
+        0,
+        2
+      ],
+      "explanation": "Le jour de la semaine va de 0 à 7, et 0 comme 7 désignent le dimanche. 1 est le lundi et 6 le samedi.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q035",
+      "type": "single",
+      "prompt": "Quand cette ligne de crontab lance-t-elle le script ?",
+      "code": "0 1 * * * /home/toto/sauve1",
+      "choices": [
+        "Toutes les nuits à 1h du matin",
+        "Toutes les heures, à la minute 1",
+        "Le 1er de chaque mois à minuit",
+        "Chaque lundi à minuit"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Les champs sont dans l'ordre minute, heure, jour du mois, mois, jour de la semaine : minute 0, heure 1, tous les jours. Le piège est d'inverser minute et heure.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q036",
+      "type": "single",
+      "prompt": "Quand cette ligne de crontab lance-t-elle le script ?",
+      "code": "15 4 * * 0 /home/toto/sauve2",
+      "choices": [
+        "Chaque lundi à 4h15",
+        "Le 15 avril de chaque année à minuit",
+        "Chaque dimanche à 4h15, dans la nuit du samedi au dimanche",
+        "Chaque dimanche à 15h04"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Minute 15, heure 4, jour de la semaine 0 (dimanche) : 4h15 dans la nuit du samedi au dimanche. Lire 15h04 revient à inverser minute et heure.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q037",
+      "type": "single",
+      "prompt": "Quand cette ligne de crontab lance-t-elle le script ?",
+      "code": "*/5 * * * 1-5 /root/mesure",
+      "choices": [
+        "Toutes les cinq minutes, du lundi au vendredi",
+        "Toutes les cinq heures, du lundi au vendredi",
+        "Toutes les minutes, du 1er au 5 du mois",
+        "Toutes les cinq minutes, du 1er au 5 du mois"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`*/5` dans le champ minute signifie toutes les cinq minutes, et `1-5` dans le cinquième champ (jour de la semaine) va du lundi au vendredi. Le jour du mois est le troisième champ, ici `*`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch08-q038",
+      "type": "single",
+      "prompt": "Selon l'exemple du cours, quand cette ligne de crontab lance-t-elle le script ?",
+      "code": "0 23 1-7 * 6 /home/toto/sauve3",
+      "choices": [
+        "Du 1er au 7 du mois, à 6h23",
+        "Le premier samedi du mois, à 23h",
+        "Chaque samedi de janvier à juillet, à 23h",
+        "Le sixième jour du mois, à 23h"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Le cours lit ainsi cette ligne : heure 23, jours 1 à 7 du mois, jour de la semaine 6 (samedi), donc le premier samedi du mois à 23h. Les jours 1 à 7 sont dans le troisième champ, pas dans celui des mois. En pratique, quand ces deux champs de jour sont renseignés, cron lance la commande dès que l'un des deux correspond (du 1er au 7, et aussi chaque samedi), mais c'est la lecture du cours qui est attendue.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch08-q039",
+      "type": "single",
+      "prompt": "Quelle ligne de crontab lance `/root/script` tous les jours à 12h30 ?",
+      "choices": [
+        "`12 30 * * * /root/script`",
+        "`30 12 * * 0 /root/script`",
+        "`* 12 30 * * /root/script`",
+        "`30 12 * * * /root/script`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "La minute vient en premier (30), puis l'heure (12), et `*` partout ailleurs pour tous les jours. Mettre `0` dans le dernier champ limiterait l'exécution au dimanche.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch08-q040",
+      "type": "single",
+      "prompt": "Dans le champ heure d'une crontab, que signifie la valeur `12-14,16` ?",
+      "choices": [
+        "De 12h à 16h, sans interruption",
+        "À 12h et à 16h seulement",
+        "À 12h, 13h, 14h et 16h",
+        "À 12h14 et à 16h"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Un intervalle (`12-14`) et une liste séparée par des virgules se combinent : 12, 13, 14 et 16. 15h n'est pas inclus.",
+      "difficulty": 3
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "id": "al1-ch02",
+  "title": "Installation",
+  "group": "Cours, partie 1",
+  "order": 2,
+  "source": "AdminLinux-1.pdf, chapitre 2",
+  "questions": [
+    {
+      "id": "al1-ch02-q001",
+      "type": "single",
+      "prompt": "Selon le cours, à quelle adresse trouve-t-on la liste des miroirs distribuant Ubuntu Linux ?",
+      "choices": [
+        "`https://www.debian.org/distrib`",
+        "`https://ubuntu.com/download`",
+        "`https://launchpad.net/ubuntu`",
+        "`https://packages.ubuntu.com`"
+      ],
+      "answer": [1],
+      "explanation": "Le cours renvoie à `https://ubuntu.com/download` pour la liste des miroirs. `packages.ubuntu.com` sert à consulter les paquets, pas à télécharger le système.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q002",
+      "type": "single",
+      "prompt": "Comment le cours qualifie-t-il Ubuntu Linux dans la préparation de l'installation ?",
+      "choices": [
+        "un logiciel propriétaire sous licence payante",
+        "une distribution dérivée de Red Hat",
+        "un projet communautaire",
+        "un système réservé aux machines certifiées"
+      ],
+      "answer": [2],
+      "explanation": "Le cours présente Ubuntu Linux comme un projet communautaire, distribué par une liste de miroirs. La certification du matériel est conseillée, pas obligatoire.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q003",
+      "type": "single",
+      "prompt": "Quel type d'image Ubuntu sera utilisé pour les travaux pratiques ?",
+      "choices": [
+        "des images « desktop » avec l'environnement Gnome",
+        "des images « server » avec l'interface Wayland",
+        "des images « cloud » minimales sans réseau",
+        "des images « server » sans interface graphique"
+      ],
+      "answer": [3],
+      "explanation": "Les travaux pratiques utilisent des images « server » sans interface graphique. Wayland est une interface graphique, donc incompatible avec ce choix.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q004",
+      "type": "single",
+      "prompt": "Dans quel cas le cours juge-t-il important de vérifier que le matériel est supporté et suffisamment puissant ?",
+      "choices": [
+        "lors d'une installation sur une machine compatible PC qui n'est pas certifiée pour Ubuntu Linux",
+        "uniquement lors d'une installation dans une machine virtuelle",
+        "uniquement lors du passage à une nouvelle version d'Ubuntu",
+        "lors d'une installation sur une machine déjà certifiée pour Ubuntu Linux"
+      ],
+      "answer": [0],
+      "explanation": "La vérification est importante sur une machine compatible PC non certifiée pour Ubuntu Linux. Une machine certifiée est justement celle dont le support est déjà garanti.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch02-q005",
+      "type": "single",
+      "prompt": "Quelle quantité minimale de RAM le cours indique-t-il pour Ubuntu 26.04 version Desktop ?",
+      "choices": [
+        "4 Go",
+        "6 Go",
+        "2 Go",
+        "1,5 Go"
+      ],
+      "answer": [1],
+      "explanation": "Ubuntu 26.04 Desktop demande au minimum 6 Go de RAM pour une utilisation confortable. 1,5 Go est le minimum donné pour la version Server.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q006",
+      "type": "single",
+      "prompt": "Quel espace libre minimal le cours indique-t-il pour Ubuntu 26.04 version Desktop ?",
+      "choices": [
+        "4 Go",
+        "10 Go",
+        "25 Go",
+        "50 Go"
+      ],
+      "answer": [2],
+      "explanation": "Ubuntu 26.04 Desktop demande au minimum 25 Go d'espace libre. 4 Go est la valeur donnée pour la version Server.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q007",
+      "type": "single",
+      "prompt": "Quel processeur minimal le cours indique-t-il pour Ubuntu 26.04 version Desktop ?",
+      "choices": [
+        "un simple cœur 1 GHz",
+        "un quadruple cœur 3 GHz",
+        "un double cœur 1 GHz",
+        "un double cœur 2 GHz"
+      ],
+      "answer": [3],
+      "explanation": "Le cours demande au minimum un processeur double cœur 2 GHz, avec 6 Go de RAM et 25 Go d'espace libre, pour Ubuntu 26.04 Desktop.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q008",
+      "type": "single",
+      "prompt": "À partir de quelles ressources la version Server d'Ubuntu peut-elle fonctionner selon le cours ?",
+      "choices": [
+        "environ 1,5 Go de RAM et 4 Go de stockage",
+        "environ 6 Go de RAM et 25 Go de stockage",
+        "environ 512 Mo de RAM et 2 Go de stockage",
+        "environ 4 Go de RAM et 1,5 Go de stockage"
+      ],
+      "answer": [0],
+      "explanation": "La version Server peut fonctionner à partir d'environ 1,5 Go de RAM et 4 Go de stockage selon l'usage. Le piège inverse les deux valeurs ; 6 Go et 25 Go sont les minima de la version Desktop.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch02-q009",
+      "type": "single",
+      "prompt": "Pourquoi le cours conseille-t-il de prévoir davantage que les minima pour les travaux pratiques et les machines virtuelles ?",
+      "choices": [
+        "parce que l'installateur refuse de démarrer en dessous de ces minima",
+        "pour garder une marge pour les mises à jour, les journaux et les logiciels installés",
+        "parce que les machines virtuelles ne peuvent pas utiliser de swap",
+        "parce que les images « server » ne fonctionnent pas avec ces valeurs"
+      ],
+      "answer": [1],
+      "explanation": "Les valeurs données sont des minima : il faut une marge pour les mises à jour, les journaux et les logiciels installés. Le cours ne dit pas que l'installateur refuse de démarrer.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch02-q010",
+      "type": "multi",
+      "prompt": "Quelles informations faut-il récupérer sur la machine avant de lancer l'installation ? (plusieurs réponses)",
+      "choices": [
+        "le nombre de disques, l'espace libre et les partitions disponibles",
+        "le contenu du répertoire `/var/log/installer`",
+        "la présence d'autres systèmes d'exploitation déjà installés",
+        "la configuration réseau actuelle",
+        "la version du noyau qui sera installée"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "Avant l'installation, on recense les disques, l'espace libre et les partitions, les systèmes déjà installés, les moyens d'installation, l'usage prévu, les logiciels nécessaires et la configuration réseau actuelle. `/var/log/installer` n'existe qu'après l'installation.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch02-q011",
+      "type": "multi",
+      "prompt": "Quels moyens d'installation le cours cite-t-il ? (plusieurs réponses)",
+      "choices": [
+        "une disquette de démarrage",
+        "une clé USB",
+        "le réseau",
+        "une bande magnétique",
+        "une image virtuelle ou cloud"
+      ],
+      "answer": [1, 2, 4],
+      "explanation": "Le cours cite la clé USB, le DVD, le réseau et l'image virtuelle ou cloud comme moyens d'installation. La disquette et la bande magnétique n'y figurent pas.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q012",
+      "type": "single",
+      "prompt": "Parmi ces éléments, lequel fait partie des informations à établir pour l'installation, et non des informations à récupérer sur la machine ?",
+      "choices": [
+        "les systèmes d'exploitation déjà installés",
+        "la configuration réseau actuelle",
+        "les partitions à créer",
+        "les partitions déjà disponibles"
+      ],
+      "answer": [2],
+      "explanation": "Les partitions à créer sont une décision établie à partir des informations recueillies. Les partitions déjà disponibles, les systèmes présents et la configuration réseau actuelle sont des informations à récupérer.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch02-q013",
+      "type": "multi",
+      "prompt": "À partir des informations recueillies sur la machine, que doit-on pouvoir établir pour l'installation ? (plusieurs réponses)",
+      "choices": [
+        "les systèmes d'exploitation déjà présents",
+        "s'il faut installer l'interface graphique",
+        "l'espace libre actuel des disques",
+        "la configuration du réseau",
+        "les logiciels à installer"
+      ],
+      "answer": [1, 3, 4],
+      "explanation": "On établit les partitions à créer, la configuration du réseau, l'installation ou non de l'interface graphique, les logiciels à installer et la configuration graphique. Les systèmes présents et l'espace libre sont des informations récupérées, pas des décisions.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch02-q014",
+      "type": "single",
+      "prompt": "Dans quel répertoire trouve-t-on, une fois l'installation terminée, les fichiers concernant son déroulement ?",
+      "choices": [
+        "`/var/lib/dpkg`",
+        "`/etc/installer`",
+        "`/var/log/apt`",
+        "`/var/log/installer`"
+      ],
+      "answer": [3],
+      "explanation": "Les fichiers sur le déroulement de l'installation se trouvent dans `/var/log/installer`. `/var/lib/dpkg` contient les bases de données de dpkg.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q015",
+      "type": "single",
+      "prompt": "Quel fichier de `/var/log/installer` contient les messages de parted, le logiciel de partitionnement ?",
+      "choices": [
+        "`partman`",
+        "`syslog`",
+        "`status`",
+        "`hardware-summary`"
+      ],
+      "answer": [0],
+      "explanation": "`partman` contient les messages de parted, le logiciel de partitionnement. `syslog` contient les messages du noyau et des pilotes.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q016",
+      "type": "single",
+      "prompt": "Quel fichier de `/var/log/installer` liste les logiciels installés ?",
+      "choices": [
+        "`syslog`",
+        "`status`",
+        "`partman`",
+        "`hardware-summary`"
+      ],
+      "answer": [1],
+      "explanation": "Le fichier `status` de `/var/log/installer` concerne les logiciels installés. `hardware-summary` concerne la détection des périphériques.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch02-q017",
+      "type": "single",
+      "prompt": "Que contient le fichier `/var/log/installer/syslog` ?",
+      "choices": [
+        "la liste des logiciels installés",
+        "les messages de parted",
+        "les messages du noyau et des pilotes",
+        "le résultat de la détection des périphériques"
+      ],
+      "answer": [2],
+      "explanation": "`syslog` contient les messages du noyau et des pilotes. Le résultat de la détection des périphériques est dans `hardware-summary`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch02-q018",
+      "type": "single",
+      "prompt": "Un administrateur veut savoir quels périphériques ont été détectés pendant l'installation. Quel fichier consulte-t-il ?",
+      "choices": [
+        "`/var/log/installer/syslog`",
+        "`/var/log/installer/status`",
+        "`/var/log/installer/partman`",
+        "`/var/log/installer/hardware-summary`"
+      ],
+      "answer": [3],
+      "explanation": "`hardware-summary` contient les messages résultant de la détection des périphériques. Le piège est `syslog`, qui contient les messages du noyau et des pilotes mais que le cours n'associe pas à la détection.",
+      "difficulty": 3
+    }
+  ]
+}

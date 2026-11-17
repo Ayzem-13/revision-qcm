@@ -1,0 +1,265 @@
+{
+  "id": "al2-ch07",
+  "title": "Samba",
+  "group": "Cours, partie 2",
+  "order": 17,
+  "source": "AdminLinux-2.pdf, chapitre 7",
+  "questions": [
+    {
+      "id": "al2-ch07-q001",
+      "type": "single",
+      "prompt": "Quel protocole Samba utilise-t-il pour le partage de fichiers et d'imprimantes ?",
+      "choices": ["NFS", "SMB", "LDAP", "SSH"],
+      "answer": [1],
+      "explanation": "Samba fournit le partage de fichiers et d'imprimantes avec le protocole SMB. NFS est un autre protocole de partage de fichiers, propre au monde Unix, sans rapport avec Samba.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q002",
+      "type": "single",
+      "prompt": "Que désigne principalement le terme CIFS ?",
+      "choices": [
+        "Le démon qui gère les noms NetBIOS",
+        "Le format de la base d'utilisateurs de Samba",
+        "Une ancienne génération du protocole SMB",
+        "Une variante chiffrée du protocole NFS"
+      ],
+      "answer": [2],
+      "explanation": "Le terme CIFS désigne principalement une ancienne génération du protocole SMB. Le démon lié aux mécanismes NetBIOS est `nmbd`, pas CIFS.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q003",
+      "type": "multi",
+      "prompt": "Selon le cours, quels services combinés sur un même serveur permettent le fonctionnement d'un réseau hétérogène Linux, Windows et macOS ? (plusieurs réponses)",
+      "choices": ["LDAP", "DHCP", "NFS", "Samba", "Nginx"],
+      "answer": [0, 2, 3],
+      "explanation": "Le cours cite l'utilisation combinée de LDAP, NFS et Samba sur un même serveur pour un réseau hétérogène. DHCP et Nginx ne font pas partie de cette combinaison.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch07-q004",
+      "type": "single",
+      "prompt": "Dans un réseau hétérogène LDAP, NFS et Samba, comment les utilisateurs retrouvent-ils leurs données sur Linux comme sur Windows ?",
+      "choices": [
+        "Un compte distinct est créé sur chaque poste client",
+        "Le poste Windows garde leurs fichiers en cache",
+        "Une copie locale est synchronisée à chaque session",
+        "Leurs répertoires personnels sont stockés sur le serveur"
+      ],
+      "answer": [3],
+      "explanation": "Les répertoires personnels sont stockés sur le serveur, donc disponibles depuis les deux systèmes, avec les mêmes identifiants. Un compte distinct par poste ferait justement perdre cette identification unique.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch07-q005",
+      "type": "single",
+      "prompt": "Dans quel fichier configure-t-on le service Samba ?",
+      "choices": ["`/etc/samba/smb.conf`", "`/etc/smb.conf`", "`/etc/samba/samba.conf`", "`/etc/default/samba`"],
+      "answer": [0],
+      "explanation": "Après installation du paquet `samba`, le service se configure dans `/etc/samba/smb.conf`. Le fichier se nomme `smb.conf` et non `samba.conf`, et il se trouve dans le sous-répertoire `/etc/samba/`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q006",
+      "type": "single",
+      "prompt": "Quel paquet installe-t-on pour mettre en place un serveur de partage Samba ?",
+      "choices": ["`smbclient`", "`samba`", "`cifs-utils`", "`nfs-kernel-server`"],
+      "answer": [1],
+      "explanation": "Le cours installe le paquet `samba`, puis configure `/etc/samba/smb.conf`. Le paquet `smbclient` ne fournit que le client, qui sert par exemple à lister les partages d'un serveur.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q007",
+      "type": "single",
+      "prompt": "Que faut-il faire après avoir modifié `/etc/samba/smb.conf` ?",
+      "choices": [
+        "Lancer `smbpasswd -a` puis redémarrer `smbd`",
+        "Valider avec `smbclient -L` puis redémarrer `nmbd`",
+        "Valider avec `testparm` puis redémarrer `smbd`",
+        "Redémarrer `nmbd` puis lancer `smbstatus`"
+      ],
+      "answer": [2],
+      "explanation": "Le cours valide la configuration avec `testparm`, puis redémarre le service `smbd` (`sudo systemctl restart smbd`). `nmbd` ne concerne que les mécanismes historiques NetBIOS.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch07-q008",
+      "type": "single",
+      "prompt": "À quoi sert la commande `testparm` ?",
+      "choices": [
+        "Tester la connexion d'un client Windows au serveur",
+        "Afficher l'état des connexions Samba en cours",
+        "Lister les partages d'un serveur distant",
+        "Valider la configuration écrite dans `smb.conf`"
+      ],
+      "answer": [3],
+      "explanation": "`testparm` valide la configuration de `/etc/samba/smb.conf` avant le redémarrage de `smbd`. L'état des connexions s'obtient avec `smbstatus`, et la liste des partages avec `smbclient -L`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q009",
+      "type": "single",
+      "prompt": "Que dit le cours du démon `nmbd` ?",
+      "choices": [
+        "Il concerne surtout les mécanismes historiques NetBIOS et n'est pas toujours indispensable",
+        "C'est le démon de partage de fichiers à redémarrer après chaque modification",
+        "Il gère la base des utilisateurs Samba et leurs mots de passe",
+        "Il valide la configuration avant chaque démarrage du service"
+      ],
+      "answer": [0],
+      "explanation": "D'après le cours, `nmbd` concerne surtout les mécanismes historiques NetBIOS et n'est pas indispensable dans tous les déploiements modernes. Le démon à redémarrer après une modification de la configuration est `smbd`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch07-q010",
+      "type": "single",
+      "prompt": "Un administrateur modifie la configuration de Samba avec les commandes ci-dessous. Quelle étape de la démarche du cours a-t-il sautée ?",
+      "code": "# sudo nano /etc/samba/smb.conf\n# sudo systemctl restart smbd",
+      "choices": [
+        "Redémarrer aussi `nmbd`, indispensable au partage",
+        "Valider la configuration avec `testparm` avant de redémarrer",
+        "Recharger systemd avec `systemctl daemon-reload`",
+        "Lister les connexions actives avec `smbstatus`"
+      ],
+      "answer": [1],
+      "explanation": "Le cours demande de valider `smb.conf` avec `testparm`, puis de redémarrer `smbd`. `nmbd` n'est pas indispensable dans tous les déploiements, et `daemon-reload` ne sert qu'après la modification d'un fichier d'unité systemd.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch07-q011",
+      "type": "multi",
+      "prompt": "De quelles parties se compose le fichier `/etc/samba/smb.conf` ? (plusieurs réponses)",
+      "choices": [
+        "Une partie journaux, qui définit les fichiers de log",
+        "Une partie globale, qui configure le fonctionnement du service",
+        "Une partie utilisateurs, qui contient les mots de passe Samba",
+        "Une partie partages, qui liste les répertoires et imprimantes partagés"
+      ],
+      "answer": [1, 3],
+      "explanation": "Le fichier comprend une partie globale (fonctionnement du service) et une partie partages (répertoires, imprimantes et leurs paramètres). Les mots de passe ne sont pas dans `smb.conf` : ils vont dans la base propre à Samba, alimentée par `smbpasswd`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q012",
+      "type": "single",
+      "prompt": "Sous Ubuntu, quel est l'effet du décommentage de ces lignes dans `smb.conf` ?",
+      "code": "[homes]\n      comment = Home Directories\n      browseable = no",
+      "choices": [
+        "Créer automatiquement les comptes Samba des utilisateurs de `/home`",
+        "Interdire tout accès réseau au répertoire `/home`",
+        "Partager le répertoire `/home` en lecture seule pour les invités",
+        "Partager les répertoires de `/home` pour tous les utilisateurs"
+      ],
+      "answer": [3],
+      "explanation": "Le fichier est préconfiguré sous Ubuntu : décommenter la section `[homes]` suffit, selon le cours, à partager `/home` pour tous les utilisateurs (en pratique, chacun n'accède qu'à son propre répertoire personnel). Elle ne crée aucun compte : chaque utilisateur doit toujours être ajouté avec `smbpasswd -a`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch07-q013",
+      "type": "single",
+      "prompt": "Dans la section `[homes]` préconfigurée sous Ubuntu, quelle valeur prend le paramètre `browseable` ?",
+      "choices": ["`no`", "`yes`", "`auto`", "`guest`"],
+      "answer": [0],
+      "explanation": "La section donnée par le cours contient `comment = Home Directories` et `browseable = no`. `guest` n'est pas une valeur de `browseable`, qui attend un booléen.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q014",
+      "type": "single",
+      "prompt": "Quelle commande affiche l'état des connexions Samba ?",
+      "choices": ["`smbclient -L localhost`", "`testparm -s`", "`smbstatus`", "`smbpasswd -a`"],
+      "answer": [2],
+      "explanation": "`smbstatus` affiche l'état des connexions Samba. `smbclient -L` liste les partages proposés par un serveur, ce qui ne dit rien des clients connectés.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q015",
+      "type": "single",
+      "prompt": "Quelle commande liste les partages proposés par un serveur Samba ?",
+      "choices": [
+        "`showmount -e nomduserveur`",
+        "`nmblookup nomduserveur`",
+        "`smbpasswd -a nomduserveur`",
+        "`smbclient -L nomduserveur`"
+      ],
+      "answer": [3],
+      "explanation": "`smbclient -L nomduserveur` liste les partages du serveur. `showmount -e` liste les exports NFS, pas les partages SMB.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch07-q016",
+      "type": "single",
+      "prompt": "D'après le cours, quel paquet faut-il installer pour disposer de la commande `smbclient` ?",
+      "choices": ["`smbclient`", "`samba`", "`samba-common`", "`cifs-utils`"],
+      "answer": [0],
+      "explanation": "Le cours précise que `smbclient -L` vient du paquet `smbclient`. Le paquet `samba` installe le serveur, pas ce client.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch07-q017",
+      "type": "single",
+      "prompt": "Comment le cours consulte-t-il les journaux du serveur Samba ?",
+      "choices": ["`smbstatus`", "`journalctl -u smbd`", "`testparm -v`", "`dmesg | grep smb`"],
+      "answer": [1],
+      "explanation": "Les journaux du service se lisent avec `journalctl -u smbd`, l'option `-u` filtrant sur l'unité systemd. `smbstatus` montre les connexions en cours, pas l'historique du service.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q018",
+      "type": "single",
+      "prompt": "Dans sa configuration par défaut, quelle base d'utilisateurs Samba utilise-t-il ?",
+      "choices": [
+        "Directement `/etc/passwd` et `/etc/shadow`",
+        "L'annuaire LDAP du serveur",
+        "Sa propre base d'utilisateurs",
+        "La base des comptes du poste Windows client"
+      ],
+      "answer": [2],
+      "explanation": "Par défaut, Samba utilise sa propre base d'utilisateurs, distincte des comptes Linux. C'est pourquoi un compte Linux ne suffit pas : il faut l'ajouter avec `smbpasswd -a`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch07-q019",
+      "type": "multi",
+      "prompt": "Pour quelles raisons Samba utilise-t-il par défaut sa propre base d'utilisateurs ? (plusieurs réponses)",
+      "choices": [
+        "Les mots de passe Linux ne peuvent pas dépasser huit caractères",
+        "Tous les utilisateurs du serveur ne sont pas forcément des utilisateurs Windows",
+        "Le protocole SMB interdit la lecture de `/etc/passwd`",
+        "La base des utilisateurs ne contient pas toutes les informations utiles aux clients Microsoft"
+      ],
+      "answer": [1, 3],
+      "explanation": "Le cours donne deux raisons : tous les utilisateurs du serveur ne sont pas forcément des utilisateurs de machines Windows, et la base des utilisateurs ne contient pas forcément toutes les informations nécessaires aux clients Microsoft. Aucune limite de longueur des mots de passe n'est en cause.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch07-q020",
+      "type": "single",
+      "prompt": "Quelle commande permet à un utilisateur de se connecter au serveur Samba depuis une machine Windows ?",
+      "choices": [
+        "`smbpasswd -a utilisateur`",
+        "`passwd utilisateur`",
+        "`smbpasswd -d utilisateur`",
+        "`adduser utilisateur sambashare`"
+      ],
+      "answer": [0],
+      "explanation": "`smbpasswd -a utilisateur` ajoute l'utilisateur à la base de Samba. `passwd` ne change que le mot de passe Linux, que Samba n'utilise pas par défaut, et `-d` désactive un compte au lieu de l'ajouter.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch07-q021",
+      "type": "single",
+      "prompt": "`sudo smbpasswd -a alice` échoue alors qu'aucun compte `alice` n'existe sur le serveur. Quelle est la cause ?",
+      "choices": [
+        "Le service `nmbd` doit d'abord être démarré",
+        "La configuration doit d'abord être validée par `testparm`",
+        "L'utilisateur doit d'abord exister en tant qu'utilisateur Linux",
+        "L'option `-a` est réservée aux comptes machines"
+      ],
+      "answer": [2],
+      "explanation": "Le cours précise qu'il faut que l'utilisateur existe en tant qu'utilisateur Linux avant de l'ajouter à Samba. On crée donc le compte Linux, puis on lance `smbpasswd -a`.",
+      "difficulty": 3
+    }
+  ]
+}

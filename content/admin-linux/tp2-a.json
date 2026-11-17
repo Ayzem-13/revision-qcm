@@ -1,0 +1,421 @@
+{
+  "id": "tp2-a",
+  "title": "TP 2 : réseau, surveillance, RAID, swap",
+  "group": "Travaux pratiques",
+  "order": 23,
+  "source": "AdminLinux-2-TP-1.pdf, chapitres 1 à 4",
+  "questions": [
+    {
+      "id": "tp2-a-q001",
+      "type": "single",
+      "prompt": "Pour relever la configuration obtenue par DHCP, quelle commande affiche en une ligne par interface son nom, son état et ses adresses avec leur préfixe ?",
+      "choices": ["`ip route`", "`ip -br addr`", "`resolvectl status`", "`hostnamectl`"],
+      "answer": [1],
+      "explanation": "`ip -br addr` est la forme résumée (brief) de `ip addr` : nom, état et adresses en notation CIDR. `ip route` donne la route par défaut et `resolvectl status` les serveurs DNS, les deux autres relevés demandés par l'exercice.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-a-q002",
+      "type": "single",
+      "prompt": "D'après cette sortie, quelle est la passerelle par défaut et comment a-t-elle été obtenue ?",
+      "code": "# ip route\ndefault via 10.0.3.2 dev enp0s8 proto dhcp src 10.0.3.15 metric 100\n10.0.3.0/24 dev enp0s8 proto kernel scope link src 10.0.3.15 metric 100\n192.168.56.0/24 dev enp0s3 proto kernel scope link src 192.168.56.104 metric 100",
+      "choices": ["10.0.3.15, obtenue par DHCP", "10.0.3.2, configurée statiquement", "10.0.3.2, obtenue par DHCP", "192.168.56.104, ajoutée par le noyau"],
+      "answer": [2],
+      "explanation": "La ligne `default via 10.0.3.2` désigne la passerelle et `proto dhcp` indique qu'elle vient du bail DHCP. 10.0.3.15 est l'adresse de la machine elle-même (`src`), pas la passerelle.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q003",
+      "type": "single",
+      "prompt": "Le fichier `/etc/resolv.conf` contient seulement `nameserver 127.0.0.53`. Comment relever les vrais serveurs DNS reçus par DHCP ?",
+      "choices": ["Ils sont dans `/etc/hosts`, que DHCP réécrit", "127.0.0.53 est l'adresse du serveur DHCP, qui sert aussi de DNS", "Avec `ip route`, qui affiche les serveurs DNS de chaque interface", "Avec `resolvectl status` : 127.0.0.53 est le résolveur local systemd-resolved"],
+      "answer": [3],
+      "explanation": "127.0.0.53 est le résolveur interne systemd-resolved, qui relaie vers les serveurs DNS reçus ; `resolvectl status` les affiche par interface. Le cours précise que `/etc/resolv.conf` est géré automatiquement et ne doit pas être édité.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q004",
+      "type": "single",
+      "prompt": "Ce fichier Netplan doit passer `enp0s8` en statique en conservant l'adresse 10.0.3.15/24 fournie par DHCP. Quelle erreur contient-il ?",
+      "code": "network:\n  version: 2\n  ethernets:\n    enp0s8:\n      dhcp4: false\n      addresses: [10.0.3.15]\n      routes:\n        - to: default\n          via: 10.0.3.2\n      nameservers:\n        addresses: [10.0.3.3]",
+      "choices": ["L'adresse n'a pas de préfixe : il faut écrire `10.0.3.15/24`", "`dhcp4: false` doit être retiré pour une adresse statique", "La passerelle doit être déclarée sous `nameservers`", "`version: 2` doit être la dernière ligne du fichier"],
+      "answer": [0],
+      "explanation": "Netplan attend les adresses en notation CIDR, comme `addresses: [192.168.1.200/24]` dans l'exemple du cours. `dhcp4: false` est justement attendu pour une configuration statique, et la route par défaut se déclare avec `routes: - to: default via:`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-a-q005",
+      "type": "single",
+      "prompt": "Pourquoi l'exercice demande-t-il de passer par `sudo netplan try` avant `sudo netplan apply` ?",
+      "choices": ["`netplan try` vérifie seulement la syntaxe YAML sans rien appliquer", "`netplan try` applique la configuration au prochain redémarrage seulement", "`netplan try` applique la configuration puis revient à l'ancienne si on ne confirme pas, ce qui évite de perdre l'accès à distance", "`netplan try` génère la configuration pour NetworkManager au lieu de systemd-networkd"],
+      "answer": [2],
+      "explanation": "Le cours recommande `netplan try`, particulièrement utile à distance : sans confirmation dans le délai, l'ancienne configuration est restaurée. Une fois la configuration validée, `netplan apply` l'applique définitivement, sans redémarrage.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q006",
+      "type": "single",
+      "prompt": "Quel paquet installe un serveur FTP autonome disponible sous Ubuntu, comme le demande l'exercice ?",
+      "choices": ["`ftp`", "`tftpd-hpa`", "`openssh-sftp-server`", "`vsftpd`"],
+      "answer": [3],
+      "explanation": "`vsftpd` est un démon FTP autonome. `ftp` n'est qu'un client, `tftpd-hpa` sert le protocole TFTP (sans authentification) et `openssh-sftp-server` est le sous-système SFTP de SSH, pas du FTP.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-a-q007",
+      "type": "single",
+      "prompt": "Sur quel port TCP passent les commandes `USER` et `PASS` d'une session FTP, celles que l'on cherche dans la capture ?",
+      "choices": ["21", "20", "22", "990"],
+      "answer": [0],
+      "explanation": "Le canal de commandes FTP utilise le port 21 (le service `ftp` du scan nmap du cours). Le port 20 sert au canal de données en mode actif, 22 est SSH et 990 est FTPS implicite.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-a-q008",
+      "type": "single",
+      "prompt": "Que montre cette capture réalisée avec tshark sur le serveur FTP ?",
+      "code": "172.16.3.14 -> 172.16.0.2   FTP Request: USER ttoto\n172.16.0.2 -> 172.16.3.14   FTP Response: 331 Password required for ttoto.\n172.16.3.14 -> 172.16.0.2   FTP Request: PASS azerty\n172.16.0.2 -> 172.16.3.14   FTP Response: 530 Login incorrect.",
+      "choices": ["Le mot de passe circule chiffré et seul son haché `azerty` apparaît", "Le mot de passe saisi, `azerty`, circule en clair et la connexion est refusée", "La connexion de `ttoto` a réussi et la session est ouverte", "Le serveur a exigé un certificat du client avant le mot de passe"],
+      "answer": [1],
+      "explanation": "FTP n'a aucun chiffrement : la commande `PASS azerty` est lisible telle quelle. La réponse `530 Login incorrect` signale un échec d'authentification, pas une session ouverte.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q009",
+      "type": "single",
+      "prompt": "Dans un échange FTP, quel code de réponse indique que le nom d'utilisateur est accepté et que le serveur attend le mot de passe ?",
+      "choices": ["530", "220", "331", "230"],
+      "answer": [2],
+      "explanation": "Le cours montre `331 Password required for ttoto.` juste après `USER`. 530 signale un échec de connexion, 220 l'accueil du serveur et 230 une connexion réussie.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q010",
+      "type": "multi",
+      "prompt": "Pourquoi ne faut-il pas utiliser FTP pour transmettre des identifiants sur un réseau non fiable, comparé à SSH/SFTP ? (plusieurs réponses)",
+      "choices": ["FTP transmet l'utilisateur et le mot de passe en clair, lisibles par toute capture sur le chemin", "SFTP est du FTP classique auquel on a ajouté TLS sur le port 990", "SFTP passe par SSH, qui chiffre l'authentification comme les données", "FTP n'envoie qu'un haché du mot de passe, mais ce haché suffit à se reconnecter", "Le contenu des fichiers transférés en FTP est lui aussi lisible dans la capture"],
+      "answer": [0, 2, 4],
+      "explanation": "FTP fait tout passer en clair, identifiants et données, comme le montre la capture tshark du cours. SFTP est un sous-système de SSH (port 22), entièrement chiffré ; le FTP avec TLS s'appelle FTPS, c'est un autre protocole.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q011",
+      "type": "single",
+      "prompt": "Quelle commande permet de surveiller en temps réel les événements liés à `sudo` pendant que l'on lance des commandes dans un autre terminal ?",
+      "choices": ["`journalctl | grep sudo`", "`journalctl --since \"10 minutes ago\" | grep sudo`", "`journalctl -f | grep sudo`", "`who -m | grep sudo`"],
+      "answer": [2],
+      "explanation": "`journalctl -f` suit le journal en temps réel et `grep sudo` filtre les lignes. Sans `-f`, `journalctl` affiche le journal existant puis rend la main, même avec `--since`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q012",
+      "type": "single",
+      "prompt": "Dans cette ligne du journal, que désigne `USER=root` ?",
+      "code": "Nov 27 12:42:40 ubuntuserver sudo[1025]: tp_user : TTY=pts/0 ; PWD=/home/tp_user ; USER=root ; COMMAND=/usr/bin/apt-get install cron",
+      "choices": ["L'utilisateur qui a tapé la commande", "L'identité sous laquelle la commande a été exécutée", "Le propriétaire du terminal `pts/0`", "Le compte qui a ajouté `tp_user` au groupe sudo"],
+      "answer": [1],
+      "explanation": "La ligne se lit : `tp_user`, depuis `pts/0` et le répertoire `/home/tp_user`, a lancé `apt-get install cron` en tant que `root`. L'utilisateur qui a tapé la commande est celui placé avant les deux-points, `tp_user`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q013",
+      "type": "single",
+      "prompt": "Quelle commande affiche les dates et heures des 5 derniers redémarrages de la machine ?",
+      "choices": ["`last reboot | tail -n 5`", "`uptime -s`", "`who -b`", "`last -n 5 reboot`"],
+      "answer": [3],
+      "explanation": "`last reboot` trace les démarrages (cours) du plus récent au plus ancien ; `-n 5` en garde les 5 premiers. `tail` prendrait les plus anciens et la ligne `wtmp begins`, et `uptime -s` comme `who -b` ne donnent que le démarrage en cours.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q014",
+      "type": "single",
+      "prompt": "Quelle commande affiche la liste des démarrages connus par journald, avec leur index ?",
+      "choices": ["`journalctl --list-boots`", "`journalctl -b`", "`last reboot`", "`journalctl -f`"],
+      "answer": [0],
+      "explanation": "`journalctl --list-boots` liste chaque démarrage enregistré dans le journal avec son index (0 pour le démarrage en cours, -1 pour le précédent). `last reboot` lit l'historique des connexions, pas journald, et `journalctl -b` affiche les messages d'un démarrage.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q015",
+      "type": "single",
+      "prompt": "Quelle commande affiche les messages du démarrage précédent ?",
+      "choices": ["`journalctl -b 1`", "`journalctl -b -1`", "`journalctl -b 0`", "`journalctl -k`"],
+      "answer": [1],
+      "explanation": "Un index négatif compte depuis le démarrage en cours : `-b -1` est le précédent. Le piège : `-b 1` désigne le plus ancien démarrage conservé, `-b 0` le démarrage en cours, et `-k` les messages du noyau du démarrage en cours.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-a-q016",
+      "type": "single",
+      "prompt": "Pour rechercher les erreurs et alertes du démarrage précédent, quelle commande ne garde que les messages de niveau avertissement ou plus grave ?",
+      "choices": ["`journalctl -b -1 -p debug`", "`journalctl -b -1 -u warning`", "`journalctl -b -1 -p warning`", "`journalctl -b -1 | grep -v error`"],
+      "answer": [2],
+      "explanation": "`-p` filtre par priorité et garde le niveau donné et tous les niveaux plus graves (warning, err, crit, alert, emerg, dans l'ordre du cours). `-p debug` garde tout, `-u` filtre par unité systemd et `grep -v` exclut les lignes au lieu de les garder.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q017",
+      "type": "multi",
+      "prompt": "Quels niveaux de messages la commande `journalctl -p err` affiche-t-elle ? (plusieurs réponses)",
+      "choices": ["err", "warning", "crit", "notice", "emerg"],
+      "answer": [0, 2, 4],
+      "explanation": "Le cours classe les niveaux par importance croissante : debug, info, notice, warning, err, crit, alert, emerg. `-p err` garde err et tout ce qui est plus grave ; warning et notice sont moins graves et sont écartés.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q018",
+      "type": "single",
+      "prompt": "Comment repérer les deux disques de 1 Gio ajoutés à la machine sans supposer qu'ils se nomment `sdb` et `sdc` ?",
+      "choices": ["Avec `df -h`, en cherchant deux systèmes de fichiers de 1G", "Avec `mount`, en cherchant deux périphériques non montés", "Avec `free -h`, qui affiche les nouveaux périphériques", "Avec `lsblk -o NAME,SIZE,TYPE,MOUNTPOINTS`, en cherchant deux disques de 1G sans partition"],
+      "answer": [3],
+      "explanation": "Le cours recommande `lsblk` en priorité pour inventorier disques et partitions : on identifie les nouveaux disques par leur taille et l'absence de partition. `df` et `mount` ne montrent que des systèmes de fichiers montés, ce qu'un disque neuf n'a pas.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q019",
+      "type": "single",
+      "prompt": "Dans `parted` lancé sur un disque neuf, quelle commande crée une table de partitions GPT ?",
+      "choices": ["`mklabel gpt`", "`mkpart gpt`", "`print gpt`", "`resizepart gpt`"],
+      "answer": [0],
+      "explanation": "`mklabel gpt` écrit une nouvelle table de partitions GPT ; on crée ensuite la partition avec `mkpart`, par exemple de 0% à 100% pour occuper tout le disque. Comme le rappelle le cours, les commandes parted prennent effet immédiatement.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q020",
+      "type": "single",
+      "prompt": "Quelle commande assemble les partitions `/dev/sdb1` et `/dev/sdc1` en un ensemble RAID 0 ?",
+      "choices": ["`mdadm --create --verbose --level=1 --raid-devices=2 /dev/md0 /dev/sdb1 /dev/sdc1`", "`mdadm --create --verbose --level=0 --raid-devices=2 /dev/md0 /dev/sdb1 /dev/sdc1`", "`mdadm --create --verbose --level=linear --raid-devices=2 /dev/md0 /dev/sdb1 /dev/sdc1`", "`mdadm --create --verbose --level=0 --raid-devices=1 /dev/md0 /dev/sdb1 /dev/sdc1`"],
+      "answer": [1],
+      "explanation": "Le RAID 0 (striping) correspond à `--level=0`, avec `--raid-devices=2` pour deux membres, sur le modèle des exemples `mdadm --create` du cours. `--level=linear` crée un ensemble concaténé, sans répartition des données, et `--level=1` un miroir.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q021",
+      "type": "single",
+      "prompt": "Que lit-on dans ce contenu de `/proc/mdstat`, les deux membres étant des partitions de 1 Gio ?",
+      "code": "Personalities : [raid0]\nmd0 : active raid0 sdc1[1] sdb1[0]\n      2093056 blocks super 1.2 512k chunks\n\nunused devices: <none>",
+      "choices": ["Un ensemble RAID 0 dégradé dont `sdc1` est en panne", "Un miroir de deux membres d'environ 1 Gio", "Un ensemble en cours de reconstruction", "Un ensemble RAID 0 actif de deux membres, d'environ 2 Gio"],
+      "answer": [3],
+      "explanation": "`active raid0` avec deux membres et environ 2 millions de blocs de 1 Kio : en RAID 0, la capacité est la somme des disques, selon le cours. Un membre en panne serait suivi de `(F)` et une reconstruction afficherait une barre de progression.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q022",
+      "type": "single",
+      "prompt": "Quelle commande affiche l'état détaillé de l'ensemble `/dev/md0` : niveau, état, nombre de membres actifs et défaillants ?",
+      "choices": ["`mdadm --stop /dev/md0`", "`lsblk -f /dev/md0`", "`mdadm --detail /dev/md0`", "`cat /etc/mdadm/mdadm.conf`"],
+      "answer": [2],
+      "explanation": "`mdadm --detail` décrit l'ensemble en fonctionnement, en complément du résumé de `/proc/mdstat`. `mdadm.conf` ne contient que la configuration persistante, pas l'état courant, et `--stop` arrête l'ensemble.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-a-q023",
+      "type": "single",
+      "prompt": "Le RAID 0 vient d'être créé. Quelle commande prépare correctement le volume en EXT4 ?",
+      "choices": ["`mkfs.ext4 /dev/md0`", "`mkfs.ext4 /dev/sdb1` puis `mkfs.ext4 /dev/sdc1`", "`mkfs.ext4 /dev/sdb`", "`mkfs -t raid0 /dev/md0`"],
+      "answer": [0],
+      "explanation": "Le cours précise qu'une fois l'ensemble créé, on crée le système de fichiers sur le périphérique MD et on le monte comme n'importe quelle partition. Formater les membres un par un détruirait les métadonnées RAID, et `raid0` n'est pas un type de système de fichiers.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q024",
+      "type": "single",
+      "prompt": "Quelle commande donne l'UUID à placer dans `/etc/fstab` pour monter le volume RAID ?",
+      "choices": ["`mdadm --detail /dev/md0`", "`cat /proc/mdstat`", "`blkid /dev/md0`", "`findmnt --verify`"],
+      "answer": [2],
+      "explanation": "`blkid` (ou `lsblk -f`) donne l'UUID du système de fichiers EXT4, celui qu'attend `UUID=` dans fstab. Le piège : `mdadm --detail` affiche aussi un UUID, mais c'est celui de l'ensemble RAID, pas du système de fichiers.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-a-q025",
+      "type": "single",
+      "prompt": "Quelle ligne de `/etc/fstab` monte le volume RAID sur `/raid` à chaque démarrage, avec l'ordre de vérification `fsck` que le cours prévoit pour un volume autre que la racine ?",
+      "choices": ["`UUID=<uuid-fs> /raid ext4 defaults 0 1`", "`/raid UUID=<uuid-fs> ext4 defaults 0 2`", "`UUID=<uuid-fs> /raid raid0 defaults 0 2`", "`UUID=<uuid-fs> /raid ext4 defaults 0 2`"],
+      "answer": [3],
+      "explanation": "L'ordre des champs est spec, point de montage, type, options, dump, passno. Le cours réserve passno 1 à la racine et 2 aux autres systèmes de fichiers (en pratique, une ligne en `0 1` monterait aussi le volume) ; le type est celui du système de fichiers, `ext4`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q026",
+      "type": "single",
+      "prompt": "Pourquoi lancer `findmnt --verify` puis `mount -a` avant de redémarrer ?",
+      "choices": ["Pour enregistrer l'ensemble RAID dans `/etc/mdadm/mdadm.conf`", "Pour détecter une ligne erronée de `/etc/fstab` qui bloquerait le démarrage, puis monter ce qui ne l'est pas encore", "Pour formater automatiquement les volumes listés qui n'ont pas de système de fichiers", "Pour forcer une vérification `fsck` de tous les systèmes de fichiers listés"],
+      "answer": [1],
+      "explanation": "`findmnt --verify` contrôle la syntaxe et la cohérence de fstab, et `mount -a` monte toutes les entrées sans l'option `noauto` : une erreur apparaît tout de suite au lieu de bloquer le prochain démarrage. Aucune des deux ne formate ni ne lance fsck.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q027",
+      "type": "single",
+      "prompt": "Quelle quantité de données peut être perdue si un seul des deux disques d'un RAID 0 tombe en panne ?",
+      "choices": ["La moitié, c'est-à-dire les données écrites sur le disque en panne", "La totalité des données de l'ensemble", "Aucune, l'ensemble passe en mode dégradé", "Seulement les fichiers ouverts au moment de la panne"],
+      "answer": [1],
+      "explanation": "En RAID 0, chaque fichier est découpé en blocs répartis sur les deux disques, sans redondance : il manque une partie de presque chaque fichier et le système de fichiers lui-même. Le cours le dit : ce niveau rend l'ensemble dépendant de la fiabilité de chaque disque.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q028",
+      "type": "single",
+      "prompt": "Après `umount /raid` et `mdadm --stop /dev/md0`, quelle commande efface les métadonnées RAID des deux partitions pour pouvoir les réutiliser proprement ?",
+      "choices": ["`mdadm --stop /dev/sdb1 /dev/sdc1`", "`mdadm --manage /dev/md0 --remove /dev/sdb1`", "`umount /dev/sdb1 /dev/sdc1`", "`mdadm --zero-superblock /dev/sdb1 /dev/sdc1`"],
+      "answer": [3],
+      "explanation": "`--zero-superblock` efface le superbloc MD de chaque membre, sans quoi l'ancien ensemble peut être réassemblé au démarrage. `--stop` arrête l'ensemble sans effacer ses métadonnées ; il faut aussi retirer la ligne correspondante de fstab et de `mdadm.conf`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-a-q029",
+      "type": "single",
+      "prompt": "Juste après la création du RAID 1, `/proc/mdstat` affiche une progression `resync`. Que se passe-t-il ?",
+      "choices": ["mdadm synchronise ses membres pour qu'ils contiennent la même copie", "L'un des disques est déjà défaillant et mdadm le reconstruit", "mdadm formate le volume en EXT4", "mdadm répartit les données en bandes sur ses membres"],
+      "answer": [0],
+      "explanation": "Un miroir écrit les données en plusieurs exemplaires ; à la création, mdadm aligne le contenu des deux membres. Le volume est utilisable pendant cette synchronisation, et il ne crée aucun système de fichiers : c'est le rôle de `mkfs.ext4`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q030",
+      "type": "single",
+      "prompt": "Quelle séquence simule la panne du membre `/dev/sdc1` du RAID 1 puis le retire de l'ensemble ?",
+      "choices": ["`mdadm --manage /dev/md0 --remove /dev/sdc1` puis `mdadm --manage /dev/md0 --fail /dev/sdc1`", "`mdadm --stop /dev/sdc1` puis `mdadm --manage /dev/md0 --remove /dev/sdc1`", "`mdadm --manage /dev/md0 --fail /dev/sdc1` puis `mdadm --manage /dev/md0 --remove /dev/sdc1`", "`mdadm --manage /dev/md0 --fail /dev/sdc1` puis `mdadm --zero-superblock /dev/md0`"],
+      "answer": [2],
+      "explanation": "On marque d'abord le membre défaillant avec `--fail`, puis on le retire avec `--remove` : mdadm refuse de retirer un membre encore actif. `--stop` s'applique à un ensemble entier, pas à un membre.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q031",
+      "type": "multi",
+      "prompt": "Que montre cette sortie de `/proc/mdstat` après la panne simulée ? (plusieurs réponses)",
+      "code": "md0 : active raid1 sdc1[1](F) sdb1[0]\n      1046528 blocks super 1.2 [2/1] [U_]",
+      "choices": ["`sdc1` est marqué défaillant", "L'ensemble attend 2 membres mais un seul est actif", "L'ensemble est arrêté et les données sont inaccessibles", "Une reconstruction est en cours", "Les données restent lisibles grâce à `sdb1`"],
+      "answer": [0, 1, 4],
+      "explanation": "`(F)` signale le membre défaillant, `[2/1]` deux membres attendus pour un actif, et `[U_]` un membre en service et un absent : c'est l'état dégradé. Le miroir reste `active` et les données restent accessibles ; une reconstruction afficherait `recovery` avec une progression.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-a-q032",
+      "type": "single",
+      "prompt": "Quelle commande réintègre `/dev/sdc1` dans le RAID 1 et déclenche sa reconstruction ?",
+      "choices": ["`mdadm --assemble /dev/md0 /dev/sdc1`", "`mdadm --manage /dev/md0 --fail /dev/sdc1`", "`mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb1 /dev/sdc1`", "`mdadm --manage /dev/md0 --add /dev/sdc1`"],
+      "answer": [3],
+      "explanation": "`--add` ajoute le membre à l'ensemble en fonctionnement, qui recopie le miroir dessus ; `/proc/mdstat` affiche alors `recovery` jusqu'au retour à `[2/2] [UU]`. Relancer `--create` recréerait un ensemble neuf et ferait perdre les données.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q033",
+      "type": "single",
+      "prompt": "Quelle différence de comportement observe-t-on entre RAID 0 et RAID 1 lors de la perte d'un disque ?",
+      "choices": ["Le RAID 1 continue en mode dégradé avec une copie complète, le RAID 0 perd tout l'ensemble", "Le RAID 0 continue en mode dégradé, le RAID 1 perd tout l'ensemble", "RAID 0 et RAID 1 continuent, mais le RAID 0 devient plus lent", "RAID 0 et RAID 1 perdent chacun la moitié des données"],
+      "answer": [0],
+      "explanation": "Le RAID 1 écrit chaque donnée sur les deux disques : un seul suffit pour tout lire, puis le miroir se reconstruit sur un disque réintégré. Le RAID 0 n'a aucune redondance, chaque fichier est réparti sur les deux disques.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q034",
+      "type": "single",
+      "prompt": "Le disque virtuel `sdb` a été agrandi dans l'hyperviseur. Quelle commande fait reconnaître la nouvelle capacité par Linux sans redémarrer ?",
+      "choices": ["`sudo echo 1 > /sys/class/block/sdb/device/rescan`", "`echo 1 | sudo tee /sys/class/block/sdb/device/rescan`", "`sudo mount -a`", "`sudo udevadm info /dev/sdb`"],
+      "answer": [1],
+      "explanation": "Écrire 1 dans le fichier `rescan` du périphérique fait relire sa taille par le noyau. Le piège : avec `sudo echo 1 > fichier`, la redirection est faite par le shell de l'utilisateur, sans les droits root, d'où le passage par `tee`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-a-q035",
+      "type": "single",
+      "prompt": "Quel ordre d'opérations agrandit la partition `/dev/sdb1` et son système de fichiers EXT4 sans perdre les données ?",
+      "choices": ["`resize2fs /dev/sdb1`, puis `resizepart` dans parted", "`resizepart` dans parted, puis `mkfs.ext4 /dev/sdb1`", "`resizepart` dans parted, puis `resize2fs /dev/sdb1`", "`mkpart` d'une nouvelle partition, puis `resize2fs /dev/sdb1`"],
+      "answer": [2],
+      "explanation": "Le cours précise que `resizepart` ne déplace que la fin de la partition, sans toucher au système de fichiers : on agrandit donc d'abord le contenant, puis le contenu avec `resize2fs`. `mkfs.ext4` effacerait les données.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q036",
+      "type": "single",
+      "prompt": "Après `resizepart` mais avant `resize2fs`, que montrent `lsblk` et `df -h` ?",
+      "choices": ["`df -h` montre la nouvelle taille, `lsblk` encore l'ancienne", "`lsblk` montre la partition agrandie, `df -h` encore l'ancienne taille du système de fichiers", "`lsblk` et `df -h` montrent déjà la nouvelle taille", "`lsblk` et `df -h` montrent l'ancienne taille jusqu'au redémarrage"],
+      "answer": [1],
+      "explanation": "`lsblk` affiche la taille des périphériques et partitions, `df` celle des systèmes de fichiers montés. Tant que `resize2fs` n'a pas été lancé, le système de fichiers garde sa taille d'origine dans une partition plus grande.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-a-q037",
+      "type": "single",
+      "prompt": "Quelle commande liste chaque zone de swap active avec son type (partition ou fichier), sa taille, son occupation et sa priorité ?",
+      "choices": ["`free -h`", "`vmstat 1`", "`df -h`", "`swapon --show`"],
+      "answer": [3],
+      "explanation": "Le cours donne `swapon --show` et `free -h` pour vérifier le swap : le premier détaille chaque zone (Filename, Type, Size, Used, Priority dans le cours ; une version récente affiche NAME, TYPE, SIZE, USED, PRIO), le second n'affiche que les totaux de la ligne `Swap:`.",
+      "difficulty": 1
+    },
+    {
+      "id": "tp2-a-q038",
+      "type": "single",
+      "prompt": "La partition `/dev/sdd1` de 50 Mio vient d'être créée. Quelle séquence l'active comme zone de swap ?",
+      "choices": ["`mkswap /dev/sdd1` puis `swapon /dev/sdd1`", "`swapon /dev/sdd1` puis `mkswap /dev/sdd1`", "`mkfs.ext4 /dev/sdd1` puis `swapon /dev/sdd1`", "`mkswap /dev/sdd1` puis `mount /dev/sdd1 /swap`"],
+      "answer": [0],
+      "explanation": "`mkswap` initialise la zone et `swapon` l'active, comme dans l'exemple du cours. Une zone de swap ne se monte pas avec `mount`, et `swapon` refuse une zone qui n'a pas été initialisée par `mkswap`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q039",
+      "type": "multi",
+      "prompt": "Quelles lignes de `/etc/fstab` activent correctement une zone de swap à chaque démarrage ? (plusieurs réponses)",
+      "choices": ["`UUID=<uuid-swap> none swap sw 0 0`", "`/swap-tp none swap sw 0 0`", "`none /swap-tp swap sw 0 0`", "`UUID=<uuid-swap> /swap ext4 sw 0 0`"],
+      "answer": [0, 1],
+      "explanation": "Une zone de swap n'a pas de point de montage (`none`), son type est `swap` et ses deux derniers champs valent 0, comme `/swapfile none swap sw 0 0` dans le cours. Cela vaut pour une partition désignée par son UUID comme pour un fichier désigné par son chemin ; la zone se place dans le premier champ, pas dans celui du point de montage.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q040",
+      "type": "single",
+      "prompt": "Quelle séquence crée et active le fichier de swap `/swap-tp` de 50 Mio en le protégeant correctement ?",
+      "choices": ["`fallocate -l 50M /swap-tp` ; `chmod 644 /swap-tp` ; `mkswap /swap-tp` ; `swapon /swap-tp`", "`fallocate -l 50M /swap-tp` ; `chmod 600 /swap-tp` ; `swapon /swap-tp` ; `mkswap /swap-tp`", "`fallocate -l 50M /swap-tp` ; `chmod 600 /swap-tp` ; `mkfs.ext4 /swap-tp` ; `swapon /swap-tp`", "`fallocate -l 50M /swap-tp` ; `chmod 600 /swap-tp` ; `mkswap /swap-tp` ; `swapon /swap-tp`"],
+      "answer": [3],
+      "explanation": "C'est la séquence du cours : création avec `fallocate`, droits `600`, initialisation par `mkswap`, puis activation par `swapon`. En mode 644, tout utilisateur pourrait lire le fichier.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q041",
+      "type": "single",
+      "prompt": "Pourquoi le fichier de swap doit-il être en mode 600, lisible et modifiable par root seul ?",
+      "choices": ["`mkswap` refuse tout fichier qui n'est pas exécutable", "Le swap reçoit des pages mémoire de n'importe quel processus, donc des données sensibles comme des mots de passe", "Le mode 600 garantit que le fichier est contigu sur le disque", "Sans ce mode, le fichier est supprimé au redémarrage"],
+      "answer": [1],
+      "explanation": "Le noyau y déplace des pages mémoire peu actives de tous les processus : un fichier lisible par tous exposerait leur contenu. `swapon` signale d'ailleurs des permissions non sûres et suggère 0600.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q042",
+      "type": "single",
+      "prompt": "Le répertoire `/mnt/ramdisk` existe. Quelle commande y monte un tmpfs limité à 100 Mio ?",
+      "choices": ["`mount -t tmpfs -o size=100M tmpfs /mnt/ramdisk`", "`mount -t ramfs -o size=100M ramfs /mnt/ramdisk`", "`mkfs.tmpfs -s 100M /mnt/ramdisk`", "`mount -o size=100M /dev/ram0 /mnt/ramdisk`"],
+      "answer": [0],
+      "explanation": "C'est la syntaxe du cours (`mount -t tmpfs -o size=10M tmpfs /ramdisque`) avec la taille demandée. Le piège ramfs : le cours rappelle que sa taille ne peut pas être limitée, contrairement à tmpfs ; un tmpfs n'a pas besoin de mkfs.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q043",
+      "type": "single",
+      "prompt": "Quelle ligne de `/etc/fstab` rend ce montage tmpfs persistant ?",
+      "choices": ["`/mnt/ramdisk tmpfs tmpfs defaults,size=100M 0 0`", "`tmpfs /mnt/ramdisk ext4 defaults,size=100M 0 0`", "`tmpfs /mnt/ramdisk tmpfs defaults,size=100M 0 0`", "`tmpfs /mnt/ramdisk tmpfs defaults 100M 0 0`"],
+      "answer": [2],
+      "explanation": "Sur le modèle du cours (`tmpfs /ramdisque tmpfs defaults,size=10M 0 0`) : la source `tmpfs`, le point de montage, le type, puis la taille dans les options séparées par des virgules. Une taille isolée ajouterait un septième champ.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q044",
+      "type": "single",
+      "prompt": "Que confirment ces deux sorties ?",
+      "code": "$ findmnt /mnt/ramdisk\nTARGET       SOURCE FSTYPE OPTIONS\n/mnt/ramdisk tmpfs  tmpfs  rw,relatime,size=102400k\n$ df -h /mnt/ramdisk\nSys. de fichiers Taille Utilisé Dispo Uti% Monté sur\ntmpfs              100M       0  100M   0% /mnt/ramdisk",
+      "choices": ["Un tmpfs de 100 Mio dont tout l'espace est déjà réservé en RAM", "Un système de fichiers ext4 de 100 Mio stocké en mémoire", "Le montage est forcément persistant, puisque `findmnt` l'affiche", "Un tmpfs limité à 100 Mio est monté sur `/mnt/ramdisk` et il est encore vide"],
+      "answer": [3],
+      "explanation": "`findmnt` donne le type `tmpfs` et l'option `size=102400k` (100 Mio), `df` une taille de 100M dont 0 utilisé. `findmnt` montre les montages courants : seule la ligne de fstab, vérifiée après redémarrage, prouve la persistance.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-a-q045",
+      "type": "multi",
+      "prompt": "Quelles affirmations sur le tmpfs monté sur `/mnt/ramdisk` sont exactes ? (plusieurs réponses)",
+      "choices": ["Son contenu disparaît au redémarrage", "Il occupe immédiatement 100 Mio de RAM dès le montage", "Il utilise la RAM et, si nécessaire, le swap", "Il doit être formaté avec `mkfs` avant le montage", "Sa taille peut être limitée, contrairement à ramfs"],
+      "answer": [0, 2, 4],
+      "explanation": "Le cours décrit tmpfs comme un stockage en mémoire virtuelle (RAM puis swap), vidé au redémarrage, et préférable à ramfs parce que sa taille se limite et que sa mémoire peut être paginée. `size=` est un plafond, pas une réservation.",
+      "difficulty": 2
+    }
+  ]
+}

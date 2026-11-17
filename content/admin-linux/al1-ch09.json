@@ -1,0 +1,457 @@
+{
+  "id": "al1-ch09",
+  "title": "Configuration et partitionnement des disques",
+  "group": "Cours, partie 1",
+  "order": 9,
+  "source": "AdminLinux-1.pdf, chapitre 9",
+  "questions": [
+    {
+      "id": "al1-ch09-q001",
+      "type": "single",
+      "prompt": "Selon le cours, quelle est la taille habituelle d'un secteur logique ?",
+      "choices": ["4 Kio", "512 octets", "1 MiB", "256 octets"],
+      "answer": [1],
+      "explanation": "Les secteurs logiques font souvent 512 octets. Le piège est 4 Kio, qui est la taille des secteurs physiques de nombreux disques, pas celle des secteurs logiques.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q002",
+      "type": "single",
+      "prompt": "Que signifie l'adressage LBA (Logical Block Addressing) ?",
+      "choices": [
+        "Les secteurs sont repérés par leur cylindre, leur tête et leur secteur",
+        "Les partitions sont alignées sur des limites de 1 MiB",
+        "Les secteurs sont identifiés par un numéro linéaire, indépendamment de la géométrie",
+        "Les blocs de données sont regroupés en groupes de cylindres"
+      ],
+      "answer": [2],
+      "explanation": "Avec LBA, chaque secteur a un numéro linéaire, sans rapport avec la géométrie physique du support. Le repérage cylindre/tête/secteur est l'ancien format CHS, qui ne sert plus au partitionnement courant.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q003",
+      "type": "single",
+      "prompt": "Selon le cours, quel format de table de partitions choisir pour un nouveau disque d'une machine UEFI ?",
+      "choices": ["MBR (table DOS)", "Une table MBR avec une partition étendue", "BSD disklabel", "GPT"],
+      "answer": [3],
+      "explanation": "GPT est le format recommandé sur les PC modernes et s'associe naturellement à UEFI. MBR ne reste utile que pour la compatibilité avec des systèmes anciens.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q004",
+      "type": "multi",
+      "prompt": "Quelles affirmations sur les tables de partitions GPT sont exactes ? (plusieurs réponses)",
+      "choices": [
+        "Elles permettent un grand nombre de partitions sans partition étendue ni logique",
+        "Elles sont limitées à quatre entrées primaires",
+        "Elles stockent en-têtes et tables avec redondance et des identifiants GUID",
+        "Elles s'associent naturellement à UEFI",
+        "Elles imposent de délimiter les partitions en cylindres"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "GPT ne connaît pas la distinction primaire, étendue et logique, garde ses en-têtes et tables avec redondance et identifie les partitions par GUID. La limite de quatre entrées primaires est propre à MBR.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q005",
+      "type": "single",
+      "prompt": "Avec une table de partitions MBR historique, combien d'entrées primaires peut-on avoir au maximum ?",
+      "choices": ["2", "4", "8", "16"],
+      "answer": [1],
+      "explanation": "MBR est limité à quatre entrées primaires. Pour aller au-delà, l'une d'elles devient une partition étendue qui contient des partitions logiques.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q006",
+      "type": "single",
+      "prompt": "Avec une table MBR, où sont stockées les informations des partitions logiques ?",
+      "choices": [
+        "Dans la table du MBR, à la suite des quatre entrées primaires",
+        "Dans le superbloc de chaque partition logique",
+        "Dans l'en-tête GPT de secours, en fin de disque",
+        "Au début de la partition étendue qui les contient"
+      ],
+      "answer": [3],
+      "explanation": "Les partitions logiques sont décrites au début de la partition étendue qui les contient, la table du MBR n'ayant que quatre entrées. L'en-tête de secours appartient à GPT, qui n'a pas de partitions logiques.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q007",
+      "type": "single",
+      "prompt": "Dans une entrée de table de partitions MBR, quelle valeur du drapeau de démarrage marque la partition de démarrage ?",
+      "choices": ["`0x80`", "`0x83`", "`0xEE`", "`0x05`"],
+      "answer": [0],
+      "explanation": "Le drapeau vaut `0x80` pour la partition de démarrage et 0 sinon. `0x83` est un code de type de partition (Linux), pas une valeur du drapeau.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q008",
+      "type": "single",
+      "prompt": "Voici le format d'une entrée de la table de partitions MBR. Que contient le champ `NUM-SECS` ?",
+      "code": "OCTETS  0     1-3        4     5-7      8-11       12-15\n        BOOT  START-CHS  TYPE  END-CHS  ABS-START  NUM-SECS",
+      "choices": [
+        "L'adresse relative du secteur de démarrage",
+        "Le numéro de la partition dans la table",
+        "Le nombre de secteurs par piste du disque",
+        "Le nombre total de secteurs de la partition"
+      ],
+      "answer": [3],
+      "explanation": "`NUM-SECS` (octets 12 à 15) donne le nombre total de secteurs de la partition. L'adresse relative du secteur de démarrage est dans `ABS-START`, juste avant.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q009",
+      "type": "multi",
+      "prompt": "Quelles informations la table de partitions MBR stocke-t-elle pour chaque partition ? (plusieurs réponses)",
+      "choices": [
+        "Le type de partition",
+        "Un nom de partition lisible",
+        "Les adresses de début et de fin au format CHS",
+        "L'UUID du système de fichiers",
+        "Un drapeau indiquant la partition de démarrage"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "Chaque entrée MBR contient le drapeau de démarrage, le type, les adresses CHS de début et de fin, l'adresse relative du secteur de démarrage et le nombre total de secteurs. L'UUID appartient au système de fichiers (lu par `blkid`), et le nom de partition est une notion GPT.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q010",
+      "type": "single",
+      "prompt": "Quel nom désigne le quatrième disque SATA détecté par le système ?",
+      "choices": ["`/dev/sda4`", "`/dev/sdc`", "`/dev/sdd`", "`/dev/hdd`"],
+      "answer": [2],
+      "explanation": "La lettre suit l'ordre de détection : `sda` est le premier disque, `sdd` le quatrième. `/dev/sda4` est la quatrième partition du premier disque.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q011",
+      "type": "single",
+      "prompt": "Que désigne `/dev/sda1` ?",
+      "choices": [
+        "Le premier disque SATA/SAS/USB entier",
+        "La première partition du disque `sda`",
+        "Le premier namespace du premier SSD NVMe",
+        "Le deuxième disque détecté"
+      ],
+      "answer": [1],
+      "explanation": "Le numéro ajouté au nom du disque désigne la partition : `/dev/sda1` est la première partition de `/dev/sda`, qui désigne le disque entier.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q012",
+      "type": "single",
+      "prompt": "Quel nom désigne la deuxième partition du premier namespace du premier contrôleur NVMe ?",
+      "choices": ["`/dev/nvme0n2`", "`/dev/nvme1n1p2`", "`/dev/nvme0p2`", "`/dev/nvme0n1p2`"],
+      "answer": [3],
+      "explanation": "`nvme0n1` est le premier namespace du premier contrôleur, et ses partitions prennent le suffixe `p` : `/dev/nvme0n1p2`. `/dev/nvme0n2` désignerait un deuxième namespace, pas une partition.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q013",
+      "type": "single",
+      "prompt": "Que dit le cours des noms de périphériques `/dev/hdX` ?",
+      "choices": [
+        "Ils viennent des contrôleurs IDE historiques et ne sont plus utilisés sur Ubuntu moderne",
+        "Ils désignent les disques durs mécaniques, les SSD étant nommés `/dev/sdX`",
+        "Ils désignent les disques SATA branchés sur un contrôleur en mode AHCI",
+        "Ils sont réservés aux disques virtuels des hyperviseurs comme VirtualBox"
+      ],
+      "answer": [0],
+      "explanation": "Les noms `/dev/hdX` correspondaient aux anciens contrôleurs IDE et ont disparu des installations Ubuntu modernes. Les disques SATA, SAS et USB apparaissent en `/dev/sdX`, les SSD NVMe en `/dev/nvme0n1`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q014",
+      "type": "multi",
+      "prompt": "Quels périphériques apparaissent couramment sous la forme `/dev/sdX` ? (plusieurs réponses)",
+      "choices": ["Un disque SATA", "Un SSD NVMe", "Une clé USB de stockage de masse", "Un disque SAS"],
+      "answer": [0, 2, 3],
+      "explanation": "Les périphériques gérés par la couche SCSI du noyau (SATA, SAS, USB de masse) sont nommés `/dev/sdX`. Un SSD NVMe a son propre schéma de nommage, `/dev/nvme0n1`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q015",
+      "type": "single",
+      "prompt": "Quelle commande affiche les messages du noyau et des pilotes, ce qui permet de retrouver les disques et partitions détectés au démarrage ?",
+      "choices": ["`dmesg`", "`lsblk`", "`lsmod`", "`blkid`"],
+      "answer": [0],
+      "explanation": "`dmesg` affiche les messages du noyau, que l'on filtre par exemple avec `dmesg | grep sd`. `lsblk` inventorie aussi les disques, mais il ne montre pas les messages du noyau.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q016",
+      "type": "single",
+      "prompt": "Que peut-on déduire de cet extrait de `dmesg | grep sd` ?",
+      "code": "[    2.613609] sd 2:0:0:0: [sda] 52428800 512-byte logical blocks: (26.8 GB/25.0 GiB)\n[    2.659626] sda: sda1 sda2\n[    2.660199] sd 2:0:0:0: [sda] Attached SCSI disk",
+      "choices": [
+        "Deux disques, `sda1` et `sda2`, ont été détectés",
+        "Le disque `sda` est un SSD NVMe de 25 Gio",
+        "Le disque `sda` possède deux partitions, `sda1` et `sda2`",
+        "La partition `sda2` est montée en lecture seule"
+      ],
+      "answer": [2],
+      "explanation": "La ligne `sda: sda1 sda2` liste les partitions trouvées sur le disque `sda`, qui compte 52428800 blocs de 512 octets, soit 25 Gio. Les numéros désignent des partitions, pas des disques, et un SSD NVMe s'appellerait `nvme0n1`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q017",
+      "type": "single",
+      "prompt": "Quelle commande le cours recommande-t-il d'utiliser en priorité pour inventorier les disques et partitions ?",
+      "choices": ["`dmesg`", "`lsblk`", "`cat /proc/partitions`", "`udevadm info`"],
+      "answer": [1],
+      "explanation": "Le cours conseille `lsblk` en priorité, par exemple `lsblk -o NAME,SIZE,TYPE,FSTYPE,UUID,MOUNTPOINTS`. `udevadm info` sert à consulter les propriétés détaillées d'un périphérique précis.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q018",
+      "type": "single",
+      "prompt": "Quelle commande le cours cite-t-il pour afficher les identifiants (UUID) des systèmes de fichiers ?",
+      "choices": ["`blkid`", "`dmesg`", "`sfdisk -l`", "`fuser`"],
+      "answer": [0],
+      "explanation": "`blkid` affiche les identifiants et types des systèmes de fichiers, comme `lsblk -f`. `sfdisk -l` affiche la table des partitions, pas l'UUID des systèmes de fichiers.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q019",
+      "type": "single",
+      "prompt": "Quel fichier présente la table des partitions sous forme brute, telle qu'utilisée par le noyau et les pilotes ?",
+      "choices": ["`/etc/fstab`", "`/dev/sda`", "`/proc/partitions`", "`/etc/mtab`"],
+      "answer": [2],
+      "explanation": "`cat /proc/partitions` affiche pour chaque disque et partition le numéro majeur, le mineur, le nombre de blocs et le nom, sous la forme vue par le noyau. `/etc/fstab` décrit les montages, pas la table des partitions.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q020",
+      "type": "single",
+      "prompt": "Quelle commande, citée par le cours, produit cet affichage lisible de la table des partitions ?",
+      "code": "Disk /dev/sda: 25 GiB, 26843545600 bytes, 52428800 sectors\nDisklabel type: gpt\nDevice     Start      End  Sectors Size Type\n/dev/sda1   2048     4095     2048   1M BIOS boot\n/dev/sda2   4096 52426751 52422656  25G Linux filesystem",
+      "choices": ["`cat /proc/partitions`", "`blkid /dev/sda`", "`dmesg | grep sda`", "`sfdisk -l /dev/sda`"],
+      "answer": [3],
+      "explanation": "`sfdisk -l /dev/sda` affiche la table de façon lisible, avec son type (`Disklabel type: gpt`) et les secteurs de début et de fin. `/proc/partitions` ne donne que les numéros majeur et mineur, la taille en blocs et le nom.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q021",
+      "type": "single",
+      "prompt": "Sur quelle limite les outils de partitionnement modernes alignent-ils généralement les partitions ?",
+      "choices": ["Sur un cylindre", "Souvent sur 1 MiB", "Sur 512 octets", "Sur 1 GiB"],
+      "answer": [1],
+      "explanation": "Les outils modernes alignent les partitions sur des limites adaptées aux supports actuels, souvent 1 MiB. Le partitionnement ne repose plus sur les cylindres CHS.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q022",
+      "type": "single",
+      "prompt": "Dans `fdisk`, quelle commande enregistre les modifications et quitte ?",
+      "choices": ["`q`", "`p`", "`w`", "`x`"],
+      "answer": [2],
+      "explanation": "`w` écrit la table de partitions sur le disque puis quitte. `q` quitte au contraire sans enregistrer les modifications.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q023",
+      "type": "single",
+      "prompt": "Que se passe-t-il si l'on saisit `q` dans `fdisk` après avoir créé une partition ?",
+      "choices": [
+        "`fdisk` quitte sans enregistrer les modifications",
+        "`fdisk` enregistre la table puis quitte",
+        "`fdisk` affiche la table puis quitte",
+        "`fdisk` annule seulement la dernière commande"
+      ],
+      "answer": [0],
+      "explanation": "`q` quitte `fdisk` sans enregistrer : la partition créée n'est pas écrite sur le disque. Pour enregistrer, il faut `w`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q024",
+      "type": "multi",
+      "prompt": "Dans `fdisk`, quelles associations entre commande et action sont exactes ? (plusieurs réponses)",
+      "choices": [
+        "`n` : créer une nouvelle partition",
+        "`w` : afficher la table des partitions",
+        "`d` : supprimer une partition",
+        "`m` : modifier la taille d'une partition",
+        "`t` : changer le type d'une partition"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "`n` crée, `d` supprime et `t` change le type d'une partition. La table s'affiche avec `p`, `w` enregistre et quitte, et `m` affiche l'aide (« m pour aide »).",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q025",
+      "type": "single",
+      "prompt": "Quel code hexadécimal de type `fdisk` correspond à une partition d'échange (swap) Linux ?",
+      "choices": ["`83`", "`82`", "`8e`", "`5`"],
+      "answer": [1],
+      "explanation": "`82` est le type « Echange Linux ». `83` est le type d'une partition Linux ordinaire, `8e` celui de Linux LVM et `5` celui d'une partition étendue.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q026",
+      "type": "single",
+      "prompt": "Dans cet affichage de la commande `p` de `fdisk` sur une table MBR, quelle est la partition étendue ?",
+      "code": "Périphérique Amorce  Début   Fin      Blocs  Id  Système\n/dev/sda1    *          1   260   2088418+   6  FAT16\n/dev/sda2             261   514    2040255  a5  FreeBSD\n/dev/sda3             515  1024    4096575  83  Linux\n/dev/sda4            1025  5005  31977382+   f  Win95 Etdue (LBA)\n/dev/sda5            1025  1089     522081  82  Echange Linux",
+      "choices": ["`/dev/sda5`", "`/dev/sda4`", "`/dev/sda1`", "`/dev/sda3`"],
+      "answer": [1],
+      "explanation": "`/dev/sda4` a le type `f` (Win95 étendue LBA) et couvre les cylindres 1025 à 5005, dans lesquels se trouve `/dev/sda5`, une partition logique de swap. `/dev/sda5` est contenue dans l'étendue, elle n'est pas l'étendue.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch09-q027",
+      "type": "single",
+      "prompt": "Dans cet affichage de `fdisk`, que signifie l'astérisque dans la colonne Amorce de `/dev/sda1` ?",
+      "code": "Périphérique Amorce  Début   Fin      Blocs  Id  Système\n/dev/sda1    *          1   260   2088418+   6  FAT16\n/dev/sda2             261   514    2040255  a5  FreeBSD\n/dev/sda3             515  1024    4096575  83  Linux",
+      "choices": [
+        "La partition est actuellement montée",
+        "La partition est une partition logique",
+        "La partition est marquée comme partition de démarrage",
+        "La partition est vide et peut être supprimée"
+      ],
+      "answer": [2],
+      "explanation": "L'astérisque de la colonne Amorce indique que la partition est marquée comme partition de démarrage. `fdisk` n'affiche pas l'état de montage, qui se consulte avec `findmnt` ou `lsblk`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q028",
+      "type": "single",
+      "prompt": "Après `w` dans `fdisk`, ce message s'affiche. Qu'en conclure ?",
+      "code": "La table de partition a été modifiée !\nAppel de ioctl() pour relire la table de partition.\nWARNING: Re-reading the partition table failed with error 16: Périphérique ou ressource occupé.\nThe kernel still uses the old table.\nThe new table will be used at the next reboot.",
+      "choices": [
+        "La table n'a pas été écrite car le disque est occupé",
+        "Le disque est défectueux et la table a été perdue",
+        "Le noyau a rechargé la nouvelle table et supprimé l'ancienne",
+        "La table a été écrite, mais le noyau n'utilisera la nouvelle qu'au prochain redémarrage"
+      ],
+      "answer": [3],
+      "explanation": "La table a bien été modifiée sur le disque, mais le noyau n'a pas pu la relire car le disque est occupé : il garde l'ancienne jusqu'au prochain redémarrage. C'est ce qui arrive quand on modifie un disque dont des partitions sont utilisées.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch09-q029",
+      "type": "single",
+      "prompt": "Avant de modifier la table de partitions d'un disque, que recommande le cours ?",
+      "choices": [
+        "Démonter les systèmes de fichiers concernés et vérifier avec `lsblk`, `findmnt` ou `fuser`",
+        "Lancer `fsck` sur chaque partition encore montée du disque concerné",
+        "Exécuter `mount -a` pour figer les montages pendant la modification",
+        "Convertir la table en MBR pour pouvoir la modifier à chaud"
+      ],
+      "answer": [0],
+      "explanation": "Il est déconseillé de modifier la table d'un disque dont des partitions sont montées ou utilisées : on démonte d'abord, et on vérifie l'utilisation avec `lsblk`, `findmnt` ou `fuser`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q030",
+      "type": "single",
+      "prompt": "Quelle différence le cours souligne-t-il entre `parted` et `fdisk` ?",
+      "choices": [
+        "`parted` ne gère que les tables MBR",
+        "`parted` crée automatiquement le système de fichiers de chaque partition",
+        "Les commandes de `parted` prennent effet immédiatement, alors que `fdisk` attend `w`",
+        "`parted` ne permet pas de supprimer une partition"
+      ],
+      "answer": [2],
+      "explanation": "Dans `parted`, chaque commande est exécutée immédiatement : il n'y a pas d'étape d'enregistrement comme le `w` de `fdisk`. `parted` gère GPT et MBR mais ne crée pas le système de fichiers, qui se fait avec `mkfs`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q031",
+      "type": "single",
+      "prompt": "Dans l'affichage `print` de `parted`, quelle valeur du champ « Table de partitions » indique une table MBR historique ?",
+      "choices": ["`mbr`", "`dos`", "`legacy`", "`msdos`"],
+      "answer": [3],
+      "explanation": "`parted` affiche `gpt` sur les systèmes modernes et `msdos` pour une table MBR historique.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q032",
+      "type": "multi",
+      "prompt": "Que peut-on lire dans cette sortie de `parted` ? (plusieurs réponses)",
+      "code": "(parted) print\nModèle : disque /dev/sda, table de partitions GPT\nTable de partitions : gpt\nNuméro  Début   Fin     Taille    Système de fichiers  Nom   Drapeaux\n 1      1MiB    513MiB  512MiB    fat32                ESP   boot, esp\n 2      513MiB  25GiB   ~24.5GiB  ext4                 root",
+      "choices": [
+        "Le disque utilise une table de partitions GPT",
+        "La partition 2 est une partition logique",
+        "La partition 1 porte les drapeaux `boot` et `esp`",
+        "La partition 1 commence au premier secteur du disque",
+        "La partition 2, en ext4, porte le nom `root`"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "La table est `gpt`, la partition 1 (fat32, 512 MiB) porte les drapeaux `boot` et `esp`, et la partition 2 en ext4 a le nom GPT `root`. GPT n'a pas de partitions logiques, et la partition 1 commence à 1 MiB, pas au premier secteur.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q033",
+      "type": "single",
+      "prompt": "Quelle est la syntaxe de la commande `mkpart` de `parted` ?",
+      "choices": [
+        "`mkpart [nom] [type-fs] début fin`",
+        "`mkpart numéro-part taille`",
+        "`mkpart début fin [type-fs]`",
+        "`mkpart type-fs nom taille`"
+      ],
+      "answer": [0],
+      "explanation": "La syntaxe est `mkpart [nom] [type-fs] début fin`, par exemple `mkpart data ext4 1GiB 11GiB`. On donne des positions de début et de fin, pas une taille.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q034",
+      "type": "single",
+      "prompt": "Juste après `(parted) mkpart data ext4 1GiB 11GiB` sur un disque GPT (la partition devient `/dev/sda3`), quelle est l'étape suivante pour pouvoir l'utiliser ?",
+      "choices": [
+        "Saisir `w` pour écrire la table de partitions",
+        "Aucune : `mkpart` a déjà formaté la partition en ext4",
+        "Lancer `resize2fs /dev/sda3` pour étendre le système de fichiers",
+        "Créer le système de fichiers, par exemple avec `mkfs.ext4 /dev/sda3`"
+      ],
+      "answer": [3],
+      "explanation": "`mkpart` crée seulement la partition : le `ext4` indiqué n'est qu'un type, aucun système de fichiers n'est créé, d'où `mkfs.ext4`. Inutile de saisir `w`, les commandes de `parted` prennent effet immédiatement.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch09-q035",
+      "type": "single",
+      "prompt": "Vous agrandissez la partition 3 avec `(parted) resizepart 3 15GiB`. Qu'en est-il du système de fichiers ext4 qu'elle contient ?",
+      "choices": [
+        "Il est agrandi automatiquement en même temps que la partition",
+        "Il faut le recréer avec `mkfs.ext4` pour profiter de la place",
+        "Il n'est pas agrandi : il faut ensuite utiliser `resize2fs`",
+        "Il sera agrandi automatiquement au prochain `mount -a`"
+      ],
+      "answer": [2],
+      "explanation": "`resizepart` ne modifie que la limite de fin de la partition. Pour ext4, on agrandit ensuite le système de fichiers avec `resize2fs`, après avoir vérifié les prérequis et les sauvegardes. `mkfs.ext4` effacerait les données.",
+      "difficulty": 3
+    },
+    {
+      "id": "al1-ch09-q036",
+      "type": "single",
+      "prompt": "Que recommande le cours pour déplacer une partition et son système de fichiers ?",
+      "choices": [
+        "Utiliser la commande `move` de `parted`",
+        "Utiliser un outil spécialisé, après une sauvegarde préalable",
+        "Enchaîner deux commandes `resizepart` dans `parted`",
+        "Supprimer la partition avec `rm`, puis la retrouver avec `rescue`"
+      ],
+      "answer": [1],
+      "explanation": "GNU Parted moderne n'a pas de commande générique pour déplacer sans risque une partition et son système de fichiers : le cours renvoie vers un outil spécialisé, avec une sauvegarde préalable.",
+      "difficulty": 2
+    },
+    {
+      "id": "al1-ch09-q037",
+      "type": "single",
+      "prompt": "Dans `parted`, comment supprime-t-on la partition numéro 6 ?",
+      "choices": ["`rm 6`", "`d 6`", "`delete 6`", "`del /dev/sda6`"],
+      "answer": [0],
+      "explanation": "La commande de `parted` est `rm numéro-part`. `d` est la commande de suppression de `fdisk`, pas celle de `parted`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al1-ch09-q038",
+      "type": "single",
+      "prompt": "Vous venez de supprimer une partition par erreur dans `parted`. Quelle commande tente de la retrouver ?",
+      "choices": ["`rescue début fin`", "`undo`", "`mkpart`", "`resizepart`"],
+      "answer": [0],
+      "explanation": "`rescue début fin` cherche les partitions situées entre les deux positions (en Mo dans l'exemple du cours) et propose de les rajouter à la table. Il n'existe pas d'annulation, puisque les commandes de `parted` prennent effet immédiatement.",
+      "difficulty": 2
+    }
+  ]
+}

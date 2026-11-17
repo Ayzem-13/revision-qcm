@@ -1,0 +1,552 @@
+{
+  "id": "al2-ch06",
+  "title": "Annuaires LDAP",
+  "group": "Cours, partie 2",
+  "order": 16,
+  "source": "AdminLinux-2.pdf, chapitre 6",
+  "questions": [
+    {
+      "id": "al2-ch06-q001",
+      "type": "single",
+      "prompt": "Qu'est-ce qu'un annuaire, ou service de noms ?",
+      "choices": [
+        "Une application client-serveur qui convertit des noms en identifiants ou localisations",
+        "Un fichier local qui liste les utilisateurs de chaque machine",
+        "Un protocole qui attribue des adresses IP aux machines",
+        "Un format texte pour échanger des données entre serveurs"
+      ],
+      "answer": [0],
+      "explanation": "Un annuaire est une application client-serveur qui convertit des requêtes de nommage (noms de machines, d'utilisateurs, répertoires personnels) en leur identifiant ou localisation. Le format texte d'échange, c'est LDIF.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q002",
+      "type": "multi",
+      "prompt": "Quels avantages le cours attribue-t-il à la centralisation des informations par un annuaire ? (plusieurs réponses)",
+      "choices": [
+        "Un point unique d'administration",
+        "Le chiffrement automatique de tous les échanges",
+        "La propagation immédiate des changements à tous les clients",
+        "La sauvegarde et la répartition de charge grâce à des serveurs secondaires",
+        "La suppression des fichiers locaux comme `/etc/passwd`"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "Le cours cite un point unique d'administration, une information consistante, la propagation immédiate des changements, la sauvegarde et la répartition de charge par des serveurs secondaires. Les annuaires s'utilisent en plus des fichiers locaux, ils ne les suppriment pas.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q003",
+      "type": "single",
+      "prompt": "Comment le cours décrit-il Active Directory ?",
+      "choices": [
+        "Un protocole léger de consultation d'annuaires",
+        "Un annuaire hiérarchisé et distribué de Microsoft, compatible LDAP",
+        "Un service de noms spécialisé dans les noms de machines",
+        "Le format de fichier utilisé pour importer des données LDAP"
+      ],
+      "answer": [1],
+      "explanation": "Active Directory est l'annuaire hiérarchisé et distribué de l'environnement Microsoft Windows, compatible LDAP. Le protocole de consultation d'annuaires est LDAP, et le service spécialisé dans les noms de machines est le DNS.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q004",
+      "type": "multi",
+      "prompt": "Selon le cours, quels services d'annuaires peut-on utiliser avec Linux, en plus des informations locales ? (plusieurs réponses)",
+      "choices": [
+        "NIS",
+        "DHCP",
+        "LDAP",
+        "NIS+",
+        "SNMP"
+      ],
+      "answer": [0, 2, 3],
+      "explanation": "Le cours liste DNS, NIS, NIS+ et LDAP, utilisés en plus des fichiers locaux comme `/etc/hosts` ou `/etc/passwd`. DHCP configure le réseau des machines, ce n'est pas un service d'annuaire.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q005",
+      "type": "single",
+      "prompt": "Quel fichier fixe, pour chaque type d'information, l'ordre de recherche entre fichiers locaux et services d'annuaires ?",
+      "choices": [
+        "`/etc/host.conf`",
+        "`/etc/ldap/ldap.conf`",
+        "`/etc/nsswitch.conf`",
+        "`/etc/resolv.conf`"
+      ],
+      "answer": [2],
+      "explanation": "`/etc/nsswitch.conf`, le commutateur de service de noms, fixe l'ordre de recherche avec des lignes `information: service1 [condition] service2 ...`. `/etc/ldap/ldap.conf` configure les outils LDAP en ligne de commande.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q006",
+      "type": "single",
+      "prompt": "Dans `/etc/nsswitch.conf`, quel type d'information correspond à la liste des utilisateurs ?",
+      "choices": [
+        "`shadow`",
+        "`group`",
+        "`aliases`",
+        "`passwd`"
+      ],
+      "answer": [3],
+      "explanation": "`passwd` correspond à la liste des utilisateurs, comme le fichier `/etc/passwd`. `shadow` concerne leurs mots de passe.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q007",
+      "type": "multi",
+      "prompt": "Quelles associations entre type d'information de `/etc/nsswitch.conf` et contenu sont correctes ? (plusieurs réponses)",
+      "choices": [
+        "`aliases` : alias d'adresses électroniques pour le MTA",
+        "`ether` : correspondances entre adresses IP et noms de machines",
+        "`shadow` : mots de passe des utilisateurs",
+        "`rpc` : liste des services TCP/IP et de leurs numéros de ports",
+        "`network` : liste des masques des réseaux"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "`ether` donne les correspondances entre adresses IP et adresses physiques (Ethernet) ; les noms de machines relèvent de `hosts`. `rpc` liste les services RPC, les ports TCP/IP relèvent de `services`. Pour `network`, c'est la définition du cours ; en pratique `/etc/networks` associe des noms de réseaux à leurs adresses.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q008",
+      "type": "single",
+      "prompt": "Dans `/etc/nsswitch.conf`, quel service désigne les fichiers locaux situés dans `/etc` ?",
+      "choices": [
+        "`files`",
+        "`local`",
+        "`db`",
+        "`etc`"
+      ],
+      "answer": [0],
+      "explanation": "Le service `files` utilise les fichiers locaux de `/etc`, comme dans `passwd: files nis ldap`. Les autres services du cours sont `dns`, `nis` (ou `yp`), `nisplus` (ou `nis+`) et `ldap`.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q009",
+      "type": "single",
+      "prompt": "D'après le cours, pour quel type d'information le service `dns` peut-il être utilisé dans `/etc/nsswitch.conf` ?",
+      "choices": [
+        "`passwd` et `group`",
+        "Uniquement `hosts`",
+        "`hosts` et `services`",
+        "Tous les types d'information"
+      ],
+      "answer": [1],
+      "explanation": "Le cours précise que le service `dns` ne sert que pour l'entrée `hosts`, puisque le DNS ne connaît que les noms de machines. Les utilisateurs et groupes passent par `files`, `nis` ou `ldap`. C'est la réponse du cours ; en pratique la glibc accepte aussi `dns` pour `networks`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q010",
+      "type": "single",
+      "prompt": "Dans `/etc/nsswitch.conf`, quel autre nom peut-on utiliser pour le service `nis` ?",
+      "choices": [
+        "`nisplus`",
+        "`ldap`",
+        "`yp`",
+        "`nis+`"
+      ],
+      "answer": [2],
+      "explanation": "`nis` et `yp` désignent le même service NIS. `nisplus` et `nis+` sont les deux noms du service NIS+.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q011",
+      "type": "single",
+      "prompt": "Quel état de retour signifie que le service a répondu mais ne contient pas l'information cherchée ?",
+      "choices": [
+        "`unavail`",
+        "`tryagain`",
+        "`success`",
+        "`notfound`"
+      ],
+      "answer": [3],
+      "explanation": "`notfound` : le service a répondu sans l'information. `unavail` signifie que le service n'a pas répondu, `tryagain` qu'il répond mais est temporairement indisponible.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q012",
+      "type": "single",
+      "prompt": "Quelles actions une condition de `/etc/nsswitch.conf` peut-elle déclencher ?",
+      "choices": [
+        "`return` ou `continue`",
+        "`return` ou `retry`",
+        "`stop` ou `continue`",
+        "`success` ou `notfound`"
+      ],
+      "answer": [0],
+      "explanation": "Les actions sont `return` (arrêter la recherche) et `continue` (passer au service suivant). `success` et `notfound` sont des états de retour, pas des actions.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q013",
+      "type": "single",
+      "prompt": "Avec cette ligne de `/etc/nsswitch.conf`, le serveur DNS répond qu'il ne connaît pas `srv1`, qui figure pourtant dans `/etc/hosts`. Quel est le résultat ?",
+      "code": "hosts:      dns [!UNAVAIL=return] files",
+      "choices": [
+        "`srv1` est trouvé dans `/etc/hosts` après la réponse du DNS",
+        "La recherche s'arrête et `srv1` n'est pas résolu",
+        "Le DNS est interrogé à nouveau jusqu'à trouver `srv1`",
+        "`/etc/hosts` est consulté, car l'état n'est pas `success`"
+      ],
+      "answer": [1],
+      "explanation": "Le DNS a répondu, l'état est `notfound` et non `unavail` : la condition `!UNAVAIL=return` s'applique et la recherche s'arrête. Les fichiers locaux ne sont consultés que si le DNS ne répond pas.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch06-q014",
+      "type": "single",
+      "prompt": "Avec cette ligne de `/etc/nsswitch.conf`, dans quel cas `/etc/hosts` est-il consulté ?",
+      "code": "hosts:      dns [!UNAVAIL=return] files",
+      "choices": [
+        "Quand le DNS ne trouve pas le nom demandé",
+        "Avant chaque requête DNS, pour gagner du temps",
+        "Uniquement quand le serveur DNS ne répond pas",
+        "Quand le DNS répond qu'il est temporairement indisponible"
+      ],
+      "answer": [2],
+      "explanation": "`!UNAVAIL=return` arrête la recherche pour tout état autre que `unavail`, y compris `notfound` et `tryagain`. Seul un DNS qui ne répond pas laisse passer la recherche à `files`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch06-q015",
+      "type": "single",
+      "prompt": "Avec cette ligne de `/etc/nsswitch.conf`, le serveur NIS est en panne et ne répond pas. Que se passe-t-il pour une recherche dans `networks` ?",
+      "code": "networks:   nis [NOTFOUND=return] files",
+      "choices": [
+        "La recherche s'arrête sans résultat",
+        "La recherche s'arrête, car l'état vaut `notfound`",
+        "Le système attend que NIS redevienne disponible",
+        "La recherche continue avec les fichiers locaux"
+      ],
+      "answer": [3],
+      "explanation": "Un service qui ne répond pas renvoie `unavail`, pas `notfound` : la condition ne s'applique pas et la recherche continue avec `files`. Elle ne s'arrêterait que si NIS répondait sans connaître le réseau.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch06-q016",
+      "type": "single",
+      "prompt": "Qu'est-ce que LDAP ?",
+      "choices": [
+        "Un protocole d'accès à un annuaire hiérarchique inspiré de X.500",
+        "Un annuaire distribué propriétaire de Microsoft",
+        "Un format de fichier texte pour échanger des données d'annuaire",
+        "Un service de noms spécialisé dans les noms de machines"
+      ],
+      "answer": [0],
+      "explanation": "LDAP (Lightweight Directory Access Protocol) est un protocole d'accès à un annuaire hiérarchique inspiré de X.500 ; il permet aussi d'interroger des annuaires X500 comme Active Directory. Le format de fichier texte est LDIF.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q017",
+      "type": "multi",
+      "prompt": "Selon le cours, comment protéger un échange LDAP par TLS ? (plusieurs réponses)",
+      "choices": [
+        "Avec StartTLS sur une connexion `ldap://`",
+        "Rien à faire : LDAP est chiffré par défaut",
+        "Avec une connexion LDAPS en `ldaps://`",
+        "En ajoutant l'option `-x` aux commandes LDAP"
+      ],
+      "answer": [0, 2],
+      "explanation": "LDAP se protège par TLS soit avec StartTLS sur `ldap://`, soit avec une connexion LDAPS en `ldaps://`. Sans TLS, LDAP n'est pas chiffré.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q018",
+      "type": "single",
+      "prompt": "Que définit le standard X500 ?",
+      "choices": [
+        "Le format des fichiers LDIF",
+        "La manière dont un annuaire doit être organisé, sous forme d'arbre",
+        "Le chiffrement des échanges entre client et serveur",
+        "L'ordre de consultation des services de noms"
+      ],
+      "answer": [1],
+      "explanation": "X500 définit l'organisation d'un annuaire : un arbre avec une racine et des niveaux par catégorie d'informations (villes, société, service...). L'ordre de consultation des services relève de `/etc/nsswitch.conf`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q019",
+      "type": "multi",
+      "prompt": "Quelles correspondances entre abréviation LDAP et signification sont correctes ? (plusieurs réponses)",
+      "choices": [
+        "`ou` : Object User, qui identifie un utilisateur",
+        "`dc` : Domain Component, qui identifie une racine de l'arbre",
+        "`ou` : Organizational Unit, qui identifie une branche",
+        "`dc` : Directory Container, qui identifie une feuille",
+        "`cn` : Common Name, qui identifie une feuille"
+      ],
+      "answer": [1, 2, 4],
+      "explanation": "`dc` (Domain Component) identifie une racine, `ou` (Organizational Unit) une branche et `cn` (Common Name) une feuille de l'arbre. Le nom complet d'une entrée est son DN, Distinguished Name.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q020",
+      "type": "single",
+      "prompt": "Quel DN désigne la branche des utilisateurs, People, de l'annuaire du domaine `mondomaine.com` ?",
+      "choices": [
+        "`cn=People, dc=mondomaine, dc=com`",
+        "`dc=People, ou=mondomaine, ou=com`",
+        "`ou=People, dc=mondomaine, dc=com`",
+        "`ou=People, cn=admin, dc=com`"
+      ],
+      "answer": [2],
+      "explanation": "Une branche est une `ou`, placée sous la racine `dc=mondomaine, dc=com`. `cn` est réservé aux feuilles, comme l'administrateur `cn=admin, dc=mondomaine, dc=com`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q021",
+      "type": "single",
+      "prompt": "L'arborescence simple du cours (racine, People, Group, admin) suffit pour les comptes UNIX. Que faut-il ajouter pour les comptes Windows ?",
+      "choices": [
+        "Un serveur Active Directory en plus de LDAP",
+        "Une branche par utilisateur Windows",
+        "Rien, elle convient telle quelle",
+        "Deux branches, pour les domaines et pour les machines des domaines"
+      ],
+      "answer": [3],
+      "explanation": "Pour les comptes Windows, il suffit d'ajouter deux branches stockant les domaines et les machines des domaines. Les utilisateurs restent dans la branche People.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q022",
+      "type": "single",
+      "prompt": "Quelle commande installe le serveur OpenLDAP et les outils clients LDAP ?",
+      "choices": [
+        "`sudo apt install slapd ldap-utils`",
+        "`sudo apt install openldap ldap-utils`",
+        "`sudo apt install sssd-ldap ldap-utils`",
+        "`sudo apt install slapd migrationtools`"
+      ],
+      "answer": [0],
+      "explanation": "Le serveur est le paquet `slapd`, et `ldap-utils` fournit les commandes `ldapadd`, `ldapsearch`... `sssd-ldap` sert à intégrer un client Linux à l'annuaire, pas à faire le serveur.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q023",
+      "type": "single",
+      "prompt": "Après l'installation de `slapd`, quelle commande le cours utilise-t-il pour déclarer le domaine ?",
+      "choices": [
+        "`sudo systemctl enable --now slapd`",
+        "`sudo dpkg-reconfigure slapd`",
+        "`sudo slapcat`",
+        "`sudo apt install ldap-utils`"
+      ],
+      "answer": [1],
+      "explanation": "`dpkg-reconfigure slapd` relance la configuration du paquet pour déclarer le domaine. `systemctl enable --now slapd` active et démarre le service, et `slapcat` affiche le contenu de la base.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q024",
+      "type": "single",
+      "prompt": "Que faut-il modifier dans `/etc/ldap/ldap.conf`, et à quoi sert ce fichier ?",
+      "choices": [
+        "La ligne `URI`, pour la configuration de SSSD",
+        "La ligne `BASE`, pour la configuration du serveur `slapd`",
+        "La ligne `BASE`, pour les outils LDAP en ligne de commande",
+        "La ligne `rootdn`, pour la configuration du serveur `slapd`"
+      ],
+      "answer": [2],
+      "explanation": "On modifie la ligne `BASE` de `/etc/ldap/ldap.conf`, fichier utilisé par les outils LDAP en ligne de commande pour tester le service. La configuration du serveur se trouve dans `/etc/ldap/slapd.d`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q025",
+      "type": "multi",
+      "prompt": "Que crée la commande `dpkg-reconfigure slapd` ? (plusieurs réponses)",
+      "choices": [
+        "Le fichier `/etc/sssd/sssd.conf`",
+        "Le répertoire `/etc/ldap/slapd.d`, qui contient la configuration du serveur",
+        "Les fichiers LDIF des utilisateurs du système",
+        "Une base de données vide dans `/var/lib/ldap`"
+      ],
+      "answer": [1, 3],
+      "explanation": "`dpkg-reconfigure slapd` crée `/etc/ldap/slapd.d` (configuration du serveur) et une base vide dans `/var/lib/ldap`. Les LDIF des utilisateurs sont produits ensuite par les scripts de `migrationtools`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q026",
+      "type": "single",
+      "prompt": "Que font ces commandes, lancées une fois le serveur configuré ?",
+      "code": "ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/cosine.ldif\nldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/nis.ldif\nldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/inetorgperson.ldif",
+      "choices": [
+        "Elles importent les utilisateurs et groupes du système",
+        "Elles activent le chiffrement TLS du serveur",
+        "Elles créent la racine du domaine et le compte admin",
+        "Elles ajoutent les schémas déclarant les classes d'objets à stocker"
+      ],
+      "answer": [3],
+      "explanation": "Les classes d'objets que l'annuaire pourra stocker sont déclarées dans des fichiers nommés schémas, ajoutés ici depuis `/etc/ldap/schema`. La racine et le compte admin viennent ensuite, avec `domain.ldif`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q027",
+      "type": "single",
+      "prompt": "Que signifie LDIF, le format des fichiers texte utilisés pour remplir l'annuaire ?",
+      "choices": [
+        "LDAP Data Interchange Format",
+        "LDAP Directory Information File",
+        "Lightweight Data Import Format",
+        "LDAP Distinguished Identifier Format"
+      ],
+      "answer": [0],
+      "explanation": "LDIF signifie LDAP Data Interchange Format. Sans outil graphique, ces fichiers texte permettent de communiquer avec le serveur LDAP.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q028",
+      "type": "single",
+      "prompt": "Dans ce fichier `domain.ldif`, quelle classe d'objet sert à créer les branches `people` et `group` ?",
+      "code": "dn: dc=mondomaine,dc=com\nobjectClass: top\nobjectClass: dcObject\nobjectclass: organization\no: Example Organization\ndc: mondomaine\n\ndn: cn=admin,dc=mondomaine,dc=com\nobjectClass: simpleSecurityObject\nobjectClass: organizationalRole\ncn: admin\nuserPassword: secret\n\ndn: ou=people,dc=mondomaine,dc=com\nou: people\nobjectClass: organizationalUnit\n\ndn: ou=group,dc=mondomaine,dc=com\nou: group\nobjectClass: organizationalUnit",
+      "choices": [
+        "`organization`",
+        "`organizationalUnit`",
+        "`organizationalRole`",
+        "`dcObject`"
+      ],
+      "answer": [1],
+      "explanation": "Les branches `ou=people` et `ou=group` sont des `organizationalUnit`. `organizationalRole` est utilisée pour l'entrée `cn=admin`, et `dcObject` pour la racine du domaine.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q029",
+      "type": "single",
+      "prompt": "Dans cette commande, que désigne l'argument de `-D` ?",
+      "code": "ldapadd -D \"cn=admin,dc=mondomaine,dc=com\" -W -x -f domain.ldif",
+      "choices": [
+        "Le domaine à créer dans l'annuaire",
+        "Le fichier LDIF à importer",
+        "Le DN de l'administrateur avec lequel on se connecte",
+        "La base de recherche utilisée par défaut"
+      ],
+      "answer": [2],
+      "explanation": "`-D` donne le DN avec lequel on s'authentifie, ici l'administrateur `cn=admin`, et `-W` demande son mot de passe. Le fichier à importer est donné par `-f`.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch06-q030",
+      "type": "single",
+      "prompt": "D'après le cours, quelle commande permet de voir le contenu de la base de données du serveur LDAP ?",
+      "choices": [
+        "`ldapadd -x`",
+        "`slapadd`",
+        "`ldapdelete -x`",
+        "`slapcat`"
+      ],
+      "answer": [3],
+      "explanation": "`slapcat` affiche le contenu de la base de données du serveur. `slapadd` et `ldapadd` ajoutent des données au lieu de les afficher.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q031",
+      "type": "single",
+      "prompt": "Après l'import de `groups.ldif` et `passwd.ldif`, quelle commande le cours utilise-t-il pour vérifier que les données sont bien dans la base ?",
+      "choices": [
+        "`ldapsearch -x`",
+        "`ldapadd -x`",
+        "`ldapmodify -x`",
+        "`ldapdelete -x`"
+      ],
+      "answer": [0],
+      "explanation": "`ldapsearch -x` interroge l'annuaire et permet de vérifier le résultat de l'import. Elle fait partie des commandes du paquet `ldap-utils`, comme `ldapadd` qui sert à l'import.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q032",
+      "type": "single",
+      "prompt": "Quel paquet fournit les scripts qui transforment `/etc/group` et `/etc/passwd` en fichiers LDIF ?",
+      "choices": [
+        "`ldap-utils`",
+        "`migrationtools`",
+        "`slapd`",
+        "`sssd-ldap`"
+      ],
+      "answer": [1],
+      "explanation": "Les scripts `migrate_group.pl` et `migrate_passwd.pl` sont fournis par le paquet `migrationtools`, dans `/usr/share/migrationtools/`. `ldap-utils` fournit les commandes `ldapadd`, `ldapsearch`...",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q033",
+      "type": "single",
+      "prompt": "Quelle variable d'environnement les scripts de `migrationtools` utilisent-ils pour connaître le nom du domaine ?",
+      "choices": [
+        "`LDAP_BASE`",
+        "`LDAP_DOMAIN`",
+        "`LDAP_BASEDN`",
+        "`BASEDN`"
+      ],
+      "answer": [2],
+      "explanation": "On exporte `LDAP_BASEDN`, par exemple `export LDAP_BASEDN=\"dc=mondomaine,dc=com\"`, avant de lancer les scripts. Ne pas confondre avec la ligne `BASE` de `/etc/ldap/ldap.conf`.",
+      "difficulty": 2
+    },
+    {
+      "id": "al2-ch06-q034",
+      "type": "single",
+      "prompt": "Quelle commande produit le fichier LDIF des utilisateurs du système ?",
+      "choices": [
+        "`/usr/share/migrationtools/migrate_group.pl /etc/passwd passwd.ldif`",
+        "`ldapadd -x -f /etc/passwd`",
+        "`/usr/share/migrationtools/migrate_passwd.pl passwd.ldif /etc/passwd`",
+        "`/usr/share/migrationtools/migrate_passwd.pl /etc/passwd passwd.ldif`"
+      ],
+      "answer": [3],
+      "explanation": "`migrate_passwd.pl` prend le fichier source puis le fichier LDIF à produire. `migrate_group.pl` sert à `/etc/group`, et `ldapadd` n'accepte que du LDIF, pas `/etc/passwd` brut.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch06-q035",
+      "type": "single",
+      "prompt": "Sur Ubuntu, avec quoi le cours recommande-t-il d'intégrer un client Linux à un annuaire LDAP ?",
+      "choices": [
+        "SSSD",
+        "NIS",
+        "Samba",
+        "`slapd`"
+      ],
+      "answer": [0],
+      "explanation": "L'intégration d'un client Linux à un annuaire LDAP se fait de préférence avec SSSD (paquet `sssd-ldap`), qui assure l'intégration NSS/PAM. `slapd` est le serveur, pas le client.",
+      "difficulty": 1
+    },
+    {
+      "id": "al2-ch06-q036",
+      "type": "single",
+      "prompt": "Dans cet extrait de `/etc/sssd/sssd.conf`, quelle ligne indique que l'authentification des utilisateurs passe par LDAP ?",
+      "code": "[sssd]\nservices = nss, pam\ndomains = LDAP\n[domain/LDAP]\nid_provider = ldap\nauth_provider = ldap\nldap_uri = ldaps://ldap.mondomaine.com",
+      "choices": [
+        "`id_provider = ldap`",
+        "`auth_provider = ldap`",
+        "`services = nss, pam`",
+        "`domains = LDAP`"
+      ],
+      "answer": [1],
+      "explanation": "`auth_provider` choisit la source d'authentification. `id_provider` choisit la source des identités (utilisateurs, groupes), et `domains = LDAP` ne fait que nommer le domaine SSSD.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch06-q037",
+      "type": "single",
+      "prompt": "Vous avez écrit `/etc/sssd/sssd.conf` puis lancé `sudo systemctl enable --now sssd`, mais le service ne démarre pas. Quelle étape du cours manque probablement ?",
+      "choices": [
+        "`sudo dpkg-reconfigure slapd`",
+        "`sudo chmod 644 /etc/sssd/sssd.conf`",
+        "`sudo chmod 600 /etc/sssd/sssd.conf`",
+        "`getent passwd utilisateur`"
+      ],
+      "answer": [2],
+      "explanation": "`/etc/sssd/sssd.conf` doit être protégé en mode 600, et SSSD refuse un fichier trop ouvert. Le mode 644 le rendrait lisible par tous.",
+      "difficulty": 3
+    },
+    {
+      "id": "al2-ch06-q038",
+      "type": "single",
+      "prompt": "SSSD est configuré et démarré. Quelle commande vérifie qu'un utilisateur de l'annuaire est bien connu du système ?",
+      "choices": [
+        "`grep utilisateur /etc/passwd`",
+        "`systemctl status sssd`",
+        "`sudo slapcat`",
+        "`getent passwd utilisateur`"
+      ],
+      "answer": [3],
+      "explanation": "`getent passwd` interroge les sources déclarées pour NSS, donc l'annuaire via SSSD. `grep` sur `/etc/passwd` ne voit que les comptes locaux.",
+      "difficulty": 2
+    }
+  ]
+}
