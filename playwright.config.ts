@@ -10,6 +10,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env["CI"]),
   retries: process.env["CI"] ? 1 : 0,
+  failOnFlakyTests: Boolean(process.env["CI"]),
   reporter: process.env["CI"] ? "github" : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,

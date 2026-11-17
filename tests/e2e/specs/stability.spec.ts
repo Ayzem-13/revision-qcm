@@ -104,3 +104,17 @@ test("no screen overflows sideways", async ({ page }) => {
   await startSession(page, "Examen", "10");
   expect(movements(await layoutOf(page), await layoutOf(page))).toEqual([]);
 });
+
+test("the action bar rests exactly where it sticks", async ({ page }) => {
+  await startSession(page, "Entraînement", "10");
+  const size = page.viewportSize();
+  if (size === null) throw new Error("the project sets a viewport");
+  const gapBelowActionBar = async (height: number): Promise<number> => {
+    await page.setViewportSize({ width: size.width, height });
+    await layoutOf(page);
+    return page.getByTestId("action-bar").evaluate((bar) => window.innerHeight - bar.getBoundingClientRect().bottom);
+  };
+  const resting = await gapBelowActionBar(2000);
+  const stuck = await gapBelowActionBar(420);
+  expect(Math.abs(resting - stuck)).toBeLessThanOrEqual(0.5);
+});

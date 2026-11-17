@@ -35,7 +35,7 @@ export function SessionPage(props: { study: Study; view: QuestionView }): ReactN
   const progress = free ? view.answeredCount : view.index + (view.feedback === null ? 0 : 1);
 
   return (
-    <div className="-mb-8 flex flex-1 flex-col pt-1 md:mb-0">
+    <div className="-mb-8 flex flex-1 flex-col pt-1">
       <div className="flex items-center gap-1 sm:gap-2">
         <IconAction label="Quitter la session" hint="Quitter" testId="quit" onClick={() => setPending("quit")}>
           <X aria-hidden="true" />
