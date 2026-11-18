@@ -110,7 +110,7 @@ bun run content:check
 ```
 
 ```
-1 matière, 22 chapitres, 792 questions : aucun problème
+1 matière, 24 chapitres, 892 questions : aucun problème
 ```
 
 Chaque problème s'affiche avec son fichier (par exemple `content/reseaux/ch01.json : res-ch01-q001 : la réponse 4 ne

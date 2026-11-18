@@ -17,9 +17,11 @@ export function SetupPage(props: { study: Study; overview: SubjectOverview }): R
   const preferences = useReadable(useApplication().preferences);
   const chapters = useMemo(() => overview.sections.flatMap((section) => section.chapters), [overview]);
 
-  const [selected, setSelected] = useState<ReadonlySet<ChapterId>>(
-    () => new Set(chapters.map((chapter) => chapter.id)),
-  );
+  const [selected, setSelected] = useState<ReadonlySet<ChapterId>>(() => {
+    const all = chapters.map((chapter) => chapter.id);
+    const remembered = all.filter((id) => preferences.lastChapters[overview.id]?.includes(id));
+    return new Set(remembered.length === 0 ? all : remembered);
+  });
   const [mode, setMode] = useState<Mode>(preferences.lastMode);
   const [count, setCount] = useState(preferences.lastCount);
   const [confirmReset, setConfirmReset] = useState(false);

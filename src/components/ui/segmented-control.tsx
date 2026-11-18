@@ -4,6 +4,7 @@ import {
   SegmentedControlIndicator,
   SegmentedControlItem as SegmentedControlItemPrimitive,
 } from "@ui-sdk/react/segmented-control"
+import { cva, type VariantProps } from "class-variance-authority"
 import { CheckIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -42,24 +43,36 @@ function SegmentedControl<T extends string>({
   )
 }
 
+const segmentedControlItemVariants = cva(
+  "flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-xl text-sm font-semibold whitespace-nowrap text-muted-foreground tabular-nums transition-colors duration-200 ease-emphasized outline-none not-data-checked:not-data-disabled:hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 data-checked:text-secondary-foreground data-disabled:cursor-not-allowed data-disabled:opacity-40",
+  {
+    variants: {
+      size: {
+        default: "gap-1.5 px-2",
+        compact: "px-1 [&>svg]:hidden",
+      },
+    },
+    defaultVariants: { size: "default" },
+  }
+)
+
 function SegmentedControlItem({
+  size,
   className,
   children,
   ...props
 }: Omit<
   React.ComponentProps<typeof SegmentedControlItemPrimitive>,
   "className" | "children"
-> & {
-  className?: string
-  children: React.ReactNode
-}) {
+> &
+  VariantProps<typeof segmentedControlItemVariants> & {
+    className?: string
+    children: React.ReactNode
+  }) {
   return (
     <SegmentedControlItemPrimitive
       data-slot="segmented-control-item"
-      className={cn(
-        "flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 text-sm font-semibold whitespace-nowrap text-muted-foreground tabular-nums transition-colors duration-200 ease-emphasized outline-none not-data-checked:not-data-disabled:hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 data-checked:text-secondary-foreground data-disabled:cursor-not-allowed data-disabled:opacity-40",
-        className
-      )}
+      className={cn(segmentedControlItemVariants({ size }), className)}
       {...props}
     >
       <CheckIcon

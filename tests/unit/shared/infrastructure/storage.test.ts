@@ -25,7 +25,12 @@ describe("round trips", () => {
   test("preferences", () => {
     const host = new MemoryHost();
     storedPreferences(host).update((current) => ({ ...current, theme: "dark", lastCount: 40, lastMode: "exam" }));
-    expect(storedPreferences(host).get()).toEqual({ theme: "dark", lastCount: 40, lastMode: "exam" });
+    expect(storedPreferences(host).get()).toEqual({
+      theme: "dark",
+      lastCount: 40,
+      lastMode: "exam",
+      lastChapters: {},
+    });
   });
 
   test("progress, stored as one tuple per question with its revision", () => {

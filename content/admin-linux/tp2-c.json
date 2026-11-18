@@ -1,0 +1,861 @@
+{
+  "id": "tp2-c",
+  "title": "TP 2 : raisonnement et diagnostic",
+  "group": "Travaux pratiques",
+  "order": 26,
+  "source": "AdminLinux-2-TP-1.pdf, chapitres 1 à 5",
+  "questions": [
+    {
+      "id": "tp2-c-q001",
+      "type": "single",
+      "prompt": "Vous venez de relever ces sorties sur le serveur, configuré par DHCP. Quelles valeurs le fichier Netplan statique doit-il reprendre pour conserver exactement la même configuration ?",
+      "code": "$ ip -br addr\nlo               UNKNOWN        127.0.0.1/8 ::1/128\nenp0s3           UP             10.0.2.15/24 fe80::a00:27ff:fe8d:c04d/64\n$ ip route\ndefault via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100\n10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 metric 100\n$ resolvectl status enp0s3\nLink 2 (enp0s3)\n    Current Scopes: DNS\nCurrent DNS Server: 10.0.2.3\n       DNS Servers: 10.0.2.3",
+      "choices": [
+        "`addresses: [10.0.2.15/24]`, `via: 10.0.2.3` et `nameservers` à `[10.0.2.2]`",
+        "`addresses: [10.0.2.15/24]`, `via: 10.0.2.2` et `nameservers` à `[127.0.0.53]`",
+        "`addresses: [10.0.2.15/24]`, `via: 10.0.2.2` et `nameservers` à `[10.0.2.3]`",
+        "`addresses: [10.0.2.2/24]`, `via: 10.0.2.15` et `nameservers` à `[10.0.2.3]`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "L'adresse et le préfixe viennent de `ip -br addr`, la passerelle de la ligne `default via` de `ip route` et le serveur DNS de `resolvectl status`. 127.0.0.53 est le résolveur local systemd-resolved, pas un serveur DNS du réseau. Inverser passerelle et DNS est l'erreur classique quand les deux adresses se suivent.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q002",
+      "type": "single",
+      "prompt": "Vous êtes sur le serveur FTP (192.168.56.104) et vous allez vous y connecter depuis l'hôte 192.168.56.1. Quelle capture fera apparaître les commandes `USER` et `PASS` de l'échange ?",
+      "choices": [
+        "`sudo tshark host 192.168.56.1 and port ftp`",
+        "`sudo tshark host 192.168.56.1 and port ssh`",
+        "`sudo tshark host 127.0.0.1 and port ftp`",
+        "`sudo tshark host 192.168.56.1 and port domain`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le cours capture une session FTP avec `tshark host servux and port ftp` : on filtre sur l'hôte qui se connecte et sur le port `ftp`. Le port `ssh` est celui de SSH et `domain` celui du DNS, comme dans les requêtes `PTR?` de l'exemple tcpdump du cours. 127.0.0.1 est l'adresse de l'interface de bouclage `lo` : aucun paquet échangé entre l'hôte et le serveur ne la porte.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q003",
+      "type": "single",
+      "prompt": "Un collègue refait le test avec SFTP et le même utilisateur, en capturant avec `sudo tshark host 192.168.56.1 and port ssh`. Que verra-t-il ?",
+      "choices": [
+        "Les commandes `USER` et `PASS` en clair, comme dans la capture de la session FTP",
+        "Le nom de l'utilisateur seul, tshark masquant le mot de passe à l'affichage",
+        "Du trafic sur le port `ssh`, mais aucun identifiant lisible : SSH chiffre la session",
+        "Aucun paquet : SFTP passe par le port `ftp`, que ce filtre ne retient pas, et non par celui de SSH"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le TP oppose FTP, qui ne doit pas transporter d'identifiants sur un réseau non fiable, à SSH/SFTP : la capture FTP du cours montre `USER ttoto` et `PASS azerty` en clair, alors qu'avec SFTP la session passe par SSH et les identifiants n'apparaissent pas dans la capture. tshark ne masque rien, `PASS azerty` le montre, et SFTP utilise le port de SSH, pas celui de FTP.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q004",
+      "type": "single",
+      "prompt": "Vous venez de passer `enp0s8` en statique avec ce fichier et `sudo netplan apply`. `ping -c1 10.0.3.2` répond, mais `ping -c1 deb.debian.org` affiche `Temporary failure in name resolution` et `resolvectl status enp0s8` ne liste aucun serveur DNS. Quelle correction est durable ?",
+      "code": "network:\n  version: 2\n  ethernets:\n    enp0s8:\n      dhcp4: false\n      addresses: [10.0.3.15/24]\n      routes:\n        - to: default\n          via: 10.0.3.2",
+      "choices": [
+        "`echo \"nameserver 10.0.3.3\" | sudo tee /etc/resolv.conf`, puis `sudo netplan apply`",
+        "Ajouter la ligne `nameserver 10.0.3.3` à `/etc/hosts`, puis `sudo netplan apply`",
+        "`sudo systemctl restart systemd-resolved`, pour qu'il relise les serveurs DNS du dernier bail",
+        "Ajouter `nameservers:` avec `addresses: [10.0.3.3]` sous `enp0s8`, puis `sudo netplan apply`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "En DHCP, les serveurs DNS venaient du bail ; en statique, il faut les écrire dans le bloc `nameservers` du fichier Netplan, comme dans l'exemple du cours. Le cours rappelle que `/etc/resolv.conf` est géré automatiquement et ne doit pas être édité, `/etc/hosts` associe des adresses à des noms de machines sans désigner de serveur DNS, et redémarrer systemd-resolved ne lui apprend aucun serveur qui ne figure nulle part.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q005",
+      "type": "single",
+      "prompt": "Vous voulez voir s'afficher en temps réel les commandes lancées avec `sudo` pendant que vous travaillez dans un autre terminal. Quelle commande ?",
+      "choices": [
+        "`journalctl | grep sudo`",
+        "`journalctl --since \"10 minutes ago\" | grep sudo`",
+        "`w -s | grep sudo`",
+        "`journalctl -f | grep sudo`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`journalctl -f` affiche les messages au fur et à mesure qu'ils arrivent dans le journal, et `grep sudo` ne garde que les lignes de sudo, comme `sudo[1025]: tp_user : ... COMMAND=/usr/bin/apt-get install cron` dans le cours. Sans `-f`, journalctl affiche ce qui est déjà journalisé, depuis le début ou depuis `--since`, puis s'arrête. `w` montre ce que font les utilisateurs à l'instant où on le lance, pas la suite des commandes.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q006",
+      "type": "single",
+      "prompt": "Nous sommes mercredi et vous voulez relire les messages du démarrage de lundi après-midi pour y chercher des erreurs. D'après cette liste, quelle commande affiche les messages de ce démarrage, et eux seuls ?",
+      "code": "$ journalctl --list-boots\nIDX BOOT ID                          FIRST ENTRY                 LAST ENTRY\n -4 1f9d2c0b6a3e4c1d9a7b5e2f8c4d6a10 Sun 2026-11-15 10:02:11 CET Sun 2026-11-15 11:47:30 CET\n -3 4a1c8e2d7b6f4a3e8d1c9b5a7e3f2c64 Mon 2026-11-16 08:58:02 CET Mon 2026-11-16 12:30:11 CET\n -2 9be07d4c3a2b4f1e8c6d5a4b3c2e1f09 Mon 2026-11-16 13:45:20 CET Mon 2026-11-16 18:02:44 CET\n -1 c71f5e6d4c3b4a2f9e8d7c6b5a4f3e21 Tue 2026-11-17 08:31:09 CET Tue 2026-11-17 17:55:40 CET\n  0 e03a9b8c7d6e4f5a8b9c0d1e2f3a4b5c Wed 2026-11-18 08:29:51 CET Wed 2026-11-18 10:14:02 CET",
+      "choices": [
+        "`journalctl -b -3`",
+        "`journalctl --since \"2026-11-16 13:45\"`",
+        "`journalctl -b -2`",
+        "`journalctl -b -1`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "La colonne IDX numérote les démarrages à partir de celui en cours (0) : lundi après-midi porte l'index -2, -3 désigne lundi matin et -1 mardi, le démarrage précédent. `--since` ne fixe qu'un début : la sortie continuerait avec les démarrages de mardi et de mercredi.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q007",
+      "type": "single",
+      "prompt": "Le TP demande les dates et heures des 5 derniers redémarrages du serveur. Quelle commande les affiche ?",
+      "choices": [
+        "`last reboot | head -n 5`",
+        "`last reboot | tail -n 5`",
+        "`last tp_user | head -n 5`",
+        "`uptime`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`last reboot` liste les redémarrages du plus récent au plus ancien, en commençant par le démarrage en cours (`still running`), et se termine par la ligne `wtmp begins` : `head -n 5` garde donc les cinq plus récents, alors que `tail -n 5` garderait les plus anciens et cette dernière ligne. `last tp_user` liste les connexions d'un utilisateur, et `uptime` dit seulement depuis quand le système fonctionne.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q008",
+      "type": "multi",
+      "prompt": "Vous relisez ces lignes du journal après l'exercice sur `sudo`. Que peut-on en conclure ? (plusieurs réponses)",
+      "code": "Nov 18 09:12:44 srv-tp sudo[2210]:  tp_user : TTY=pts/1 ; PWD=/home/tp_user ; USER=root ; COMMAND=/usr/bin/systemctl restart named\nNov 18 09:12:44 srv-tp sudo[2210]: pam_unix(sudo:session): session opened for user root(uid=0) by tp_user(uid=1000)\nNov 18 09:12:45 srv-tp sudo[2210]: pam_unix(sudo:session): session closed for user root\nNov 18 09:13:20 srv-tp su[2231]: pam_unix(su:auth): authentication failure; logname=tp_user uid=1000 euid=0 tty=/dev/pts/1 ruser=tp_user rhost=  user=root",
+      "choices": [
+        "`tp_user` a lancé `systemctl restart named` en tant que root, depuis le terminal pts/1",
+        "root a lancé `systemctl restart named` pour le compte de `tp_user`",
+        "La commande `sudo` a été lancée depuis le répertoire `/home/tp_user`",
+        "`tp_user` a tenté de devenir root avec `su` et l'authentification a échoué",
+        "`journalctl | grep sudo` aurait aussi affiché la ligne de `su`, sur le même terminal pts/1"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Les lignes `sudo[...]` suivent le format du cours : l'appelant (`tp_user`), son terminal (`TTY`), son répertoire (`PWD`), le compte cible (`USER=root`) et la commande, puis `session opened for user root(uid=0) by tp_user(uid=1000)`. La dernière ligne, comme l'exemple `su(pam_unix)` du cours, signale l'échec d'authentification de `tp_user` vers `user=root`. Elle ne contient pas le mot `sudo` : `grep sudo` l'écarte, alors que le `grep \"su\"` du cours la garde.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q009",
+      "type": "multi",
+      "prompt": "Nous sommes le 18 novembre 2026, il est 11 h. Vous voulez les lignes du journal écrites depuis 10 h 50 qui contiennent `sudo`, et elles seules. Quelles commandes conviennent ? (plusieurs réponses)",
+      "choices": [
+        "`journalctl --since \"50 minutes ago\" | grep sudo`",
+        "`journalctl --since \"10 minutes ago\" | grep sudo`",
+        "`journalctl --since \"2026-11-18 10:50:00\" | grep su`",
+        "`journalctl --since \"2026-11-18 10:50\" | grep sudo`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explanation": "Le cours accepte une date précise (`--since \"2023-12-01 09:07:00\"`) ou un délai (`--since \"10 minutes ago\"`) : à 11 h, ces deux formes désignent 10 h 50. 50 minutes en arrière ramènent à 10 h 10, et `grep su` garde aussi les lignes de `su` et toute autre ligne qui contient ces deux lettres, comme le montre l'exemple `journalctl | grep \"su\"` du cours.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q010",
+      "type": "single",
+      "prompt": "Vous venez d'ajouter les deux disques de 1 Gio. Sans supposer leur nom, d'après cette sortie, sur quels périphériques créer les tables de partitions GPT ?",
+      "code": "$ lsblk -o NAME,SIZE,TYPE,MOUNTPOINTS\nNAME    SIZE TYPE MOUNTPOINTS\nsda      25G disk\n├─sda1    1M part\n├─sda2    2G part /boot\n└─sda3   23G part /\nsdb       1G disk\nsdc      20G disk\n└─sdc1   20G part /srv\nsdd       1G disk\nsr0    1024M rom",
+      "choices": [
+        "`/dev/sdb` et `/dev/sdc`",
+        "`/dev/sdb` et `/dev/sdd`",
+        "`/dev/sdb1` et `/dev/sdd1`",
+        "`/dev/sdd` et `/dev/sr0`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Les disques neufs sont `sdb` et `sdd` : 1G, type `disk` et aucune partition. `sdc` fait 20G et porte une partition montée sur `/srv`, `sr0` est un lecteur optique (type `rom`), et `sdb1` ou `sdd1` n'existent pas encore : la table de partitions se crée sur le disque entier, la partition vient ensuite.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q011",
+      "type": "multi",
+      "prompt": "Après l'exercice d'agrandissement, `sdb1` fait 2 Gio et `sdc1` 1 Gio. Un collègue assemble ces deux partitions, d'abord en RAID 0, puis en RAID 1. Quelles capacités utiles obtient-il ? (plusieurs réponses)",
+      "choices": [
+        "Environ 2 Gio en RAID 0, deux fois le plus petit membre",
+        "Environ 3 Gio en RAID 0",
+        "Environ 1 Gio en RAID 1",
+        "Environ 2 Gio en RAID 1, la taille du plus grand membre"
+      ],
+      "answer": [
+        1,
+        2
+      ],
+      "explanation": "Selon le cours, la capacité d'un RAID 0 est la somme des tailles des disques, et celle d'un RAID 1 la taille du plus petit disque, puisque les données sont écrites en plusieurs exemplaires, un sur chaque membre. Dans le miroir, le Gio supplémentaire de `sdb1` ne sert à rien.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q012",
+      "type": "multi",
+      "prompt": "Vous venez de lancer `sudo mdadm --manage /dev/md0 --add /dev/sdc1` sur le RAID 1 dégradé, puis `sudo mdadm --detail /dev/md0`. Que conclure de cet extrait ? (plusieurs réponses)",
+      "code": "        Raid Level : raid1\n        Array Size : 1046528 (1022.00 MiB 1071.64 MB)\n      Raid Devices : 2\n     Total Devices : 2\n             State : clean, degraded, recovering\n    Active Devices : 1\n   Working Devices : 2\n    Failed Devices : 0\n     Spare Devices : 1\n    Rebuild Status : 42% complete\n\n    Number   Major   Minor   RaidDevice State\n       0       8       17        0      active sync   /dev/sdb1\n       2       8       33        1      spare rebuilding   /dev/sdc1",
+      "choices": [
+        "La copie de `sdb1` vers `sdc1` est en cours et en est à 42 %",
+        "Les deux membres portent déjà une copie complète des données",
+        "Si `sdb1` tombait maintenant, les données seraient perdues",
+        "L'ensemble fonctionne en RAID 0 le temps de la reconstruction du second membre",
+        "`sdc1` reste compté comme disque de secours tant que la copie n'est pas finie"
+      ],
+      "answer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "`degraded, recovering` et `Rebuild Status : 42% complete` montrent que le miroir est recréé à partir de l'autre disque : un seul membre actif (`Active Devices : 1`), l'autre en `spare rebuilding`, encore compté parmi les `Spare Devices`. Tant que la copie n'est pas terminée, `sdb1` porte la seule copie complète. `Raid Level : raid1` ne change pas pendant la reconstruction.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q013",
+      "type": "single",
+      "prompt": "L'exercice RAID 0 est terminé : `/dev/md0` est monté sur `/raid`, déclaré dans `/etc/fstab` et décrit dans `/etc/mdadm/mdadm.conf`. Quelle séquence respecte l'ordre demandé par le TP pour l'arrêter et retirer sa configuration ?",
+      "choices": [
+        "`sudo umount /raid` ; `sudo mdadm --stop /raid` ; retrait de ses lignes de `/etc/fstab` et de `mdadm.conf`",
+        "`sudo umount /raid` ; `sudo mdadm --stop /dev/md0` ; retrait de ses lignes de `/etc/fstab` et de `mdadm.conf`",
+        "`sudo mdadm --stop /dev/md0` ; `sudo umount /raid` ; retrait de ses lignes de `/etc/fstab` et de `mdadm.conf`",
+        "Retrait de ses lignes de `/etc/fstab` et de `mdadm.conf` ; `sudo mdadm --stop /dev/md0`, `/raid` restant monté"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Le système de fichiers est créé sur l'ensemble puis monté : le TP fait démonter `/raid` avant de supprimer l'ensemble, qu'on arrête ensuite avec `mdadm --stop /dev/md0`, appliqué au périphérique RAID et non au point de montage. Les lignes de `/etc/fstab` et de `mdadm.conf` décrivent un ensemble qui n'existera plus : on les retire aussi.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q014",
+      "type": "multi",
+      "prompt": "Un collègue a supprimé le RAID 0 pour créer le RAID 1, mais a laissé dans `/etc/fstab` la ligne `UUID=3f6c1a2e-9b8d-4c7e-a1f0-5d2b8e9c4a71 /raid ext4 defaults 0 2` de l'ancien volume. Avant de redémarrer, quelles commandes lui signaleront cette ligne ? (plusieurs réponses)",
+      "choices": [
+        "`cat /proc/mdstat`",
+        "`sudo findmnt --verify`",
+        "`sudo mdadm --detail --scan`",
+        "`sudo mount -a`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explanation": "Le TP fait vérifier fstab avec `findmnt --verify` et `mount -a` avant tout redémarrage : la première contrôle les lignes de `/etc/fstab`, la seconde tente de monter ce qu'elles décrivent, et toutes deux butent sur un UUID qu'aucun volume ne porte plus. `/proc/mdstat` et `mdadm --detail --scan` décrivent les ensembles RAID présents, sans lire `/etc/fstab`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q015",
+      "type": "single",
+      "prompt": "Un collègue a agrandi `sdb` de 1 à 2 Gio dans l'hyperviseur, puis lancé ces commandes ; `/dev/sdb1` est monté sur `/data`. `df -h` affiche toujours environ 1 Gio. Que doit-il lancer maintenant ?",
+      "code": "$ echo 1 | sudo tee /sys/class/block/sdb/device/rescan\n1\n$ sudo resize2fs /dev/sdb1\nresize2fs 1.47.2 (1-Jan-2025)\nThe filesystem is already 261883 (4k) blocks long.  Nothing to do!\n\n$ sudo parted /dev/sdb resizepart 1 100%\n$ lsblk /dev/sdb\nNAME   MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS\nsdb      8:16   0   2G  0 disk\n└─sdb1   8:17   0   2G  0 part /data",
+      "choices": [
+        "`sudo parted /dev/sdb resizepart 1 100%`, car la partition n'est pas encore agrandie",
+        "`sudo resize2fs /dev/sdb1`, car il a été lancé avant l'agrandissement de la partition",
+        "`sudo mkfs.ext4 /dev/sdb1`, pour recréer le système de fichiers à la nouvelle taille de 2 Gio",
+        "Rien : `df -h` affichera la nouvelle taille après un simple redémarrage"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Le TP agrandit la partition, puis le système de fichiers : lancé avant `resizepart`, `resize2fs` n'avait rien à faire, comme il l'affiche. `lsblk` montre maintenant `sdb1` à 2G alors que `df` mesure encore l'ancien système de fichiers : il reste à relancer `resize2fs`. `mkfs.ext4` créerait un système de fichiers neuf et vide, contre la consigne de garder les données, et un redémarrage n'accomplit pas l'étape oubliée.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q016",
+      "type": "single",
+      "prompt": "Après un redémarrage, `cat /proc/mdstat` affiche `md127 : active raid0 sdc1[1] sdb1[0]` alors que l'ensemble avait été créé sous `/dev/md0`. Pourquoi le TP demande-t-il de monter `/raid` par son UUID plutôt que par `/dev/md0` ?",
+      "choices": [
+        "Parce que `/dev/md0` est réservé aux RAID 1, un RAID 0 recevant un autre nom",
+        "Parce que l'UUID inscrit dans fstab force mdadm à réassembler l'ensemble sous `/dev/md0`",
+        "Parce que les membres de l'ensemble changent d'un démarrage à l'autre",
+        "Parce que le nom de l'ensemble peut changer, pas l'UUID de son système de fichiers"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "La sortie le montre : l'ensemble créé sous `/dev/md0` revient sous `md127`, et une ligne `/dev/md0` dans fstab désignerait un périphérique absent. L'UUID demandé par le TP suit le système de fichiers quel que soit le nom de l'ensemble. Le cours crée aussi bien un ensemble linéaire qu'un RAID 1 sous `/dev/md0`, les membres `sdb1` et `sdc1` sont toujours là, et c'est `/etc/mdadm/mdadm.conf`, pas fstab, qui porte la configuration de mdadm.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q017",
+      "type": "single",
+      "prompt": "Vous êtes root sur le serveur et vous voulez enregistrer le RAID dans la configuration persistante de mdadm, sans effacer ce que contient déjà le fichier. Quelle commande ?",
+      "choices": [
+        "`mdadm --detail --scan >> /etc/fstab`, lu à chaque démarrage",
+        "`mdadm --detail --scan > /etc/mdadm/mdadm.conf`",
+        "`mdadm --detail --scan >> /etc/mdadm/mdadm.conf`",
+        "`cat /proc/mdstat >> /etc/mdadm/mdadm.conf`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le cours génère les lignes qui décrivent les ensembles avec `mdadm --detail --scan >> /etc/mdadm/mdadm.conf`, le fichier de la configuration persistante de mdadm : `>>` ajoute à la fin du fichier, alors que `>` le remplacerait entièrement. `/etc/fstab` décrit les montages, pas les ensembles, et `/proc/mdstat` donne l'état des ensembles en fonctionnement, pas des lignes de configuration.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q018",
+      "type": "single",
+      "prompt": "Le RAID 0 de deux disques monté sur `/raid` contient 600 Mio de fichiers. Un des deux disques tombe en panne. Quelle quantité de données risque-t-on de perdre ?",
+      "choices": [
+        "Environ 300 Mio, la moitié écrite sur le disque en panne",
+        "Rien : l'autre disque garde une copie de chaque fichier",
+        "Tout : les données de `/raid` sont réparties sur les deux disques",
+        "Rien : l'ensemble se reconstruit à partir des informations de parité"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le RAID 0 répartit les lectures et les écritures sur tous les disques de l'ensemble et le rend dépendant de la fiabilité de chacun : sans l'un des deux, il faut considérer tout `/raid` comme perdu. La copie sur un autre disque est le principe du RAID 1 et la parité celui du RAID 5 ; le RAID 0 n'a ni l'une ni l'autre.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q019",
+      "type": "single",
+      "prompt": "Sur le RAID 1 monté sur `/raid`, vous simulez la panne de `sdc1` avec `sudo mdadm --manage /dev/md0 --fail /dev/sdc1`, puis vous le retirez de l'ensemble. Qu'observez-vous ?",
+      "choices": [
+        "Les fichiers de `/raid` restent lisibles et l'ensemble est signalé dégradé",
+        "`/raid` devient illisible jusqu'à la réintégration de `sdc1`",
+        "La capacité de `/raid` est divisée par deux, faute de second membre dans le miroir",
+        "L'ensemble devient un RAID 0 qui ne compte plus que `sdb1`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le RAID 1 écrit les données en plusieurs exemplaires sur plusieurs disques : `sdb1` en garde une copie complète, et le TP fait vérifier que les données restent accessibles en observant l'état dégradé avec `/proc/mdstat` et `mdadm --detail`. La taille d'un RAID 1 est celle du plus petit disque, pas la somme des membres, et l'ensemble reste un RAID 1 dégradé.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q020",
+      "type": "single",
+      "prompt": "Hier, vous avez préparé `/dev/sdd1` avec `mkswap` puis l'avez activée avec `sudo swapon /dev/sdd1`. Après le redémarrage de ce matin, `swapon --show` ne la liste plus. Que faire ?",
+      "choices": [
+        "Ajouter `/dev/sdd1 none swap sw 0 0` à `/etc/fstab`, que lit le démarrage",
+        "Relancer `mkswap` à chaque démarrage, la partition perdant son contenu comme un tmpfs",
+        "Ajouter `/dev/sdd1 none swap sw 0 0` à `/etc/mdadm/mdadm.conf`, lu au démarrage",
+        "Ajouter `/dev/sdd1 /mnt/ramdisk tmpfs defaults 0 0` à `/etc/fstab`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Une zone activée avec `swapon` ne l'est que jusqu'à l'arrêt : pour une activation au démarrage, le cours ajoute à `/etc/fstab` une ligne de type `swap`, comme `/swapfile none swap sw 0 0`. Une partition garde son contenu, contrairement à un tmpfs, `mdadm.conf` ne décrit que les ensembles RAID, et une ligne `tmpfs` monterait un système de fichiers en mémoire au lieu d'activer le swap.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q021",
+      "type": "single",
+      "prompt": "Vous voulez désactiver `/swap.img` avec `sudo swapoff /swap.img`. Voici l'état de la mémoire. Que va-t-il se passer ?",
+      "code": "$ swapon --show\nNAME      TYPE       SIZE USED PRIO\n/swap.img file         2G 1.6G   -2\n/dev/sdd1 partition   50M   0B   -3\n/swap-tp  file        50M   0B   -4\n$ free -h\n               total        used        free      shared  buff/cache   available\nMem:           1.9Gi       1.5Gi       120Mi       1.0Mi       280Mi       300Mi\nSwap:          2.1Gi       1.6Gi       500Mi",
+      "choices": [
+        "La zone est désactivée aussitôt, ses pages étant simplement effacées",
+        "Les pages sont transférées vers `/swap-tp`, qui s'agrandit automatiquement pour les recevoir",
+        "Les pages sont transférées vers le tmpfs de `/mnt/ramdisk`, en mémoire",
+        "La commande échoue : 1,6 Gio de pages ne tiennent ni dans les autres zones ni en RAM"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "D'après le cours, `swapoff` doit transférer les pages de la zone vers les autres zones de swap, voire vers la mémoire physique, et peut donc échouer s'il n'y a pas assez de mémoire virtuelle. Ici, 1,6 Gio de pages ne tiennent ni dans les 100 Mio des deux autres zones ni dans les 300 Mio de RAM disponibles. Une zone de swap garde la taille fixée à sa création, et un tmpfs n'est pas une zone de swap.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q022",
+      "type": "single",
+      "prompt": "Vous devez créer la zone de swap `/swap-tp` de 50 Mio, protégée comme le demande le TP, et l'activer. Quelle séquence ?",
+      "choices": [
+        "`sudo fallocate -l 50M /swap-tp` ; `sudo chmod 644 /swap-tp` ; `sudo mkswap /swap-tp` ; `sudo swapon /swap-tp`",
+        "`sudo fallocate -l 50M /swap-tp` ; `sudo chmod 600 /swap-tp` ; `sudo mkswap /swap-tp` ; `sudo swapon /swap-tp`",
+        "`sudo mkswap /swap-tp` ; `sudo fallocate -l 50M /swap-tp` ; `sudo chmod 600 /swap-tp` ; `sudo swapon /swap-tp`",
+        "`sudo fallocate -l 50M /swap-tp` ; `sudo chmod 600 /swap-tp` ; `sudo swapon /swap-tp` ; `sudo mkswap /swap-tp`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Le cours crée le fichier avec `fallocate`, le protège avec `chmod 600`, l'initialise avec `mkswap` puis l'active avec `swapon`. En mode 644, tout utilisateur pourrait lire le fichier, donc les pages mémoire qui y sont placées ; `mkswap` ne peut pas initialiser un fichier qui n'existe pas encore, et `swapon` n'active qu'une zone déjà initialisée.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q023",
+      "type": "single",
+      "prompt": "Vous devez retirer définitivement la zone `/swap-tp`, active et déclarée dans `/etc/fstab`, sans toucher aux autres zones de swap. Quelle séquence ?",
+      "choices": [
+        "`sudo swapoff -a` ; retrait de la ligne `/swap-tp` de `/etc/fstab` ; `sudo rm /swap-tp`",
+        "`sudo swapoff /swap-tp` ; `sudo rm /swap-tp`, en laissant la ligne de `/etc/fstab`",
+        "`sudo swapoff /swap-tp` ; retrait de la ligne `/swap-tp` de `/etc/fstab` ; `sudo rm /swap-tp`",
+        "`sudo rm /swap-tp` ; retrait de la ligne `/swap-tp` de `/etc/fstab` ; `sudo swapoff /swap-tp`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le cours suit cet ordre : `swapoff` cesse d'utiliser la zone en transférant ses pages vers les autres zones ou la RAM, on retire sa ligne de `/etc/fstab`, et seulement ensuite on supprime le fichier. `swapoff -a` désactiverait aussi `/swap.img` et les autres zones, une ligne laissée dans fstab désignerait un fichier disparu, et on ne supprime pas un fichier que le noyau utilise encore.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q024",
+      "type": "single",
+      "prompt": "`/mnt/ramdisk` est un tmpfs monté avec `size=100M`. Vous y copiez un répertoire de 120 Mio avec `cp -r`. Que se passe-t-il ?",
+      "choices": [
+        "Le tmpfs s'agrandit pour absorber les 20 Mio en trop, dans la limite de la RAM libre",
+        "Les 20 Mio en trop sont écrits dans la zone de swap, à côté du tmpfs",
+        "Le noyau tue le processus `cp` pour protéger la mémoire du système",
+        "La copie échoue faute de place une fois les 100 Mio atteints"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Le cours présente `size=` comme la limite de taille du tmpfs : une fois les 100 Mio occupés, l'écriture échoue comme sur un disque plein. Le tmpfs peut placer ses pages dans le swap quand la RAM manque, mais sa taille reste bornée à 100 Mio.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q025",
+      "type": "single",
+      "prompt": "Le TP demande que le tmpfs de 100 Mio sur `/mnt/ramdisk` soit monté à chaque démarrage. Quelle ligne ajouter à `/etc/fstab` ?",
+      "choices": [
+        "`tmpfs /mnt/ramdisk tmpfs defaults,size=100M 0 0`",
+        "`tmpfs /mnt/ramdisk tmpfs defaults 0 0`",
+        "`/mnt/ramdisk tmpfs tmpfs defaults,size=100M 0 0`",
+        "`tmpfs /mnt/ramdisk ext4 defaults,size=100M 0 0`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le cours rend un tmpfs persistant avec `tmpfs /ramdisque tmpfs defaults,size=10M 0 0` : la source `tmpfs`, le point de montage, le type `tmpfs`, puis les options. Sans `size=100M`, la limite demandée disparaît ; inverser les deux premiers champs fait de `/mnt/ramdisk` la source, et `ext4` est le type d'un système de fichiers sur disque.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q026",
+      "type": "multi",
+      "prompt": "Vous redémarrez le serveur à la fin du chapitre 4. Qu'est-ce qui sera encore là ? (plusieurs réponses)",
+      "choices": [
+        "Le tmpfs monté sur `/mnt/ramdisk`, recréé vide à partir de `/etc/fstab`",
+        "Les fichiers copiés dans `/mnt/ramdisk` avant le redémarrage",
+        "La zone `/swap-tp` active, grâce à sa ligne `/swap-tp none swap sw 0 0`",
+        "La zone `/dev/sdd1`, activée avec `swapon` mais absente de `/etc/fstab`",
+        "Les fichiers écrits sur `/raid`, monté depuis fstab par son UUID"
+      ],
+      "answer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "Ce qui est décrit dans `/etc/fstab` est rétabli au démarrage : le tmpfs, vide puisque son contenu disparaît au redémarrage, le fichier de swap et le volume RAID, dont les données sont sur disque. Une zone activée seulement avec `swapon` ne l'est que jusqu'à l'arrêt : le cours ajoute une ligne à fstab pour l'activation au démarrage.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q027",
+      "type": "single",
+      "prompt": "Vous avez configuré l'interface interne `enp0s9` du serveur avec ce fichier et `sudo netplan apply`. Depuis, `ip route` affiche une seconde route par défaut et le trafic du serveur vers Internet part vers 192.168.50.254, qui n'existe pas. Quelle correction ?",
+      "code": "$ cat /etc/netplan/60-interne.yaml\nnetwork:\n  version: 2\n  ethernets:\n    enp0s9:\n      addresses: [192.168.50.1/24]\n      routes:\n        - to: default\n          via: 192.168.50.254\n$ ip route\ndefault via 192.168.50.254 dev enp0s9 proto static\ndefault via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100\n10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 metric 100\n192.168.50.0/24 dev enp0s9 proto kernel scope link src 192.168.50.1",
+      "choices": [
+        "Remplacer `via: 192.168.50.254` par `via: 192.168.50.1`, l'adresse du serveur sur ce réseau",
+        "Retirer le bloc `routes` de `enp0s9` : le serveur est lui-même la passerelle de ce réseau",
+        "Ajouter `dhcp4: true` sous `enp0s9`, pour qu'il obtienne sa passerelle du réseau interne",
+        "Ajouter sous `enp0s9` un bloc `nameservers` avec `addresses: [192.168.50.1]`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Sur le réseau interne, la seule passerelle est le serveur lui-même : son interface interne porte une adresse statique et aucune route par défaut, la sienne restant `default via 10.0.2.2` sur l'interface externe. Une passerelle 192.168.50.1 désignerait le serveur lui-même, `dhcp4` contredit l'adresse statique demandée par le TP alors que le seul serveur DHCP de ce réseau est le serveur, et `nameservers` règle la résolution des noms, pas le chemin des paquets.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q028",
+      "type": "single",
+      "prompt": "Le fichier de la zone `tp.lan` commence par `$ORIGIN tp.lan.`. Lequel de ces enregistrements produit un nom faux ?",
+      "choices": [
+        "`srv IN A 192.168.50.1`",
+        "`mail IN CNAME srv`",
+        "`www IN CNAME srv.tp.lan.`",
+        "`ftp IN CNAME srv.tp.lan`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "`$ORIGIN` donne le nom de domaine ajouté aux noms qui ne le précisent pas : `srv` devient `srv.tp.lan.`, ce qui est voulu. Un nom complet se termine par un point, comme `dns1.intra.net.` dans les fichiers de zone du cours ; sans ce point, `srv.tp.lan` est complété à son tour et devient `srv.tp.lan.tp.lan.`, un nom qui n'existe pas.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q029",
+      "type": "single",
+      "prompt": "`named-checkconf` et `named-checkzone` ne signalent rien, mais `dig @192.168.50.1 -x 192.168.50.10` ne renvoie aucun nom. Voici la déclaration de la zone et son enregistrement. Quelle est l'erreur ?",
+      "code": "zone \"192.168.50.in-addr.arpa\" {\n    type primary;\n    file \"/etc/bind/db.192.168.50\";\n};\n\n10      IN  PTR     client.tp.lan.",
+      "choices": [
+        "La zone porte les octets dans l'ordre naturel : le PTR créé est `10.192.168.50.in-addr.arpa`",
+        "Le PTR doit reprendre l'adresse complète : `192.168.50.10 IN PTR client.tp.lan.`",
+        "Le PTR doit désigner l'adresse, pas le nom : `10 IN PTR 192.168.50.10`",
+        "Une zone inverse doit être de type `secondary`, le serveur primaire ne servant que la zone directe"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Comme `0.168.192.IN-ADDR.ARPA` dans l'exemple de `named.conf` du cours, une zone inverse s'écrit avec les octets du réseau inversés : `dig -x 192.168.50.10` demande `10.50.168.192.in-addr.arpa`, la zone doit donc s'appeler `50.168.192.in-addr.arpa`. Le fichier inverse du cours écrit `1 IN PTR dns1.intra.net.` : le PTR associe une adresse à un nom de machine. `secondary` désigne une copie de la zone sur un serveur secondaire, et les outils de vérification contrôlent la configuration et la zone, pas le sens du nom choisi.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q030",
+      "type": "single",
+      "prompt": "Sur le client, vous comparez `dig client.tp.lan` et `dig @192.168.50.1 client.tp.lan`, comme le demande le TP. D'après les lignes `SERVER`, qui a répondu à chaque commande ?",
+      "code": "$ dig client.tp.lan\n...\n;; ANSWER SECTION:\nclient.tp.lan.          86400   IN      A       192.168.50.101\n\n;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)\n$ dig @192.168.50.1 client.tp.lan\n...\n;; ANSWER SECTION:\nclient.tp.lan.          86400   IN      A       192.168.50.101\n\n;; SERVER: 192.168.50.1#53(192.168.50.1) (UDP)",
+      "choices": [
+        "BIND dans les deux cas, `@192.168.50.1` ne faisant que préciser son adresse",
+        "Le résolveur local du client, puis BIND interrogé directement",
+        "Un serveur DNS d'Internet pour la première, BIND pour la seconde",
+        "BIND pour la première, le résolveur systemd-resolved du serveur pour la seconde"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Sans `@`, dig interroge le serveur de `/etc/resolv.conf`, `127.0.0.53` : d'après le cours, c'est le résolveur interne au système, systemd-resolved, ici celui du client, qui relaie la question au serveur DNS reçu par DHCP. Avec `@192.168.50.1`, dig s'adresse directement à BIND, ce qui permet au TP de comparer sa réponse à celle obtenue par l'intermédiaire du résolveur local.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q031",
+      "type": "single",
+      "prompt": "Le client vient de passer en DHCP. `ping -c1 192.168.50.1` répond, mais aucun nom ne se résout. Voici ce que montre le client. Quelle ligne de la configuration Kea faut-il corriger ?",
+      "code": "$ ip route\ndefault via 192.168.50.1 dev enp0s8 proto dhcp src 192.168.50.101 metric 100\n192.168.50.0/24 dev enp0s8 proto kernel scope link src 192.168.50.101 metric 100\n$ resolvectl status enp0s8\nLink 3 (enp0s8)\n    Current Scopes: DNS\nCurrent DNS Server: 192.168.50.254\n       DNS Servers: 192.168.50.254",
+      "choices": [
+        "`{ \"name\": \"routers\", \"data\": \"192.168.50.254\" }`",
+        "`{ \"name\": \"domain-name-servers\", \"data\": \"192.168.50.254\" }`",
+        "`\"pools\": [ { \"pool\": \"192.168.50.100 - 192.168.50.200\" } ]` du sous-réseau",
+        "`\"interfaces-config\": { \"interfaces\": [ \"enp0s9\" ] }`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Le client a bien une adresse et la passerelle 192.168.50.1 : le pool, l'interface et l'option `routers` fonctionnent. Il interroge en revanche 192.168.50.254 pour les noms, valeur reçue de `domain-name-servers`, qui doit désigner le serveur BIND, 192.168.50.1.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q032",
+      "type": "single",
+      "prompt": "`sudo kea-dhcp4 -t /etc/kea/kea-dhcp4.conf` ne signale aucune erreur et le service tourne, mais le client n'obtient aucune adresse. L'interface `enp0s9` du serveur porte 192.168.50.1/24. Quelle est la cause ?",
+      "code": "\"interfaces-config\": { \"interfaces\": [ \"enp0s9\" ] },\n\"subnet4\": [ {\n  \"subnet\": \"192.168.5.0/24\",\n  \"pools\": [ { \"pool\": \"192.168.5.100 - 192.168.5.200\" } ],\n  \"option-data\": [\n    { \"name\": \"routers\", \"data\": \"192.168.5.1\" },\n    { \"name\": \"domain-name-servers\", \"data\": \"192.168.5.1\" }\n  ]\n} ]",
+      "choices": [
+        "Kea ne peut pas écouter sur `enp0s9`, il n'accepte que des noms d'interface comme `eth0`",
+        "Le pool doit couvrir tout le sous-réseau, de .1 à .254, pour que Kea puisse répondre",
+        "Le `subnet4` décrit 192.168.5.0/24, pas le réseau 192.168.50.0/24 de `enp0s9`",
+        "Il manque une réservation pour l'adresse MAC de la carte interne du client"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Le sous-réseau, son pool, sa passerelle et son DNS sont écrits en 192.168.5.x au lieu de 192.168.50.x : Kea sert un réseau qui n'est pas celui de `enp0s9`. Le fichier reste valide, et `-t` ne peut pas deviner le réseau voulu. L'exemple du cours écoute sur `enp0s8` et limite son pool à `10.0.0.100 - 10.0.0.250`, et le TP présente la réservation comme le moyen de fixer l'adresse d'une machine, pas de lui en donner une.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q033",
+      "type": "single",
+      "prompt": "La carte du client reliée au réseau interne est `enp0s8`. Vous avez réservé 192.168.50.20 au client avec une MAC relevée par `ip link` et redémarré Kea, mais après plusieurs renouvellements du bail le client reçoit toujours une adresse du pool. Pourquoi ?",
+      "code": "client$ ip link\n2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000\n    link/ether 08:00:27:3b:91:0e brd ff:ff:ff:ff:ff:ff\n3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000\n    link/ether 08:00:27:c4:52:7a brd ff:ff:ff:ff:ff:ff\n\nserveur$ grep -A1 reservations /etc/kea/kea-dhcp4.conf\n\"reservations\": [\n  { \"hw-address\": \"08:00:27:3b:91:0e\", \"ip-address\": \"192.168.50.20\", \"hostname\": \"client\" }",
+      "choices": [
+        "La réservation porte la MAC de `enp0s3`, alors que la requête DHCP part de `enp0s8`",
+        "Kea ignore une réservation dont l'adresse se trouve en dehors du pool du sous-réseau déclaré",
+        "Kea exige une adresse MAC écrite en majuscules dans le champ `hw-address`",
+        "La réservation doit aussi être déclarée dans la zone `tp.lan` de BIND"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le TP demande une réservation basée sur l'adresse MAC du client : celle de la carte reliée au réseau interne, qui émet la requête, ici `08:00:27:c4:52:7a` (`link/ether` de `enp0s8`). L'exemple du cours réserve 10.0.0.2 hors du pool `10.0.0.100 - 10.0.0.250` et écrit la MAC en minuscules, et la réservation se déclare dans la configuration de Kea, pas dans BIND.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q034",
+      "type": "single",
+      "prompt": "Vous venez de modifier une réservation dans `/etc/kea/kea-dhcp4.conf`. Quelle séquence vérifie la configuration puis la fait prendre en compte ?",
+      "choices": [
+        "`sudo systemctl restart kea-dhcp4-server` puis `sudo kea-dhcp4 -t /etc/kea/kea-dhcp4.conf`",
+        "`sudo named-checkconf` puis `sudo rndc reload`",
+        "`sudo kea-dhcp4 -t /etc/kea/kea-dhcp4.conf` puis `sudo netplan apply`",
+        "`sudo kea-dhcp4 -t /etc/kea/kea-dhcp4.conf` puis `sudo systemctl restart kea-dhcp4-server`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Le cours vérifie d'abord le fichier avec `kea-dhcp4 -t`, puis redémarre `kea-dhcp4-server` pour qu'il relise sa configuration. Vérifier après le redémarrage arrive trop tard, `named-checkconf` et `rndc reload` concernent BIND, et `netplan apply` applique la configuration réseau de la machine, pas celle de Kea.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q035",
+      "type": "multi",
+      "prompt": "Vous capturez avec tshark sur l'interface interne du serveur pendant que le client demande un bail. Que montre la capture ? (plusieurs réponses)",
+      "code": "1 0.000000      0.0.0.0 → 255.255.255.255 DHCP 342 DHCP Discover - Transaction ID 0x5e2a91c3\n2 0.001514 192.168.50.1 → 192.168.50.101  DHCP 342 DHCP Offer    - Transaction ID 0x5e2a91c3\n3 1.012230      0.0.0.0 → 255.255.255.255 DHCP 342 DHCP Request  - Transaction ID 0x5e2a91c3\n4 1.013910 192.168.50.1 → 192.168.50.101  DHCP 342 DHCP ACK      - Transaction ID 0x5e2a91c3",
+      "choices": [
+        "Le client émet le Discover et le Request depuis 0.0.0.0, en diffusion",
+        "Le Request part directement vers 192.168.50.1, adresse du serveur apprise par l'Offer",
+        "Un seul serveur DHCP, 192.168.50.1, a répondu au client",
+        "Le même identifiant de transaction se retrouve dans les quatre messages",
+        "Le client a obtenu l'adresse 192.168.50.1, source de l'Offer et de l'ACK"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Le cours décrit une machine qui diffuse un message pour découvrir le serveur DHCP, puis utilise les informations du premier serveur qui répond : le Discover et le Request partent de 0.0.0.0 vers 255.255.255.255, faute d'adresse. Seul 192.168.50.1 envoie l'Offer et l'ACK, adressés à 192.168.50.101, l'adresse attribuée au client. L'identifiant 0x5e2a91c3, commun aux quatre messages, les relie à la même demande.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q036",
+      "type": "multi",
+      "prompt": "Le client lance `dig srv.tp.lan` puis `dig -x 192.168.50.1` pendant que vous capturez sur le serveur avec `sudo tshark host 192.168.50.101 and port domain`. Que lit-on ? (plusieurs réponses)",
+      "code": "1 0.000000 192.168.50.101 → 192.168.50.1   DNS 70 Standard query 0x1a2b A srv.tp.lan\n2 0.000412 192.168.50.1   → 192.168.50.101 DNS 86 Standard query response 0x1a2b A srv.tp.lan A 192.168.50.1\n3 2.104733 192.168.50.101 → 192.168.50.1   DNS 85 Standard query 0x5e6f PTR 1.50.168.192.in-addr.arpa\n4 2.105101 192.168.50.1   → 192.168.50.101 DNS 109 Standard query response 0x5e6f PTR 1.50.168.192.in-addr.arpa PTR srv.tp.lan",
+      "choices": [
+        "Le paquet 1 est une requête du client et le paquet 2 la réponse de BIND",
+        "Le client a demandé l'adresse IPv4 de `srv.tp.lan` et obtenu 192.168.50.1",
+        "Les paquets 3 et 4 forment une résolution inverse, de l'adresse vers le nom",
+        "Le paquet 4 rattache le nom `srv.tp.lan` à l'adresse par un enregistrement CNAME",
+        "Ces réponses viennent du cache de systemd-resolved, sur le client"
+      ],
+      "answer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Une requête va du client (192.168.50.101) au serveur DNS et la réponse revient en sens inverse avec le même identifiant (0x1a2b, puis 0x5e6f). La première demande l'enregistrement A, qui associe un nom à une adresse IP ; la seconde, produite par `dig -x`, demande le PTR de `1.50.168.192.in-addr.arpa`, qui associe une adresse à un nom. Ces paquets traversent le réseau depuis 192.168.50.1 : ils ne viennent pas d'un cache du client.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q037",
+      "type": "multi",
+      "prompt": "`tpuser` existe avec l'UID 1500 sur les deux machines. Vous lancez `sudo passwd tpuser` sur le serveur seulement. Qu'en résulte-t-il ? (plusieurs réponses)",
+      "choices": [
+        "Seul le mot de passe du compte `tpuser` du serveur change",
+        "Le mot de passe change sur les deux machines, puisque le compte porte le même UID de part et d'autre",
+        "`ssh tpuser@client.tp.lan`, lancé depuis le serveur, demande toujours l'ancien mot de passe",
+        "`ssh tpuser@srv.tp.lan`, lancé depuis le client, demande le nouveau mot de passe",
+        "Les fichiers du client appartenant à l'UID 1500 changent de propriétaire"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Le TP le fait remarquer : même nom et même UID ne font pas un même compte. Chaque machine garde ses propres comptes locaux, et `passwd` lancé sur le serveur ne modifie que celui du serveur. Une connexion SSH s'authentifie auprès de la machine de destination, avec le mot de passe que cette machine connaît, et rien ne change sur le client.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q038",
+      "type": "single",
+      "prompt": "Le client n'est relié qu'au réseau interne et le NAT du serveur n'est pas encore en place. Que montre cet extrait de `timedatectl` sur le client ?",
+      "code": "               Local time: mer. 2026-11-18 10:41:07 CET\n           Universal time: mer. 2026-11-18 09:41:07 UTC\n                Time zone: Europe/Paris (CET, +0100)\nSystem clock synchronized: no\n              NTP service: active",
+      "choices": [
+        "La synchronisation est désactivée : aucun service n'est chargé de régler l'horloge",
+        "L'heure locale est fausse d'une heure, puisqu'elle diffère de l'heure universelle",
+        "Le service de synchronisation est actif, mais l'horloge n'est pas synchronisée",
+        "L'horloge est synchronisée, et le service de synchronisation est arrêté"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`NTP service: active` indique que le service de synchronisation tourne, et `System clock synchronized: no` que l'horloge système n'est pas synchronisée. Une cause possible ici : sans NAT, le client ne joint aucune machine hors du réseau interne, donc aucune source de temps qui s'y trouverait. L'écart d'une heure entre heure locale et heure universelle correspond simplement au fuseau `Europe/Paris (CET, +0100)`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q039",
+      "type": "single",
+      "prompt": "Le serveur relie 192.168.50.0/24 (`enp0s9`) et 192.168.60.0/24 (`enp0s10`). A (192.168.50.10) et B (192.168.60.10) ont le serveur pour passerelle. Le ping de A vers B échoue : tshark voit les requêtes arriver sur `enp0s9`, mais rien ne sort sur `enp0s10`. Quelle étape du TP manque ?",
+      "code": "serveur$ ip route\ndefault via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100\n10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 metric 100\n192.168.50.0/24 dev enp0s9 proto kernel scope link src 192.168.50.1\n192.168.60.0/24 dev enp0s10 proto kernel scope link src 192.168.60.1",
+      "choices": [
+        "Ajouter sur le serveur une route vers 192.168.60.0/24, réseau qu'il ne connaît pas encore",
+        "Activer le routage IPv4 sur le serveur, qui ne transmet pas encore les paquets",
+        "Mettre en place le NAT, sans lequel aucun paquet ne passe d'un réseau interne à l'autre",
+        "Ajouter sur B une route par défaut, pour qu'il reçoive enfin les requêtes de A"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Les requêtes entrent dans le serveur sans en ressortir : il ne fait pas encore passer les paquets d'un réseau à l'autre, ce que le TP obtient en activant le routage IPv4 sur le serveur. `ip route` montre qu'il connaît déjà ses deux réseaux, directement connectés ; le NAT sert ensuite à l'accès à Internet, et B a déjà sa passerelle, alors que rien ne lui parvient.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q040",
+      "type": "single",
+      "prompt": "Le routage IPv4 est actif sur le serveur (192.168.50.1 et 192.168.60.1). A (192.168.50.10) et B (192.168.60.10) n'ont aucune route par défaut. Quelles commandes les font communiquer ?",
+      "choices": [
+        "Sur A : `sudo ip route add 192.168.60.0/24 via 192.168.50.1`, et rien sur B",
+        "Sur A : `sudo ip route add 192.168.60.0/24 via 192.168.60.1` ; sur B : `sudo ip route add 192.168.50.0/24 via 192.168.50.1`",
+        "Sur le serveur : `sudo ip route add 192.168.50.0/24 via 192.168.50.1` et `sudo ip route add 192.168.60.0/24 via 192.168.60.1`",
+        "Sur A : `sudo ip route add 192.168.60.0/24 via 192.168.50.1` ; sur B : `sudo ip route add 192.168.50.0/24 via 192.168.60.1`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "Chaque machine doit joindre l'autre réseau par une passerelle située sur son propre réseau, l'adresse du serveur de son côté, comme la passerelle 192.168.1.1 de l'adresse 192.168.1.200/24 dans l'exemple Netplan du cours. Sans route sur B, la requête arrive mais la réponse ne revient pas, et le serveur connaît déjà ses deux réseaux directement connectés (`proto kernel scope link` dans `ip route`).",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q041",
+      "type": "single",
+      "prompt": "Le NAT est en place sur le serveur, dont l'interface externe `enp0s3` porte 10.0.2.15. Le client 192.168.50.101 lance `ping 1.1.1.1`. Où observer l'adresse source après traduction, comme le demande le TP ?",
+      "choices": [
+        "Dans une capture tshark sur l'interface externe `enp0s3` du serveur",
+        "Dans une capture tshark sur l'interface interne `enp0s9` du serveur",
+        "Dans une capture tshark sur l'interface de bouclage `lo` du serveur",
+        "Dans une capture tshark sur l'interface `enp0s8` du client"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "Le TP demande l'adresse source observée à la sortie du serveur : c'est sur l'interface externe que les paquets du client portent l'adresse du serveur, 10.0.2.15. Sur `enp0s9` comme sur le client, ils portent encore l'adresse du client, 192.168.50.101, et `lo` ne voit que le trafic interne au serveur.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q042",
+      "type": "single",
+      "prompt": "Sur le serveur, `ip route` affiche ceci. Par quelle interface partent les paquets à destination de 192.168.60.10, puis de 1.1.1.1, puis de 192.168.50.101 ?",
+      "code": "$ ip route\ndefault via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100\n10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 metric 100\n192.168.50.0/24 dev enp0s9 proto kernel scope link src 192.168.50.1\n192.168.60.0/24 dev enp0s10 proto kernel scope link src 192.168.60.1",
+      "choices": [
+        "`enp0s3` pour les trois, la route par défaut passant en premier",
+        "`enp0s10`, puis aucune faute de route vers 1.1.1.1, puis `enp0s9`",
+        "`enp0s10`, puis `enp0s3`, puis `enp0s9`",
+        "`enp0s9`, puis `enp0s3`, puis `enp0s10`"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "Un paquet suit la route qui correspond à sa destination : 192.168.60.10 est dans 192.168.60.0/24, joint par `enp0s10`, et 192.168.50.101 dans 192.168.50.0/24, joint par `enp0s9`. 1.1.1.1 ne correspond à aucune route plus spécifique : comme le décrit le cours, il prend la route par défaut, vers 10.0.2.2 par `enp0s3`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q043",
+      "type": "single",
+      "prompt": "Une machine placée seulement sur le second réseau interne (192.168.60.10, configurée en statique) doit sortir sur Internet par le serveur, qui a l'adresse 192.168.60.1 de son côté et 10.0.2.15 côté externe. Son `ip route` n'affiche que `192.168.60.0/24 dev enp0s8`. Quelle commande lancer sur cette machine ?",
+      "choices": [
+        "`sudo ip route add default via 10.0.2.15`",
+        "`sudo ip route add default via 192.168.50.1`",
+        "`sudo ip route add default via 192.168.60.10`",
+        "`sudo ip route add default via 192.168.60.1`"
+      ],
+      "answer": [
+        3
+      ],
+      "explanation": "La passerelle par défaut doit se trouver sur le réseau de la machine : c'est l'adresse du serveur de ce côté, comme la passerelle 192.168.1.1 de l'adresse 192.168.1.200/24 dans l'exemple Netplan du cours. 10.0.2.15 et 192.168.50.1 appartiennent bien au serveur, mais à des réseaux que la machine ne joint pas directement, et 192.168.60.10 est la machine elle-même. Pour la rendre persistante, on la déclare ensuite dans Netplan (`routes`, `to: default`).",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q044",
+      "type": "single",
+      "prompt": "Vous avez créé `ns1`, `ns2` et la paire `veth0`/`veth1`, puis configuré `ns1`. `sudo ip netns exec ns1 ping -c1 10.99.0.2` échoue. D'après ces sorties, que faut-il lancer ?",
+      "code": "$ sudo ip netns exec ns1 ip -br addr\nlo               DOWN\nveth0@if4        LOWERLAYERDOWN 10.99.0.1/24\n$ sudo ip netns exec ns2 ip -br addr\nlo               DOWN\n$ ip -br link | grep veth\nveth1@if5        DOWN           6a:3e:11:d2:9b:04 <BROADCAST,MULTICAST>",
+      "choices": [
+        "`sudo ip netns exec ns2 ip addr add 10.99.0.2/24 dev veth1`, puis `sudo ip netns exec ns2 ip link set veth1 up`, directement dans `ns2`",
+        "`sudo ip link set veth1 netns ns2`, puis dans `ns2` : `ip addr add 10.99.0.2/24 dev veth1` et `ip link set veth1 up`",
+        "`sudo ip addr add 10.99.0.2/24 dev veth1`, puis `sudo ip link set veth1 up`, sans changer d'espace de noms",
+        "`sudo ip netns exec ns1 ip route add default dev veth0`, puis `sudo ip netns exec ns1 ip link set lo up`"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "`ip -br link` montre que `veth1` est resté dans l'espace de noms principal, et `ns2` ne contient que `lo` : il faut d'abord l'y déplacer, puis lui donner son adresse et l'activer. Sans ce déplacement, les commandes lancées dans `ns2` ne trouvent pas `veth1`, et l'activer dans l'hôte relierait `ns1` à l'hôte, pas à `ns2`. Une route dans `ns1` n'apporte rien tant que l'autre extrémité n'est pas en place.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q045",
+      "type": "single",
+      "prompt": "Dans un second essai, les deux extrémités de la paire sont actives mais le ping échoue avec ce message. Quelle correction relie `ns1` et `ns2` ?",
+      "code": "$ sudo ip netns exec ns1 ip -br addr show veth0\nveth0@if4        UP             10.99.0.1/24\n$ sudo ip netns exec ns2 ip -br addr show veth1\nveth1@if5        UP             10.99.1.2/24\n$ sudo ip netns exec ns1 ping -c1 10.99.1.2\nping: connect: Network is unreachable",
+      "choices": [
+        "Dans `ns2` : `ip addr del 10.99.1.2/24 dev veth1` puis `ip addr add 10.99.0.2/24 dev veth1`",
+        "Activer le routage IPv4 sur l'hôte, pour qu'il transmette les paquets entre les deux namespaces",
+        "`sudo ip netns exec ns1 ip link set veth0 up`, puis `sudo ip netns exec ns2 ip link set veth1 up`",
+        "`sudo ip route add 10.99.1.0/24 dev veth0`, lancée dans l'espace de noms de l'hôte pour joindre `ns2`"
+      ],
+      "answer": [
+        0
+      ],
+      "explanation": "`Network is unreachable` vient de `ns1` : sa table de routage ne connaît que son réseau directement connecté, 10.99.0.0/24, et 10.99.1.2 n'en fait pas partie. Placer les deux extrémités de la paire dans le même réseau suffit, avec `ip addr del` et `ip addr add` comme dans le cours. La paire relie directement `ns1` à `ns2` sans passer par l'hôte, les deux interfaces sont déjà `UP`, et `veth0` n'existe pas dans l'espace de noms de l'hôte.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q046",
+      "type": "multi",
+      "prompt": "Depuis le client, `ping -c1 192.168.50.1` répond mais `ping -c1 srv.tp.lan` affiche `Temporary failure in name resolution`. Quelles commandes aident à savoir si la panne vient de BIND ou de la configuration DNS du client ? (plusieurs réponses)",
+      "choices": [
+        "`ping -c1 192.168.50.1`, relancée avec l'adresse du serveur",
+        "`dig @192.168.50.1 srv.tp.lan`",
+        "`nmap srv.tp.lan`, pour voir si le port `domain` est ouvert",
+        "`resolvectl status`"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explanation": "`dig @192.168.50.1` interroge BIND directement : s'il renvoie l'enregistrement A attendu, 192.168.50.1, BIND sert bien la zone et la panne est côté client, où `resolvectl status` montre le serveur DNS réellement utilisé. Un ping par adresse ne fait intervenir aucune résolution, et `nmap srv.tp.lan` doit d'abord résoudre le nom, ce qui échoue déjà.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q047",
+      "type": "multi",
+      "prompt": "Pour le diagnostic final, vous lancez `nmap srv.tp.lan` depuis le client. Que pouvez-vous conclure de cette sortie ? (plusieurs réponses)",
+      "code": "$ nmap srv.tp.lan\nStarting Nmap 7.95 ( https://nmap.org ) at 2026-11-18 11:02 CET\nNmap scan report for srv.tp.lan (192.168.50.1)\nHost is up (0.00041s latency).\n...\nPORT   STATE SERVICE\n22/tcp open  ssh\n53/tcp open  domain",
+      "choices": [
+        "Le nom `srv.tp.lan` a été résolu en 192.168.50.1",
+        "Le port 22 du serveur est filtré par un pare-feu",
+        "Le service SSH du serveur est accessible depuis le client",
+        "Le port `domain` du DNS accepte des connexions TCP",
+        "Le serveur FTP installé au chapitre 1 est joignable sur le port 21 du serveur"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "La ligne `Nmap scan report for srv.tp.lan (192.168.50.1)` montre la résolution du nom. nmap se connecte aux ports pour trouver les services actifs ou filtrés : `open` signale un service accessible, ici SSH (22) et le DNS (`domain`, 53), alors qu'un port filtré par un pare-feu serait noté comme tel. Le port 21 n'apparaît pas parmi les services ouverts.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp2-c-q048",
+      "type": "multi",
+      "prompt": "Vous lancez `sudo ss -ltnp` sur le serveur à la fin du TP. Que montre cette sortie ? (plusieurs réponses)",
+      "code": "State  Recv-Q Send-Q   Local Address:Port  Peer Address:Port Process\nLISTEN 0      4096     127.0.0.53%lo:53         0.0.0.0:*     users:((\"systemd-resolve\",pid=540,fd=15))\nLISTEN 0      10        192.168.50.1:53         0.0.0.0:*     users:((\"named\",pid=812,fd=31))\nLISTEN 0      10           127.0.0.1:53         0.0.0.0:*     users:((\"named\",pid=812,fd=27))\nLISTEN 0      4096         127.0.0.1:953        0.0.0.0:*     users:((\"named\",pid=812,fd=33))",
+      "choices": [
+        "named écoute en TCP sur le port 53 de l'adresse interne 192.168.50.1",
+        "Le port 953 de named n'est ouvert que sur l'interface de bouclage du serveur",
+        "Le client peut interroger le résolveur systemd-resolved du serveur à l'adresse 127.0.0.53",
+        "Le client peut joindre BIND en interrogeant l'adresse 127.0.0.1",
+        "BIND répond correctement aux requêtes DNS envoyées par le client"
+      ],
+      "answer": [
+        0,
+        1
+      ],
+      "explanation": "Chaque ligne donne une adresse et un port en écoute, avec le processus. named écoute le port 53 sur 192.168.50.1, et son port 953 sur 127.0.0.1 seulement ; 127.0.0.1 et 127.0.0.53 appartiennent à l'interface de bouclage `lo`, que chaque machine garde pour elle : depuis le client, 127.0.0.1 désigne le client lui-même. Un port en écoute montre que named attend des connexions, pas qu'il répond correctement : c'est `dig @192.168.50.1` depuis le client qui le vérifie.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q049",
+      "type": "single",
+      "prompt": "Le client ne résout plus aucun nom depuis une modification des options de `named.conf` sur le serveur. Voici deux sorties. Quelle est la cause ?",
+      "code": "client$ nmap 192.168.50.1\n...\nPORT   STATE SERVICE\n22/tcp open  ssh\n\nserveur$ sudo ss -ltnp | grep ':53 '\nLISTEN 0      4096     127.0.0.53%lo:53         0.0.0.0:*     users:((\"systemd-resolve\",pid=540,fd=15))\nLISTEN 0      10           127.0.0.1:53         0.0.0.0:*     users:((\"named\",pid=1290,fd=27))",
+      "choices": [
+        "La zone `tp.lan` contient une erreur et BIND refuse d'y répondre",
+        "Kea a transmis au client une mauvaise adresse de serveur DNS lors du dernier renouvellement",
+        "named n'écoute plus que sur 127.0.0.1, plus sur l'adresse interne 192.168.50.1",
+        "Le cache de systemd-resolved, sur le client, garde l'échec d'une ancienne requête"
+      ],
+      "answer": [
+        2
+      ],
+      "explanation": "`ss` montre que named n'écoute plus le port 53 que sur 127.0.0.1, l'adresse de bouclage joignable depuis le serveur seul, et nmap ne trouve plus le port `domain` sur 192.168.50.1 : la modification des options a retiré l'adresse interne des adresses d'écoute de BIND. Une erreur de zone, une mauvaise adresse reçue de Kea ou un cache du client n'expliqueraient pas que le port 53 ait disparu de l'adresse interne du serveur.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp2-c-q050",
+      "type": "single",
+      "prompt": "La carte NAT du serveur est débranchée. Depuis le client, vous obtenez ces deux réponses. Que conclure pour ces deux requêtes ?",
+      "code": "$ dig @192.168.50.1 srv.tp.lan\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 3811\n...\n;; ANSWER SECTION:\nsrv.tp.lan.             86400   IN      A       192.168.50.1\n\n;; SERVER: 192.168.50.1#53(192.168.50.1) (UDP)\n$ dig @192.168.50.1 www.debian.org\n;; ->>HEADER<<- opcode: QUERY, status: SERVFAIL, id: 52040\n...\n;; SERVER: 192.168.50.1#53(192.168.50.1) (UDP)",
+      "choices": [
+        "BIND est arrêté et le client tire ces deux réponses de son propre cache",
+        "BIND répond pour sa zone `tp.lan`, mais n'a pas pu résoudre `www.debian.org`",
+        "La zone `tp.lan` est corrompue, d'où le statut `SERVFAIL` de la seconde requête",
+        "Le client n'a plus aucune route vers le serveur 192.168.50.1"
+      ],
+      "answer": [
+        1
+      ],
+      "explanation": "Les deux réponses viennent de 192.168.50.1, interrogé directement par `dig @` : BIND tourne et le client le joint. Pour `srv.tp.lan`, BIND répond depuis son fichier de zone, sans dépendre d'aucun autre serveur. `www.debian.org` n'appartient à aucune de ses zones : BIND doit passer par d'autres serveurs, ses forwarders par exemple, hors d'atteinte sans la carte NAT : faute de pouvoir résoudre ce nom, il renvoie `SERVFAIL`.",
+      "difficulty": 3
+    }
+  ]
+}

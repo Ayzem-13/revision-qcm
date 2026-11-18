@@ -3,7 +3,7 @@ import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmente
 
 const ALL_QUESTIONS = Number.MAX_SAFE_INTEGER;
 
-const PRESETS = ["10", "20", "40"] as const;
+const PRESETS = ["10", "20", "40", "50"] as const;
 
 type Option = (typeof PRESETS)[number] | "all";
 
@@ -24,13 +24,14 @@ export function CountPicker(props: { value: number; max: number; onChange: (coun
         <SegmentedControlItem
           key={preset}
           value={preset}
+          size="compact"
           disabled={Number(preset) >= props.max}
           aria-label={`${preset} questions`}
         >
           {preset}
         </SegmentedControlItem>
       ))}
-      <SegmentedControlItem value="all" aria-label={`Tout, ${props.max} questions`}>
+      <SegmentedControlItem value="all" size="compact" aria-label={`Tout, ${props.max} questions`}>
         Tout
       </SegmentedControlItem>
     </SegmentedControl>

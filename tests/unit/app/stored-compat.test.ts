@@ -37,6 +37,7 @@ describe("data written by the previous build", () => {
       theme: "dark",
       lastCount: 40,
       lastMode: "exam",
+      lastChapters: {},
     });
   });
 
@@ -96,7 +97,7 @@ describe("data written by the previous build", () => {
     expect(session?.selections.map((selection) => [...selection])).toEqual([[choiceId(0)], [], []]);
   });
 
-  test("writing again keeps the same keys and shapes", async () => {
+  test("writing again keeps the same keys and shapes, plus the chapters of the last setup", async () => {
     const host = hostWith({
       "qcm.session": RAW.examSession,
       "qcm.progress.demo": RAW.progress,
@@ -108,7 +109,9 @@ describe("data written by the previous build", () => {
     study.goTo(2);
     expect(host.read("qcm.session")).toBe(RAW.examSession);
     application.preferences.chooseTheme("dark");
-    expect(host.read("qcm.settings")).toBe(RAW.settings);
+    expect(host.read("qcm.settings")).toBe(
+      `{"v":1,"data":{"theme":"dark","lastCount":40,"lastMode":"exam","lastChapters":{}}}`,
+    );
     study.resetProgress();
     expect(host.read("qcm.progress.demo")).toBe(`{"v":1,"data":{}}`);
   });

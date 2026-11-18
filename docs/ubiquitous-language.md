@@ -76,12 +76,12 @@ sans le posséder). Les champs des fichiers de contenu sont en `code` quand ils 
 
 ## Préférences (`src/domains/preferences`)
 
-| Terme            | Identifiant                                       | Domaine     | Sens                                                                      |
-| ---------------- | ------------------------------------------------- | ----------- | ------------------------------------------------------------------------- |
-| préférences      | `Preferences` : `theme`, `lastCount`, `lastMode`  | preferences | thème choisi, derniers nombre et mode utilisés                            |
-| thème            | `ThemePreference` : `system`, `light`, `dark`     | preferences | Système, Clair, Sombre                                                    |
-| choisir le thème | `chooseTheme`, `PreferencesSource`                | preferences | ce que le menu de thème lit et appelle                                    |
-| dernier réglage  | `rememberSetup` ; port `SetupMemory` de `session` | preferences | le nombre et le mode d'une session qui démarre, repris au réglage suivant |
+| Terme            | Identifiant                                                      | Domaine     | Sens                                                                                     |
+| ---------------- | ---------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| préférences      | `Preferences` : `theme`, `lastCount`, `lastMode`, `lastChapters` | preferences | thème choisi, derniers nombre, mode et chapitres utilisés                                |
+| thème            | `ThemePreference` : `system`, `light`, `dark`                    | preferences | Système, Clair, Sombre                                                                   |
+| choisir le thème | `chooseTheme`, `PreferencesSource`                               | preferences | ce que le menu de thème lit et appelle                                                   |
+| dernier réglage  | `rememberSetup` ; port `SetupMemory` de `session`                | preferences | le nombre, le mode et les chapitres d'une session qui démarre, repris au réglage suivant |
 
 ## Application et éléments partagés (`src/app`, `src/shared`)
 

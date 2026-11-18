@@ -31,7 +31,7 @@ export function createApplication(ports: Ports): Application {
   const sessionPorts: SessionPorts = {
     sessions: ports.sessions,
     progress: ports.progress,
-    setups: { remember: (setup) => rememberSetup(ports.preferences, setup) },
+    setups: { remember: (request) => rememberSetup(ports.preferences, request) },
     clock: ports.clock,
     random: ports.random,
   };

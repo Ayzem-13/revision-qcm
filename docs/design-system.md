@@ -112,12 +112,12 @@ listent les variantes et tailles existantes, lues dans ce fichier.
 
 Une seule question : **est-ce que ça ouvre une couche ?**
 
-| Ce que fait le composant                                                         | D'où il vient                              | Exemples ici                                                              |
-| -------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------- |
-| Ouvre une couche (focus piégé, défilement verrouillé, portail)                   | CLI shadcn, Radix                          | `alert-dialog`, `sheet`, `dropdown-menu`, `tooltip`                       |
-| Statique, sans comportement                                                      | CLI shadcn                                 | `button`, `badge`, `card`, `alert`, `item`, `kbd`, `skeleton`, `progress` |
-| Tient une valeur en place (sélection, cochage, ouverture d'un panneau sur place) | `components/ui` sur `@ui-sdk/react`        | `choice-group`, `checkbox`, `segmented-control`, `action-bar`             |
-| Ni l'un ni l'autre : dessin ou mouvement                                         | `components/ui`, fichier propre avec `cva` | `progress-ring`, `stacked-bar`, `spinner`, `code`, `motion`               |
+| Ce que fait le composant                                                         | D'où il vient                              | Exemples ici                                                                 |
+| -------------------------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------- |
+| Ouvre une couche (focus piégé, défilement verrouillé, portail)                   | CLI shadcn, Radix                          | `alert-dialog`, `sheet`, `dropdown-menu`, `tooltip`                          |
+| Statique, sans comportement                                                      | CLI shadcn                                 | `button`, `badge`, `card`, `alert`, `item`, `kbd`, `skeleton`, `progress`    |
+| Tient une valeur en place (sélection, cochage, ouverture d'un panneau sur place) | `components/ui` sur `@ui-sdk/react`        | `choice-group`, `checkbox`, `segmented-control`, `action-bar`, `collapsible` |
+| Ni l'un ni l'autre : dessin ou mouvement                                         | `components/ui`, fichier propre avec `cva` | `progress-ring`, `stacked-bar`, `spinner`, `code`, `motion`                  |
 
 Le lint tient les deux bords : dans `components/ui`, les contrôles à valeur de Radix (`Checkbox`, `RadioGroup`,
 `Select`, `Slider`, `Switch`, `Tabs`, `Toggle`, `ToggleGroup`) et les entrées « couche » de UI SDK (`alert-dialog`,
@@ -164,9 +164,11 @@ réponse, ni ouvrir une boîte de dialogue, une feuille ou un menu, ni passer à
    désélectionner », la description d'un mode et son message de vivier vide, le compteur du navigateur d'examen.
 6. **Les fonds modaux utilisent `--overlay`**, un token, pour que `no-raw-colors` passe aussi dans `components/ui`.
 
-Une seule exception, voulue : changer d'écran (de l'accueil à une matière, du réglage à la session, de la session aux
-résultats) remonte en haut de la page à la fin de la transition (`ScreenTransition`). C'est une nouvelle page, pas une
-interaction dans la page.
+Deux exceptions, voulues. Replier ou déplier une section de chapitres (`Collapsible`) déplace les sections placées
+dessous, et rien d'autre : la section garde sa place, son en-tête et son bouton aussi, et la liste garde
+sa hauteur (`--held-height`) pour que la page ne raccourcisse pas sous le défilement. Et changer d'écran (de l'accueil
+à une matière, du réglage à la session, de la session aux résultats) remonte en haut de la page à la fin de la
+transition (`ScreenTransition`). C'est une nouvelle page, pas une interaction dans la page.
 
 ### Les tests qui les tiennent
 
@@ -178,7 +180,8 @@ interaction dans la page.
   d'accélération qui dépasse.
 - `tests/e2e/specs/stability.spec.ts` mesure, avec une vraie barre de défilement de 15 px (Chromium lancé sans
   `--hide-scrollbars`), la boîte de chaque élément `data-testid` de l'en-tête et du contenu avant et après chaque
-  interaction : choisir des chapitres, un mode, un nombre ; ouvrir et fermer le menu de thème et chaque boîte de
+  interaction : choisir des chapitres, un mode, un nombre ; replier une section (seules les sections du dessous
+  bougent) ; ouvrir et fermer le menu de thème et chaque boîte de
   confirmation ; sélectionner, révéler, replier la correction, passer à la question suivante ; ouvrir le navigateur
   d'examen et changer de question. Tolérance : 0,5 px, et aucun défilement. Il tourne sur quatre projets : 390, 360,
   768 et 1400 px. Un dernier test vérifie qu'aucun écran ne déborde en largeur.
