@@ -126,8 +126,8 @@ revision-qcm/
           mode-copy.ts                     libellé, description et icône de chaque mode
           resume-banner.tsx                la session en cours à reprendre
           setup/
-            chapter-picker.tsx             sections et chapitres en groupes de cases avec case parente
-            count-picker.tsx               10, 20, 40 ou tout, plafonnés par le vivier
+            chapter-picker.tsx             sections repliables (seule la dernière est ouverte au départ), chapitres en groupes de cases avec case parente
+            count-picker.tsx               10, 20, 40, 50 ou tout, plafonnés par le vivier
             mode-picker.tsx                un Choice par mode, désactivé quand son vivier est vide
           question/
             answer-choices.tsx             les ChoiceView sur ChoiceGroup ; verdict et icône par marque
@@ -203,6 +203,7 @@ revision-qcm/
         (sur @ui-sdk/react : ce qui tient une valeur en place)
         action-bar.tsx                     barre d'action à hauteur constante et son panneau repliable (Collapsible)
         checkbox.tsx                       Checkbox, CheckboxGroup, case parente et état mixte
+        collapsible.tsx                    Collapsible, son bouton à chevron et son panneau qui se replie sur place
         choice-group.tsx                   ChoiceGroup, Choice, ChoiceMarker, ChoiceContent, ChoiceLabel, ChoiceDescription, ChoiceIndicator
         segmented-control.tsx              SegmentedControl et ses éléments, indicateur placé par les variables CSS de la partie
         (propres, sans bibliothèque de comportement)

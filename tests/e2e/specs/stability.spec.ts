@@ -32,6 +32,25 @@ test("choosing chapters, a mode and a count moves nothing on the setup screen", 
   await expectNoHorizontalScroll(page);
 });
 
+test("folding a section moves only the sections below it", async ({ page }) => {
+  await openSubject(page);
+  const fold = page.getByTestId("fold-section-1");
+  const below = ["section-", "fold-section-2", "fold-section-3"];
+  await bringIntoView(fold);
+  await expectNothingMoves(page, () => fold.click(), below);
+  await expect(fold).toHaveAttribute("aria-expanded", "true");
+  await expectNothingMoves(page, () => fold.click(), below);
+  await expect(fold).toHaveAttribute("aria-expanded", "false");
+});
+
+test("folding the last section does not shorten the page under the scroll", async ({ page }) => {
+  await openSubject(page);
+  const fold = page.getByTestId("fold-section-3");
+  await bringIntoView(fold);
+  await expectNothingMoves(page, () => fold.click(), ["section-3"]);
+  await expect(fold).toHaveAttribute("aria-expanded", "false");
+});
+
 test("the theme menu and the reset dialog open and close without moving the page", async ({ page }) => {
   await openSubject(page);
   await expectNothingMoves(page, async () => {

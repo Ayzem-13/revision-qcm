@@ -136,7 +136,8 @@ les ports dont ils ont besoin (`ports.ts`). Les composants sont rangés par mome
 confirmations), `results/` (score, scores par chapitre, correction), plus la bannière de reprise et les libellés des
 modes.
 
-**`preferences`** : le thème choisi et le dernier réglage (nombre de questions et mode). Comme le dernier réglage nomme
+**`preferences`** : le thème choisi et le dernier réglage (nombre de questions, mode, et chapitres
+cochés pour chaque matière). Comme le dernier réglage nomme
 un `Mode`, ce domaine est en aval de `session`, et rien ne dépend de lui. Le domaine déclare `Preferences` et le port
 `PreferencesStore` ; l'application expose `PreferencesSource` (ce que le menu de thème lit, avec `chooseTheme`) et
 `rememberSetup` ; l'infrastructure garde la clé `qcm.settings` ; les composants installent la classe `dark` et

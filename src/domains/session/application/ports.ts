@@ -1,8 +1,8 @@
 import type { ProgressRepository } from "@/domains/progress/domain";
-import type { SessionRepository, SessionSetup } from "@/domains/session/domain";
+import type { SessionRepository, SessionRequest } from "@/domains/session/domain";
 import type { Clock, Random } from "@/shared/application";
 
-type SetupMemory = { remember(setup: SessionSetup): void };
+type SetupMemory = { remember(request: SessionRequest): void };
 
 export type SessionPorts = {
   readonly sessions: SessionRepository;

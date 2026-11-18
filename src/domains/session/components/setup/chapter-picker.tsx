@@ -1,6 +1,7 @@
-import { useId, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { Checkbox, CheckboxGroup } from "@/components/ui/checkbox";
+import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Reveal, Stagger } from "@/components/ui/motion";
 import type { ChapterId } from "@/domains/catalog/application";
 import type { ChapterOverview, SectionOverview } from "@/domains/progress/application";
@@ -12,25 +13,40 @@ export function ChapterPicker(props: {
   selected: ReadonlySet<ChapterId>;
   onChange: (section: SectionOverview, chapterIds: readonly ChapterId[]) => void;
 }): ReactNode {
+  const list = useRef<HTMLDivElement>(null);
+  const [heldHeight, setHeldHeight] = useState(0);
+  const holdHeight = (): void => {
+    const height = list.current?.offsetHeight ?? 0;
+    setHeldHeight((held) => Math.max(held, height));
+  };
+
   return (
-    <Stagger step="list" className="flex flex-col gap-4">
-      {props.sections.map((section, index) => (
-        <Reveal key={section.title}>
-          <SectionPicker
-            section={section}
-            testId={`section-${index + 1}`}
-            selected={section.chapters.filter((chapter) => props.selected.has(chapter.id)).map((chapter) => chapter.id)}
-            onChange={(chapterIds) => props.onChange(section, chapterIds)}
-          />
-        </Reveal>
-      ))}
-    </Stagger>
+    <div ref={list} className="min-h-(--held-height)" style={{ "--held-height": `${heldHeight}px` }}>
+      <Stagger step="list" className="flex flex-col gap-4">
+        {props.sections.map((section, index) => (
+          <Reveal key={section.title}>
+            <SectionPicker
+              onFold={holdHeight}
+              section={section}
+              testId={`section-${index + 1}`}
+              startsOpen={index === props.sections.length - 1}
+              selected={section.chapters
+                .filter((chapter) => props.selected.has(chapter.id))
+                .map((chapter) => chapter.id)}
+              onChange={(chapterIds) => props.onChange(section, chapterIds)}
+            />
+          </Reveal>
+        ))}
+      </Stagger>
+    </div>
   );
 }
 
 function SectionPicker(props: {
   section: SectionOverview;
   testId: string;
+  startsOpen: boolean;
+  onFold: () => void;
   selected: readonly ChapterId[];
   onChange: (chapterIds: readonly ChapterId[]) => void;
 }): ReactNode {
@@ -46,25 +62,40 @@ function SectionPicker(props: {
           allValues={props.section.chapters.map((chapter) => chapter.id)}
           onValueChange={props.onChange}
         >
-          <label className="flex min-h-18 cursor-pointer items-center gap-4 bg-muted px-5 py-3 transition-colors duration-200 hover:bg-accent has-focus-visible:bg-accent">
-            <Checkbox parent aria-labelledby={`${id}-title`} aria-describedby={`${id}-meta`} />
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span id={`${id}-title`} className="text-base font-semibold">
-                {props.section.title}
-              </span>
-              <span id={`${id}-meta`} className="text-sm text-muted-foreground">
-                {plural(props.section.chapters.length, "chapitre", "chapitres")},{" "}
-                {plural(questions, "question", "questions")}
-              </span>
-            </span>
-          </label>
-          <ul className="flex flex-col gap-0.5 p-1.5">
-            {props.section.chapters.map((chapter) => (
-              <li key={chapter.id}>
-                <ChapterRow chapter={chapter} />
-              </li>
-            ))}
-          </ul>
+          <Collapsible
+            defaultOpen={props.startsOpen}
+            onOpenChange={(open) => {
+              if (!open) props.onFold();
+            }}
+          >
+            <div className="flex items-center bg-muted pr-3">
+              <label className="flex min-h-18 min-w-0 flex-1 cursor-pointer items-center gap-4 px-5 py-3 transition-colors duration-200 hover:bg-accent has-focus-visible:bg-accent">
+                <Checkbox parent aria-labelledby={`${id}-title`} aria-describedby={`${id}-meta`} />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span id={`${id}-title`} className="text-base font-semibold">
+                    {props.section.title}
+                  </span>
+                  <span id={`${id}-meta`} className="text-sm text-muted-foreground">
+                    {plural(props.section.chapters.length, "chapitre", "chapitres")},{" "}
+                    {plural(questions, "question", "questions")}
+                  </span>
+                </span>
+              </label>
+              <CollapsibleTrigger
+                data-testid={`fold-${props.testId}`}
+                aria-label={`Chapitres de la section ${props.section.title}`}
+              />
+            </div>
+            <CollapsiblePanel>
+              <ul className="flex flex-col gap-0.5 p-1.5">
+                {props.section.chapters.map((chapter) => (
+                  <li key={chapter.id}>
+                    <ChapterRow chapter={chapter} />
+                  </li>
+                ))}
+              </ul>
+            </CollapsiblePanel>
+          </Collapsible>
         </CheckboxGroup>
       </section>
     </Card>

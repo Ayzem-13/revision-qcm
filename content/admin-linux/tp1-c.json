@@ -1,0 +1,670 @@
+{
+  "id": "tp1-c",
+  "title": "TP 1 : raisonnement et diagnostic",
+  "group": "Travaux pratiques",
+  "order": 25,
+  "source": "AdminLinux-1-TP.pdf, chapitres 3 à 11",
+  "questions": [
+    {
+      "id": "tp1-c-q001",
+      "type": "multi",
+      "prompt": "Pour l'inventaire des paquets liés à vim, vous tapez la commande ci-dessous. Quels paquets sont installés ? (plusieurs réponses)",
+      "code": "$ dpkg-query -l '*vim*'\nDesired=Unknown/Install/Remove/Purge/Hold\n| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend\n|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)\n||/ Name         Version                Architecture Description\n+++-============-======================-============-================================\nun  neovim       <none>                 <none>       (no description available)\nii  vim          2:8.2.3995-1ubuntu2.13 amd64        Vi IMproved - enhanced vi editor\nii  vim-common   2:8.2.3995-1ubuntu2.13 all          Vi IMproved - Common files\nun  vim-doc      <none>                 <none>       (no description available)\nii  vim-runtime  2:8.2.3995-1ubuntu2.13 all          Vi IMproved - Runtime files\nun  vim-tiny     <none>                 <none>       (no description available)",
+      "choices": ["`vim`", "`neovim`", "`vim-common`", "`vim-tiny`", "`vim-runtime`"],
+      "answer": [0, 2, 4],
+      "explanation": "Les deux premières lettres se lisent avec l'en-tête : la première est l'état souhaité (`Desired`, `u` pour Unknown, `i` pour Install), la seconde l'état réel (`Status`, `n` pour Not, `i` pour Inst). `ii` désigne donc un paquet installé. Les lignes `un`, sans version (`<none>`), sont des paquets que dpkg connaît sans qu'ils soient installés : le motif les fait apparaître quand même.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q002",
+      "type": "single",
+      "prompt": "Vous voulez voir quels fichiers le paquet cron a installés, par exemple son exécutable. Quelle commande les liste ?",
+      "choices": ["`dpkg -s cron`", "`apt-cache depends cron`", "`dpkg -S cron`", "`dpkg -L cron`"],
+      "answer": [3],
+      "explanation": "`dpkg -L` (comme `dpkg-query -L`) liste les fichiers installés par un paquet. `-s` donne l'état et la description du paquet, `-S` recherche un paquet installé, et `apt-cache depends` affiche ses dépendances.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q003",
+      "type": "single",
+      "prompt": "Un correctif de cron a été publié hier. Sur la VM, `apt update` n'a pas été lancé depuis une semaine, et `sudo apt upgrade` répond `0 mis à jour`. Que faut-il taper ?",
+      "choices": [
+        "`sudo apt upgrade cron`",
+        "`sudo dpkg -i cron`",
+        "`sudo apt upgrade` puis `sudo apt update`",
+        "`sudo apt update` puis `sudo apt upgrade`"
+      ],
+      "answer": [3],
+      "explanation": "`apt update` met à jour les informations des paquets depuis les dépôts ; tant qu'il n'a pas tourné, apt ignore la nouvelle version, et `upgrade`, avec ou sans nom de paquet, ne voit rien à mettre à jour. Lancer `update` après `upgrade` arrive trop tard, et `dpkg -i` installe une archive `.deb` qu'on lui fournit.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q004",
+      "type": "single",
+      "prompt": "Le système est minimal et aucun JDK n'est installé. Vous cherchez les paquets disponibles en rapport avec le JDK de Java. Quelle commande les trouve ?",
+      "choices": ["`apt list --installed`", "`apt search jdk`", "`dpkg -s jdk`", "`apt-cache depends jdk`"],
+      "answer": [1],
+      "explanation": "`apt search motif` cherche le motif dans les noms et les descriptions des paquets, installés ou non. `apt list --installed` ne liste que les paquets installés, donc aucun JDK ici. `dpkg -s` et `apt-cache depends` attendent le nom d'un paquet précis et en donnent l'état ou les dépendances : ils ne cherchent pas.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q005",
+      "type": "single",
+      "prompt": "Votre unité `/etc/systemd/system/monservice.service` doit démarrer à chaque démarrage du système, en mode multi-utilisateur. Qu'est-ce qui l'assure ?",
+      "choices": [
+        "`ExecStart=` dans `[Service]`, puis `systemctl start`",
+        "`WantedBy=multi-user.target` dans `[Install]`, puis `systemctl reload`",
+        "`Description=` dans `[Unit]`, puis `systemctl enable`",
+        "`WantedBy=multi-user.target` dans `[Install]`, puis `systemctl enable`"
+      ],
+      "answer": [3],
+      "explanation": "Les cibles sont des configurations de démarrage avec des services activés ou désactivés : `WantedBy=multi-user.target` rattache l'unité à la cible multi-utilisateur, et `systemctl enable` l'active. `start` ne lance le service que maintenant, `reload` demande à un service de relire sa configuration, et `Description=` n'est qu'un texte.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q006",
+      "type": "single",
+      "prompt": "Vous venez de taper `sudo systemctl enable monservice`, dont l'`ExecStart` écrit « Bonjour ! ». `systemctl status` affiche ceci et aucun « Bonjour ! » n'est dans le journal. Quelle commande lance le service maintenant ?",
+      "code": "○ monservice.service - Exemple de service\n     Loaded: loaded (/etc/systemd/system/monservice.service; enabled)\n     Active: inactive (dead)",
+      "choices": [
+        "`sudo systemctl start monservice`",
+        "`sudo systemctl reload monservice`",
+        "`sudo systemctl enable monservice`",
+        "`sudo systemctl status monservice`"
+      ],
+      "answer": [0],
+      "explanation": "`enabled` indique que le service est activé pour les démarrages du système, mais `enable` seul ne le lance pas : il reste `inactive`. `start` le lance maintenant (`enable --now` aurait fait les deux d'un coup). `reload` demande à un service de relire sa configuration, refaire `enable` ne change rien à une activation déjà faite, et `status` ne fait qu'afficher l'état.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q007",
+      "type": "single",
+      "prompt": "Il est 14h00. Vous devez arrêter le serveur dans 2 minutes en prévenant les utilisateurs connectés. Quelle commande ?",
+      "choices": [
+        "`sudo shutdown -h 2:00 \"Arrêt pour maintenance\"`",
+        "`sudo shutdown -h +2 \"Arrêt pour maintenance\"`",
+        "`sudo shutdown -r +2 \"Arrêt pour maintenance\"`",
+        "`sudo shutdown -c +2 \"Arrêt pour maintenance\"`"
+      ],
+      "answer": [1],
+      "explanation": "L'heure s'écrit `hh:mm`, `now` ou `+m` (dans m minutes) : `+2` est le délai voulu, alors que `2:00` désigne l'heure 2h00. `-h` arrête la machine, `-r` la redémarre et `-c` annule un shutdown en cours. Le message est envoyé à tous les utilisateurs connectés.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q008",
+      "type": "single",
+      "prompt": "Connecté en SSH, vous tapez `sudo systemctl isolate rescue.target`. À quoi devez-vous vous attendre ?",
+      "choices": [
+        "Rien ne change avant le prochain redémarrage de la machine",
+        "La machine redémarre, puis s'arrête sur le mode de secours",
+        "Seule votre session reste ouverte, les autres utilisateurs sont déconnectés",
+        "Passage immédiat en mono-utilisateur : la suite se fait sur la console"
+      ],
+      "answer": [3],
+      "explanation": "`isolate` change de cible immédiatement, sans redémarrage. `rescue.target` est le mode mono-utilisateur : seul root peut s'y connecter, sur la console, les autres utilisateurs ne le peuvent pas et la plupart des processus ne sont pas démarrés. Le travail se fait donc sur la console de la VM. C'est `set-default` qui change la cible des démarrages suivants.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q009",
+      "type": "multi",
+      "prompt": "Vous avez arrêté cron avec `sudo systemctl stop cron`, mais après un redémarrage il tourne de nouveau. Quelles commandes l'auraient empêché de démarrer au boot ? (plusieurs réponses)",
+      "choices": [
+        "`sudo systemctl reload cron`",
+        "`sudo systemctl disable --now cron`",
+        "`sudo systemctl restart cron`",
+        "`sudo systemctl disable cron`"
+      ],
+      "answer": [1, 3],
+      "explanation": "`stop` n'agit que sur l'instant : le service reste activé et sa cible le relance au démarrage. `disable` le désactive, et `disable --now` l'arrête en plus immédiatement. `restart` l'arrête puis le redémarre, et `reload` lui demande seulement de relire sa configuration : aucune des deux ne touche à l'activation.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q010",
+      "type": "single",
+      "prompt": "Vous venez de créer `user1` avec `sudo useradd -m -g mesusers -s /bin/bash user1`, et aucun mot de passe n'est accepté à la connexion. Voici sa ligne de `/etc/shadow`. Quelle commande corrige le problème ?",
+      "code": "$ sudo grep user1 /etc/shadow\nuser1:!:20775:0:99999:7:::",
+      "choices": ["`sudo passwd -u user1`", "`sudo chage -d 0 user1`", "`sudo usermod -U user1`", "`sudo passwd user1`"],
+      "answer": [3],
+      "explanation": "Le deuxième champ ne contient pas d'empreinte mais le marqueur `!` : l'authentification par mot de passe est désactivée, aucun mot de passe ne peut correspondre. `passwd user1`, lancé par root, en définit un. Débloquer avec `passwd -u` ou `usermod -U` ne crée pas d'empreinte, et `chage -d 0` force un changement de mot de passe à une ouverture de session qui reste impossible.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q011",
+      "type": "single",
+      "prompt": "`user1` doit en plus rejoindre le groupe `adm`. Un collègue tape la commande ci-dessous. Que montrera ensuite `id user1` ?",
+      "code": "$ id user1\nuid=1001(user1) gid=1001(mesusers) groups=1001(mesusers),27(sudo)\n$ sudo usermod -G adm user1",
+      "choices": [
+        "`groups=1001(mesusers),4(adm)` : user1 a perdu le groupe `sudo`",
+        "`groups=1001(mesusers),27(sudo),4(adm)` : adm s'ajoute aux autres",
+        "`groups=4(adm)` : user1 a aussi perdu son groupe principal",
+        "`gid=4(adm)` : adm devient le groupe principal de user1"
+      ],
+      "answer": [0],
+      "explanation": "L'option `-G` ne met pas à jour la liste des groupes secondaires, elle la remplace par celle donnée : sudo disparaît. Le groupe principal se règle avec `-g` et ne bouge pas. Pour garder sudo, il fallait donner la liste complète : `sudo usermod -G sudo,adm user1`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q012",
+      "type": "multi",
+      "prompt": "`user2` quitte le projet : son compte ne doit plus servir à partir du 1er janvier 2027. Quelles commandes posent cette date d'expiration du compte ? (plusieurs réponses)",
+      "choices": [
+        "`sudo chage -d 0 user2`",
+        "`sudo usermod -e 2027-01-01 user2`",
+        "`sudo chage -M 0 user2`",
+        "`sudo chage -E 2027-01-01 user2`",
+        "`sudo chage -I 0 user2`"
+      ],
+      "answer": [1, 3],
+      "explanation": "La date d'expiration du compte est le champ `expire` de `/etc/shadow`. `chage -E` la fixe, tout comme l'option `-e` de useradd, que usermod reprend, au format AAAA-MM-JJ. `chage -d 0` force un changement de mot de passe, `-M` règle la durée de validité du mot de passe et `-I` le délai de blocage après l'expiration du mot de passe : aucune ne pose de date d'expiration du compte.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q013",
+      "type": "single",
+      "prompt": "`user2` (UID 1002) a été créé avec `-m`. Vous le supprimez avec `sudo userdel user2`, sans `-r`. Que montre ensuite `ls -l /home` pour le répertoire `user2` ?",
+      "choices": [
+        "Il a disparu : userdel supprime le répertoire personnel",
+        "Il reste, et son propriétaire s'affiche comme `1002`",
+        "Il reste, et userdel l'a donné à `root`, faute de propriétaire",
+        "Il reste, au nom de `user2`, que ls lit dans l'inode"
+      ],
+      "answer": [1],
+      "explanation": "Sans `-r`, userdel ne supprime pas le répertoire personnel et laisse les fichiers tels quels. L'inode garde l'UID 1002, pas un nom : ls cherche ce nom dans `/etc/passwd` et, la ligne de user2 ayant disparu, n'a plus que le nombre à afficher.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q014",
+      "type": "single",
+      "prompt": "Voici la ligne de `user1` dans `/etc/shadow` (empreinte abrégée). Vous tapez `sudo chage -d 0 user1`. Que devient cette ligne ?",
+      "code": "$ sudo grep user1 /etc/shadow\nuser1:$y$j9T$Qm...:20775:0:99999:7:::",
+      "choices": [
+        "`user1:$y$j9T$Qm...:20775:0:0:7:::`",
+        "`user1:!$y$j9T$Qm...:20775:0:99999:7:::`",
+        "`user1:$y$j9T$Qm...:0:0:99999:7:::`",
+        "`user1:$y$j9T$Qm...:20775:0:99999:7::0:`"
+      ],
+      "answer": [2],
+      "explanation": "`-d` règle le troisième champ, la date du dernier changement de mot de passe en jours depuis le 1er janvier 1970 ; la valeur 0 force le changement à la prochaine ouverture de session. Les autres lignes modifient le champ max (`-M`), le champ d'expiration du compte (`-E`) ou ajoutent un `!` devant l'empreinte, ce que `-d` ne fait pas.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q015",
+      "type": "single",
+      "prompt": "`user1` et `user3` ont été créés avec `-g mesusers`. Pourtant voici ce qu'affiche `/etc/group`. Comment l'expliquer ?",
+      "code": "$ grep mesusers /etc/group\nmesusers:x:1001:",
+      "choices": [
+        "C'est leur groupe principal, noté dans `/etc/passwd`",
+        "Ils n'appartiennent pas au groupe : il fallait `-G mesusers` à la création",
+        "La liste n'est remplie qu'à leur première ouverture de session",
+        "Le `x` du deuxième champ signale une liste de membres cachée"
+      ],
+      "answer": [0],
+      "explanation": "Le groupe principal est le GID du quatrième champ de `/etc/passwd` ; le dernier champ de `/etc/group` ne liste que les utilisateurs qui ont ce groupe comme groupe secondaire. `-g` fixe justement le groupe principal, et le `x` est le champ du mot de passe du groupe. Avec `-G` seul, ils seraient listés ici, mais useradd aurait créé pour chacun un groupe principal personnel.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q016",
+      "type": "single",
+      "prompt": "`user1` utilise bash. Son `~/.profile` se termine par `echo login` et son `~/.bashrc` par `echo lancement`. Depuis le compte `tp`, vous tapez `su user1`, sans tiret. Qu'affiche le terminal après le mot de passe ?",
+      "choices": [
+        "`login` seulement",
+        "`login` et `lancement`",
+        "`lancement` seulement",
+        "Rien, aucun des deux fichiers n'est lu"
+      ],
+      "answer": [2],
+      "explanation": "Sans `-` ni `-l`, su ne simule pas un shell de login : `~/.profile`, fichier du type login, n'est pas lu. `~/.bashrc` est exécuté à chaque lancement de shell, d'où `lancement`. Avec `su - user1`, le message `login` apparaîtrait aussi.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q017",
+      "type": "multi",
+      "prompt": "`user1` utilise bash, avec `echo login` à la fin de son `~/.profile` et `echo lancement` à la fin de son `~/.bashrc`. Depuis le compte `tp`, quelles commandes affichent le message `login` ? (plusieurs réponses)",
+      "choices": ["`su user1`", "`su -l user1`", "`ssh user1@localhost`", "`sudo -u user1 bash`", "`su - user1`"],
+      "answer": [1, 2, 4],
+      "explanation": "`login` vient de `~/.profile`, fichier du type login, lu seulement à l'ouverture d'une session : c'est le cas d'une connexion SSH et de su avec `-` ou `-l`, qui simule un shell de login. `su user1` et `sudo -u user1 bash` lancent un simple shell, qui ne lit que `~/.bashrc` et n'affiche que `lancement`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q018",
+      "type": "single",
+      "prompt": "Vous avez ajouté `echo login` à `/etc/skel/.profile` et `echo lancement` à `/etc/skel/.bashrc`. Quelle commande crée `user3` de sorte qu'il voie ces deux messages à sa première connexion ?",
+      "choices": [
+        "`sudo useradd -g mesusers -s /bin/bash user3`",
+        "`sudo useradd -k /etc/skel -g mesusers -s /bin/bash user3`",
+        "`sudo useradd -m -g mesusers -s /bin/bash user3`",
+        "`sudo useradd -d /home/user3 -g mesusers -s /bin/bash user3`"
+      ],
+      "answer": [2],
+      "explanation": "Le contenu de `/etc/skel` n'est copié dans le répertoire de l'utilisateur, à sa création, que si l'option `-m` est utilisée ; sans elle, le répertoire n'est même pas créé. `-k` désigne seulement un autre modèle que `/etc/skel`, et `-d` fixe le chemin du répertoire sans le créer.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q019",
+      "type": "single",
+      "prompt": "Votre umask valait 022. Prévoyez le résultat de cette séquence.",
+      "code": "$ umask 026\n$ mkdir rapports\n$ touch rapports/bilan.txt\n$ ls -ld rapports rapports/bilan.txt",
+      "choices": [
+        "`drwxr-xr-x` et `-rw-r--r--`",
+        "`drwxr-x--x` et `-rw-r-----`",
+        "`drwxr-x--x` et `-rwxr-x--x`",
+        "`d----w-rw-` et `-----w-rw-`"
+      ],
+      "answer": [1],
+      "explanation": "Le umask donne les droits à retirer : on prend le complément de 026 à 777 pour un répertoire, soit 751 (`rwxr-x--x`), et à 666 pour le fichier que crée `touch`, soit 640 (`rw-r-----`), car un fichier n'est pas créé exécutable. Le umask n'est pas la liste des droits accordés, et le nouveau réglage remplace l'ancien : 022 aurait donné 755 et 644.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q020",
+      "type": "single",
+      "prompt": "Les ACL de `/home/projet` (propriétaire root, groupe root) sont `user::rwx`, `user:user1:rwx`, `user:user3:r-x`, `group::---`, `mask::r-x` et `other::---`. `user1` ne peut pas y créer de fichier. Quelle commande lui rend l'écriture sans rien donner au groupe propriétaire ni aux autres ?",
+      "choices": [
+        "`sudo setfacl -m g::rwx /home/projet`",
+        "`sudo setfacl -b /home/projet`",
+        "`sudo chmod o+w /home/projet`",
+        "`sudo setfacl -m m::rwx /home/projet`"
+      ],
+      "answer": [3],
+      "explanation": "Le masque bloque les permissions des ACL à une valeur maximum : avec `mask::r-x`, l'entrée `rwx` de user1 ne lui donne réellement que `r-x`. `setfacl -m m::rwx` relève ce plafond, et user3 garde son `r-x`. `g::rwx` donnerait tout au groupe propriétaire, `o+w` l'écriture aux autres, et `setfacl -b` supprimerait toutes les ACL supplémentaires, celle de user1 comprise.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q021",
+      "type": "single",
+      "prompt": "Un collègue a réglé `/home/public` avec `sudo chmod 1776 /home/public`. `user3`, ni propriétaire ni membre du groupe `root`, tape `touch /home/public/essai`. Que se passe-t-il ?",
+      "choices": [
+        "Le fichier est créé, mais user3 ne pourra pas effacer ceux des autres",
+        "Refus : user3 n'a pas `x`, le droit d'ouvrir ce répertoire",
+        "Le fichier est créé : le droit `w` suffit pour ajouter une entrée",
+        "Refus : le sticky bit interdit toute création aux autres utilisateurs"
+      ],
+      "answer": [1],
+      "explanation": "1776 se lit sticky bit (1) puis `rwx`, `rwx` et `rw-` : les autres, dont user3, n'ont pas `x`, le droit d'ouverture du répertoire, et ne peuvent donc rien y créer. Le sticky bit n'est pas en cause : il limite seulement l'effacement et le renommage des fichiers des autres. Il fallait `chmod 1777`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q022",
+      "type": "single",
+      "prompt": "`/home/projet` (propriétaire root, groupe root) porte les ACL `user::rwx`, `user:user1:rwx`, `user:user3:r-x`, `group::---`, `mask::rwx` et `other::---`. Vous tapez `sudo setfacl -b /home/projet`. Qu'est-ce qui change ?",
+      "choices": [
+        "Les entrées de user1 et user3 disparaissent, et `ls -ld` perd le `+`",
+        "Seul le masque disparaît : user1 et user3 gardent leurs droits, sans plafond",
+        "Toutes les entrées disparaissent, `user::` comprise, et le répertoire n'a plus aucun droit",
+        "user1 et user3 passent dans `other::` en gardant chacun leurs anciens droits"
+      ],
+      "answer": [0],
+      "explanation": "`setfacl -b` supprime toutes les ACL supplémentaires, dont `user:user1` et `user:user3`. Restent les trois permissions obligatoires, `user::`, `group::` et `other::`, compatibles avec les permissions UNIX standard, et ls n'affiche plus le `+`, qui signale des ACL en plus de ces trois-là. `other::` reste `---`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q023",
+      "type": "single",
+      "prompt": "Un étudiant a tapé `sudo setfacl -m u:user1:rw-,u:user3:r-- /home/projet` (propriétaire root, mode `700` au départ). Que se passe-t-il quand `user1` tape `cd /home/projet` puis `touch /home/projet/a` ?",
+      "choices": [
+        "Les deux échouent : sans `x`, ni entrée ni création possible",
+        "`cd` réussit, seul `touch` échoue faute de droit d'exécution",
+        "Les deux réussissent : `rw-` suffit pour travailler dans un répertoire",
+        "`cd` échoue, mais `touch` réussit grâce au droit `w`"
+      ],
+      "answer": [0],
+      "explanation": "Sur un répertoire, `x` est le droit d'ouverture : sans lui, user1 ne peut ni y entrer avec `cd`, ni l'ouvrir pour y créer un fichier, même avec `w`. Il fallait `u:user1:rwx,u:user3:r-x`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q024",
+      "type": "single",
+      "prompt": "`user1` a trois sessions SSH, sur `pts/1`, `pts/2` et `pts/3`. Depuis votre session `tp`, sur `pts/0`, vous voulez fermer seulement celle de `pts/2`. Quelle commande ?",
+      "choices": [
+        "`sudo pkill -9 -U user1 bash`",
+        "`sudo pgrep -l -t pts/2 bash`",
+        "`sudo pkill -9 -t pts/2 bash`",
+        "`sudo pkill -9 -t pts/2 -U tp bash`"
+      ],
+      "answer": [2],
+      "explanation": "`-t pts/2` ne sélectionne que les processus attachés à ce terminal, et `-9` envoie SIGKILL au bash de cette session. `-U user1` viserait les trois sessions, `pgrep` ne fait qu'afficher les PID, et `-U tp` ajoute un critère qu'aucun processus de `pts/2`, qui appartient à user1, ne remplit.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q025",
+      "type": "single",
+      "prompt": "Vous cherchez le PID de votre shell et celui de son processus père. Voici ce qu'affiche `ps -l` dans ce shell. Que lisez-vous ?",
+      "code": "$ ps -l\nF S   UID     PID    PPID  C PRI  NI ADDR SZ WCHAN  TTY          TIME CMD\n0 S  1000    1822    1821  0  80   0 -  2190 do_wai pts/0    00:00:00 bash\n0 R  1000    1907    1822  0  80   0 -  2517 -      pts/0    00:00:00 ps",
+      "choices": ["Shell 1907, père 1822", "Shell 1822, père 1821", "Shell 1821, père 1822", "Shell 1822, père 1907"],
+      "answer": [1],
+      "explanation": "La ligne `bash` est celle du shell : sa colonne PID donne 1822 et sa colonne PPID, le numéro du processus père, 1821. La ligne 1907 est le processus `ps` lui-même, lancé par le shell : son PPID vaut 1822. Pour remonter la hiérarchie, on recommence avec 1821.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q026",
+      "type": "single",
+      "prompt": "Il est 9h00. Vous devez programmer avec at, pour 12h10 aujourd'hui, la commande `logger -t tp-at \"A la bouffe !\"`. Quelle ligne le fait ?",
+      "choices": [
+        "`at 12:10 logger -t tp-at \"A la bouffe !\"`",
+        "`at -f 'logger -t tp-at \"A la bouffe !\"' 12:10`",
+        "`echo 'logger -t tp-at \"A la bouffe !\"' | at 12:10`",
+        "`echo 'logger -t tp-at \"A la bouffe !\"' | at now + 12 hours`"
+      ],
+      "answer": [2],
+      "explanation": "at prend en argument l'heure seule (`at [options] heure`), au format HH:MM sur 24 heures, et attend les commandes à lancer sur son entrée standard : `echo ... | at 12:10` convient. Placée après l'heure, la commande n'est pas lue comme une commande. `-f` attend un fichier qui contient les commandes, et `now + 12 hours` viserait 21h00.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q027",
+      "type": "multi",
+      "prompt": "Après une programmation avec at, `atq` affiche la ligne ci-dessous. Vous voulez annuler ce travail. Quelles commandes le font ? (plusieurs réponses)",
+      "code": "$ atq\n3\tWed Nov 18 12:10:00 2026 a tp",
+      "choices": ["`atrm 3`", "`at -l 3`", "`kill 3`", "`at -d 3`"],
+      "answer": [0, 3],
+      "explanation": "Le premier nombre est le numéro du travail. `atrm` efface les travaux en attente, et `at -d` en est l'équivalent. `at -l` équivaut à `atq` et ne fait qu'afficher la liste, et `kill` envoie un signal à un processus désigné par son PID, pas à un travail at.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q028",
+      "type": "single",
+      "prompt": "Pour le message « La pause s'impose », un étudiant a installé cette crontab. Quand le message est-il écrit ?",
+      "code": "$ crontab -l\n30 10,15 * 1,2 1-5 logger \"La pause s'impose\"",
+      "choices": [
+        "Du lundi au vendredi, en janvier et février, à 10h30 et à 15h00",
+        "Les 1er et 2 de chaque mois, du lundi au vendredi, à 10h30 et à 15h30",
+        "Du lundi au vendredi, en janvier et février, toutes les 30 minutes de 10h à 15h",
+        "Du lundi au vendredi, en janvier et février, à 10h30 et à 15h30"
+      ],
+      "answer": [3],
+      "explanation": "Les champs sont minute, heure, jour du mois, mois et jour de la semaine : la minute 30 s'applique aux deux heures, d'où 10h30 et 15h30. `1,2` dans le quatrième champ désigne janvier et février, `1-5` du lundi au vendredi. Pour 10h30 et 15h00, il faut deux lignes : `30 10 * 1,2 1-5` et `0 15 * 1,2 1-5`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q029",
+      "type": "single",
+      "prompt": "Pour la consigne « du lundi au vendredi à 10h30 et 15h00, en janvier et février », votre crontab contient déjà la ligne ci-dessous. Quelle ligne ajouter pour 15h00 ?",
+      "code": "30 10 * 1,2 1-5 logger \"La pause s'impose\"",
+      "choices": [
+        "`15 0 * 1,2 1-5 logger \"La pause s'impose\"`",
+        "`0 15 1,2 * 1-5 logger \"La pause s'impose\"`",
+        "`0 15 * 1,2 1-5 logger \"La pause s'impose\"`",
+        "`0 15 * 1,2 0-4 logger \"La pause s'impose\"`",
+        "`0 3 * 1,2 1-5 logger \"La pause s'impose\"`"
+      ],
+      "answer": [2],
+      "explanation": "Les champs sont dans l'ordre minute, heure, jour du mois, mois et jour de la semaine : `0 15` donne 15h00, `1,2` en quatrième position janvier et février, `1-5` du lundi au vendredi. `15 0` vaut 0h15, `1,2` en troisième position désigne les 1er et 2 du mois, `0-4` va du dimanche au jeudi, et l'heure s'écrit de 0 à 23.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q030",
+      "type": "single",
+      "prompt": "Dans `sudo parted /dev/sdb`, vous avez supprimé par erreur la partition 1 (ext4, avec des données) en tapant `rm 1`. Que faire pour la retrouver ?",
+      "choices": [
+        "Recréer la partition, puis `sudo mkfs.ext4 /dev/sdb1` pour reconstruire les fichiers",
+        "Lancer `sudo fsck /dev/sdb1`, qui reconstruit l'entrée dans la table des partitions",
+        "Rien : la commande `rm` de parted a effacé les données de la partition",
+        "Dans parted, lancer `rescue` sur la zone qu'occupait la partition"
+      ],
+      "answer": [3],
+      "explanation": "`rm` n'a retiré que l'entrée de la table, avec effet immédiat comme toute commande de parted. `rescue début fin` cherche les partitions présentes entre ces deux positions et propose de les ajouter à la table : le système de fichiers est retrouvé avec ses données. `mkfs.ext4` mettrait en place un système de fichiers neuf, et `fsck` vérifie un système de fichiers, pas la table des partitions.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q031",
+      "type": "single",
+      "prompt": "Pour identifier le type de table et le rôle des partitions du disque système, vous obtenez cette sortie. Que pouvez-vous en conclure ?",
+      "code": "$ sudo fdisk -l /dev/sda\nDisk /dev/sda: 25 GiB, 26843545600 bytes, 52428800 sectors\nDisk model: VBOX HARDDISK\nUnits: sectors of 1 * 512 = 512 bytes\nSector size (logical/physical): 512 bytes / 512 bytes\nI/O size (minimum/optimal): 512 bytes / 512 bytes\nDisklabel type: gpt\nDisk identifier: B162D427-C285-48C5-8E4B-DBB03D0E2207\n\nDevice     Start      End  Sectors Size Type\n/dev/sda1   2048     4095     2048   1M BIOS boot\n/dev/sda2   4096 52426751 52422656  25G Linux filesystem",
+      "choices": [
+        "Table GPT, et aucune partition n'est une partition système EFI",
+        "Table MBR, avec une partition BIOS boot propre à ce format",
+        "Table GPT, et `sda1` est la partition système EFI, en FAT32",
+        "Table GPT, et `sda1` est la partition de swap créée par défaut"
+      ],
+      "answer": [0],
+      "explanation": "`Disklabel type: gpt` donne le type de table. Une partition système EFI (ESP) est une petite partition formatée en FAT32 ; ici `sda1` est de type `BIOS boot` et ne fait que 1 Mio, et `sda2` est un système de fichiers Linux. Le swap d'Ubuntu est un fichier, `/swap.img`, déclaré dans `/etc/fstab`.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q032",
+      "type": "single",
+      "prompt": "Vous venez de créer `/dev/sdb1` avec fdisk. Pourquoi blkid n'affiche-t-il ni `UUID=` ni `TYPE=` ?",
+      "code": "$ sudo blkid /dev/sdb1\n/dev/sdb1: PARTUUID=\"5d2e8f41-6b7a-4c3d-9e10-a2b4c6d8e0f1\"",
+      "choices": [
+        "Le noyau n'a pas relu la table : l'UUID n'apparaîtra qu'après un redémarrage",
+        "Les partitions GPT n'ont qu'un PARTUUID ; l'UUID n'existe qu'avec MBR",
+        "blkid n'affiche l'UUID que des partitions déjà montées",
+        "Pas encore de système de fichiers : UUID et type viennent de `mkfs`"
+      ],
+      "answer": [3],
+      "explanation": "Le PARTUUID identifie l'entrée de la table GPT, créée par fdisk. L'UUID et le TYPE sont ceux du système de fichiers : ils n'apparaissent qu'après `mkfs.ext4 /dev/sdb1`, et le TP les fait vérifier avec lsblk et blkid avant tout montage. Le noyau connaît déjà sdb1, puisque blkid la trouve.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q033",
+      "type": "single",
+      "prompt": "Pourquoi la première partition commence-t-elle au secteur 2048, et non juste après l'en-tête GPT ?",
+      "code": "$ sudo fdisk -l /dev/sdb\nDisk /dev/sdb: 1 GiB, 1073741824 bytes, 2097152 sectors\nDisklabel type: gpt\n\nDevice       Start     End Sectors Size Type\n/dev/sdb1     2048 1026047 1024000 500M Linux filesystem\n/dev/sdb2  1026048 1128447  102400  50M Linux filesystem",
+      "choices": [
+        "Les 2048 premiers secteurs sont réservés au MBR et aux partitions étendues",
+        "fdisk aligne les partitions sur 1 Mio, soit 2048 secteurs de 512 octets",
+        "Les 2048 premiers secteurs contiendront le superbloc ext4 de sdb1",
+        "fdisk réserve ce premier Mio pour un futur fichier de swap"
+      ],
+      "answer": [1],
+      "explanation": "Les outils modernes alignent les partitions sur des limites adaptées aux supports actuels, souvent 1 Mio : 2048 secteurs logiques de 512 octets font 1 Mio, un multiple des secteurs physiques de 4 Kio. GPT ne connaît pas les partitions étendues, le superbloc ext4 se trouve dans la partition, et le swap d'Ubuntu est un fichier, `/swap.img`.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q034",
+      "type": "single",
+      "prompt": "Vous voulez formater la partition de 500 Mio du disque `/dev/sdb`, qui porte une table GPT, et obtenez ce message. Que faire ?",
+      "code": "$ sudo mkfs.ext4 /dev/sdb\nFound a gpt partition table in /dev/sdb\nProceed anyway? (y,N)",
+      "choices": [
+        "Répondre `y` : mke2fs formatera la première partition de la table",
+        "Répondre `N`, puis taper `sudo mkfs.ext4 /dev/sdb1`",
+        "Répondre `N`, puis taper `sudo mkfs.ext4 -t gpt /dev/sdb`",
+        "Répondre `y`, la table GPT ne contenant qu'une partition"
+      ],
+      "answer": [1],
+      "explanation": "`/dev/sdb` désigne le disque entier et `/dev/sdb1` sa première partition. Un système de fichiers occupe une partition : répondre `y` le créerait sur tout le disque, par-dessus la table GPT et ses partitions. L'option `-t` de mkfs indique un type de système de fichiers, pas une table de partitions.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q035",
+      "type": "single",
+      "prompt": "Après avoir copié des fichiers dans `/mnt/data`, votre shell s'y trouve encore et `sudo umount /mnt/data` répond `target is busy`. Que faire pour démonter proprement ?",
+      "choices": [
+        "`sudo umount -a`, qui démonte tous les systèmes de fichiers de fstab",
+        "`sudo fsck /mnt/data`, pour libérer le système de fichiers",
+        "`cd` pour sortir de `/mnt/data`, puis `sudo umount /mnt/data`",
+        "`sudo umount -f /mnt/data`, qui force le démontage"
+      ],
+      "answer": [2],
+      "explanation": "Le système de fichiers est occupé parce que votre shell s'y trouve, comme après `cd /opt` puis `umount /opt`. Il suffit d'en sortir ; `fuser -u /mnt/data` aurait montré le processus en cause. `umount -f` est à éviter, `umount -a` chercherait à démonter tous les systèmes de fichiers au lieu du seul `/mnt/data`, et `fsck` vérifie un système de fichiers au lieu de le libérer.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q036",
+      "type": "single",
+      "prompt": "Voici la ligne ajoutée à `/etc/fstab`, et `sudo mount -a` échoue. Quelle est l'erreur ?",
+      "code": "UUID=3f6c0e5a-8d2b-4c1e-9a7f-2b5d8e1c4a90  ext4  /mnt/data  defaults  0  2",
+      "choices": [
+        "Les champs 2 et 3 sont inversés : le point de montage précède le type",
+        "Le premier champ doit être `/dev/sdb1`, mount ne comprend pas `UUID=`",
+        "L'option `defaults` n'existe pas pour un système de fichiers ext4",
+        "Le dernier champ doit valoir 1 pour une partition de données"
+      ],
+      "answer": [0],
+      "explanation": "Chaque ligne suit l'ordre spec, rep, type, opts, dump, passno : ici mount cherche un point de montage nommé `ext4` et un type `/mnt/data`. L'UUID est la forme recommandée, `defaults` vaut `rw,suid,dev,exec,auto,nouser,async`, et passno vaut 1 pour la racine, 2 pour les autres.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q037",
+      "type": "single",
+      "prompt": "Voici `/etc/fstab` (UUID abrégés). `/mnt/data` et `/mnt/sauve` ne sont pas montés. Que fait `sudo mount -a` pour ces deux lignes ?",
+      "code": "UUID=9b1f...      /           ext4  defaults    0 1\nUUID=4C2A-1F3E   /boot/efi   vfat  umask=0077  0 1\n/swap.img        none        swap  sw          0 0\nUUID=3f6c...     /mnt/data   ext4  defaults    0 2\nUUID=77e0...     /mnt/sauve  ext4  noauto      0 2",
+      "choices": [
+        "Il monte les deux, `noauto` ne jouant qu'au démarrage",
+        "Il ne monte rien : ces lignes ne servent qu'au démarrage",
+        "Il monte `/mnt/data` et laisse `/mnt/sauve` démonté",
+        "Il monte les deux, mais `/mnt/sauve` en lecture seule"
+      ],
+      "answer": [2],
+      "explanation": "`mount -a` tente de monter tous les systèmes de fichiers listés dans `/etc/fstab` qui n'ont pas l'option `noauto` : seul `/mnt/data` est concerné. `noauto` n'a rien à voir avec la lecture seule, réglée par `ro`, et `/mnt/sauve` se monte à la main avec `sudo mount /mnt/sauve`, qui lit ses paramètres dans fstab.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q038",
+      "type": "single",
+      "prompt": "Pour l'état des lieux, vous voulez savoir qui est connecté en ce moment, sur quel terminal et depuis quelle machine. Quelle commande ?",
+      "choices": ["`last`", "`who am i`", "`who`", "`whoami`"],
+      "answer": [2],
+      "explanation": "`who` consulte `/var/run/utmp` et affiche, pour chaque connexion en cours, l'utilisateur, le terminal, l'heure de connexion et le système distant. `last` lit `/var/log/wtmp`, l'historique des connexions et déconnexions ; `who am i` se limite à votre propre connexion et `whoami` ne donne que votre identité effective.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q039",
+      "type": "single",
+      "prompt": "Pour l'état des lieux, vous voulez retrouver les arrêts du système et les changements de cible, en plus des connexions et des démarrages. Quelle commande ?",
+      "choices": ["`last`", "`last -x`", "`who`", "`systemctl get-default`"],
+      "answer": [1],
+      "explanation": "`last` lit `/var/log/wtmp` et affiche les connexions et déconnexions, les plus récentes en premier, ainsi que les démarrages. Avec `-x`, il ajoute les arrêts du système et les changements de cible, notés comme des changements de niveau SystemV. `who` ne montre que les connexions en cours, et `systemctl get-default` la cible par défaut.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q040",
+      "type": "single",
+      "prompt": "Une règle de `/etc/sudoers.d` permet à `user1` de redémarrer cron. Connecté en `user1`, vous tapez `sudo systemctl restart cron`. Sous quelle identité systemctl s'exécute-t-il ?",
+      "choices": [
+        "`root`, l'identité que sudo prend par défaut",
+        "`user1`, sudo ne faisant que vérifier la règle",
+        "`user1`, avec le groupe `root` en plus",
+        "`cron`, le compte du service à redémarrer"
+      ],
+      "answer": [0],
+      "explanation": "sudo exécute la commande en prenant l'identité d'un autre utilisateur, root par défaut. L'option `-u` en choisit un autre, et `-g` change le groupe. La règle ne fait qu'autoriser la commande ; elle ne tourne ni sous user1 ni sous un compte lié au service.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q041",
+      "type": "multi",
+      "prompt": "Connecté en `user1`, avec la règle ci-dessous, quelles commandes sudo accepte-t-il ? (plusieurs réponses)",
+      "code": "$ sudo -l\nUser user1 may run the following commands on srv:\n    (root) /usr/bin/systemctl restart cron",
+      "choices": [
+        "`sudo systemctl stop cron`",
+        "`sudo systemctl restart cron`",
+        "`sudo -u root systemctl restart cron`",
+        "`sudo systemctl restart ssh`",
+        "`sudo -u user1 systemctl restart cron`"
+      ],
+      "answer": [1, 2],
+      "explanation": "La règle n'autorise qu'une commande, `systemctl restart cron`, sous l'identité `root`. Sans `-u`, sudo prend justement root, et `-u root` le dit explicitement : les deux passent. Arrêter cron, redémarrer un autre service ou demander une autre identité que root sortent de la règle : sudo refuse.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q042",
+      "type": "multi",
+      "prompt": "Un processus qui consomme du CPU a le PID 2412. Après un essai avec SIGTERM, vous voulez lui envoyer SIGKILL. Quelles commandes le font ? (plusieurs réponses)",
+      "choices": ["`kill 2412`", "`kill -9 2412`", "`kill -TERM 2412`", "`kill -KILL 2412`", "`kill -l 2412`"],
+      "answer": [1, 3],
+      "explanation": "Le signal se donne par son nom ou par son numéro, et la liste de `kill -l` associe 9 à SIGKILL et 15 à SIGTERM. Sans option, kill envoie SIGTERM, la demande polie de fin de processus, tout comme `-TERM`. `-l` sert à afficher la liste des signaux : il n'envoie rien.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q043",
+      "type": "multi",
+      "prompt": "Vous avez volontairement introduit une erreur dans la ligne `ExecStart` du service `test`, qui ne démarre plus. Quelles commandes vous montrent ses messages pour diagnostiquer la panne ? (plusieurs réponses)",
+      "choices": [
+        "`sudo systemctl status test`",
+        "`systemctl get-default`",
+        "`sudo journalctl -u test`",
+        "`systemctl list-unit-files --type=service`"
+      ],
+      "answer": [0, 2],
+      "explanation": "`systemctl status` affiche l'état en cours du service avec ses messages, et `journalctl -u` les messages du service : ce sont les deux outils de diagnostic que le TP fait utiliser. `get-default` donne la cible par défaut, et `list-unit-files` la liste des services disponibles avec leur statut, sans leurs messages.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q044",
+      "type": "single",
+      "prompt": "Vous obtenez la sortie ci-dessous et soupçonnez que le système de fichiers n'a plus d'inode libre. Quelle commande permet de le vérifier ?",
+      "code": "$ touch /var/tmp/essai\ntouch: cannot touch '/var/tmp/essai': No space left on device\n$ df -h /var/tmp\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/sda2        25G  9.8G   14G  42% /",
+      "choices": ["`sudo du -h /var/tmp`", "`sudo tune2fs -l /dev/sda2`", "`sudo findmnt --verify`", "`sudo e2fsck -b 98304 /dev/sda2`"],
+      "answer": [1],
+      "explanation": "Chaque fichier occupe une inode, et leur nombre est fixé à la création du système de fichiers : il peut en manquer alors qu'il reste des blocs, ici 14G. `tune2fs -l` affiche le superbloc, dont la ligne `Free inodes`. `du` mesure l'espace occupé par les répertoires, `findmnt --verify` contrôle `/etc/fstab`, et `e2fsck -b` restaure le superbloc depuis une copie, ce qu'on ne lance pas sur un système de fichiers monté.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q045",
+      "type": "single",
+      "prompt": "Pour l'état des lieux, vous voulez savoir quels répertoires de `/var` occupent le plus d'espace. Quelle commande vous donne la taille de chacun ?",
+      "choices": ["`df -h /var`", "`lsblk`", "`sudo tune2fs -l /dev/sda2`", "`sudo du -h /var`"],
+      "answer": [3],
+      "explanation": "`du` indique l'espace occupé par chaque répertoire et sous-répertoire, avec le total de `/var` en dernière ligne. `df -h` raisonne par système de fichiers monté : il donne la taille, l'espace utilisé et l'espace disponible de celui qui contient `/var`. `tune2fs -l` affiche le superbloc et `lsblk` les disques et partitions.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q046",
+      "type": "single",
+      "prompt": "Dans votre répertoire, `fichier` contient `v1` ; `dur` est un lien physique vers `fichier`, et `sym` un lien symbolique vers `fichier`. Qu'affiche la dernière commande ?",
+      "code": "$ echo v2 >> dur\n$ rm fichier\n$ echo v3 > fichier\n$ cat sym dur",
+      "choices": [
+        "`v3`, puis `v1` et `v2`",
+        "`v1` et `v2`, deux fois de suite",
+        "`No such file or directory` pour `sym`, puis `v1` et `v2`",
+        "`v3`, puis `v3`"
+      ],
+      "answer": [0],
+      "explanation": "`dur` est un second nom de l'inode d'origine, qui a reçu `v2` ; un fichier n'est effacé que lorsqu'il n'a plus de nom, donc `rm fichier` ne le détruit pas. `sym` ne contient que le chemin `fichier` : il mène au nouveau fichier créé par `echo v3`, qui a sa propre inode. Sans cette recréation, `sym` pointerait vers un fichier qui n'existe pas.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q047",
+      "type": "single",
+      "prompt": "Vous voulez observer dans top le seul processus de PID 2412, avec un rafraîchissement toutes les 5 secondes. Quelle commande ?",
+      "choices": ["`top -p 5 -d 2412`", "`top -i -d 5`", "`top -d 5 -p 2412`", "`top -d 2412 -i`"],
+      "answer": [2],
+      "explanation": "`-d sec` fixe le délai de rafraîchissement et `-p pid` limite l'affichage à ce processus. Inverser les valeurs demande un délai de 2412 secondes et le PID 5, et `-i` affiche tous les processus actifs au lieu d'un seul.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q048",
+      "type": "multi",
+      "prompt": "Vous avez volontairement faussé l'UUID de la ligne `/mnt/data` dans `/etc/fstab`. Sans redémarrer, quelles commandes vous signalent le problème ? (plusieurs réponses)",
+      "choices": [
+        "`findmnt --verify`",
+        "`df -h`",
+        "`sudo mount -a`",
+        "`cat /proc/cmdline`",
+        "`systemctl get-default`"
+      ],
+      "answer": [0, 2],
+      "explanation": "`findmnt --verify` vérifie la configuration de `/etc/fstab`, et `mount -a` tente de monter tout ce qui y est listé sans `noauto` : l'UUID introuvable fait échouer la ligne. Ce sont les deux contrôles que le TP demande avant de redémarrer. `df -h` décrit les systèmes de fichiers déjà montés, `/proc/cmdline` les paramètres passés au noyau et `get-default` la cible par défaut.",
+      "difficulty": 3
+    },
+    {
+      "id": "tp1-c-q049",
+      "type": "single",
+      "prompt": "Pour la partie swap de l'état des lieux, vous trouvez cette ligne dans `/etc/fstab`. Que vous apprend-elle ?",
+      "code": "/swap.img        none        swap  sw          0 0",
+      "choices": [
+        "Le swap est un fichier, sans point de montage, ignoré par fsck",
+        "Le swap est une partition, montée sur un répertoire nommé `none`",
+        "Le swap est vérifié par fsck en premier, avant la racine `/`",
+        "Le swap est copié par dump à chaque sauvegarde du système"
+      ],
+      "answer": [0],
+      "explanation": "Le premier champ est ce qu'on monte : ici le fichier `/swap.img`, pas un périphérique `/dev/...`. Le point de montage vaut `none`, le type est `swap`, et les deux zéros finaux signifient que dump ne le sauvegarde pas et que fsck l'ignore.",
+      "difficulty": 2
+    },
+    {
+      "id": "tp1-c-q050",
+      "type": "multi",
+      "prompt": "Pour l'état des lieux, vous lancez ces commandes depuis le compte `tp`, sans sudo. Lesquelles donnent bien l'information indiquée ? (plusieurs réponses)",
+      "choices": [
+        "`who` : utilisateurs connectés",
+        "`crontab -l` : tâches cron de tous les utilisateurs",
+        "`df -h` : espace des systèmes de fichiers montés",
+        "`last` : connexions en cours uniquement",
+        "`lsblk` : disques et partitions"
+      ],
+      "answer": [0, 2, 4],
+      "explanation": "`who` liste les connexions en cours, `df -h` l'espace de chaque système de fichiers monté et `lsblk` inventorie disques et partitions. `crontab -l` n'affiche que la table de l'utilisateur qui la lance ; root utilise `-u` pour celle d'un autre. `last` donne l'historique des connexions et déconnexions, pas seulement celles en cours.",
+      "difficulty": 3
+    }
+  ]
+}

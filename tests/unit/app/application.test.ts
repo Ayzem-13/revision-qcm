@@ -129,6 +129,7 @@ describe("starting, replaying and quitting", () => {
     expect(questionView(await reloaded.study(subject.id)).total).toBe(subject.questions.size);
     expect(reloaded.preferences.get().lastCount).toBe(subject.questions.size);
     expect(reloaded.preferences.get().lastMode).toBe("exam");
+    expect(reloaded.preferences.get().lastChapters).toEqual({ [subject.id]: allChapterIds(subject) });
   });
 
   test("a start with nothing to draw leaves the current session alone", async () => {
@@ -305,7 +306,12 @@ describe("the application", () => {
 
   test("keeps the theme preference and notifies its subscribers", async () => {
     const { application } = await open();
-    expect(application.preferences.get()).toEqual({ theme: "system", lastCount: 20, lastMode: "training" });
+    expect(application.preferences.get()).toEqual({
+      theme: "system",
+      lastCount: 20,
+      lastMode: "training",
+      lastChapters: {},
+    });
     let calls = 0;
     application.preferences.subscribe(() => {
       calls += 1;
