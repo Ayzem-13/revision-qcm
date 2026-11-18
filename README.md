@@ -38,6 +38,17 @@ La première fois, Playwright a besoin de son navigateur : `bunx playwright inst
 Deux contrôles complètent la liste, et tournent aussi en CI : `bun run format:check` (Prettier, avec l'ordre des classes
 Tailwind ; `bun run format` corrige) et `bun run knip` (fichiers, exports et dépendances inutilisés).
 
+## Déployer
+
+Le dépôt est relié à un projet Vercel : chaque poussée sur `main` déploie la production, chaque autre branche un aperçu.
+`vercel.json` fixe les commandes (`bun install --frozen-lockfile`, `bun run build`, sortie `dist`) et les en-têtes de
+toutes les réponses : une politique de sécurité du contenu qui n'accepte que les fichiers du site, l'interdiction
+d'être affiché dans un cadre, et `X-Robots-Tag: noindex`, que répète la balise `robots` de `index.html`.
+
+Le site n'est pas public. Dans les réglages du projet Vercel, l'authentification Vercel protège tous les déploiements,
+production comprise : il faut être connecté à un compte membre de l'équipe pour ouvrir une adresse. Ce réglage vit chez
+Vercel, pas dans le dépôt.
+
 ## Ajouter une matière
 
 ### 1. Un dossier
